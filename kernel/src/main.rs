@@ -7,6 +7,7 @@ global_asm!(include_str!("entry.S"));
 
 mod lang_items;
 mod sbi;
+#[macro_use]
 mod console;
 #[path ="boards/qemu.rs"]
 mod board;
@@ -14,11 +15,7 @@ mod board;
 #[no_mangle]
 fn rust_main() -> ! {
     clear_bss();
-
-    sbi::console_putchar('a' as usize);
-    sbi::console_putchar('b' as usize);
-    sbi::console_putchar('c' as usize);
-
+    println!("[Kernel] Hello, world!");
     sbi::sbi_shutdown(0);
 }
 
