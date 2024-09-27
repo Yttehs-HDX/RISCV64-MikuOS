@@ -11,10 +11,12 @@ mod sbi;
 mod console;
 #[path ="boards/qemu.rs"]
 mod board;
+mod util;
 
 #[no_mangle]
 fn rust_main() -> ! {
     clear_bss();
+    util::logger_init();
     println!("[Kernel] Hello, world!");
     sbi::sbi_shutdown_success();
 }
