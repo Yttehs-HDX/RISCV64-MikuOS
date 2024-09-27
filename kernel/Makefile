@@ -16,7 +16,7 @@ QEMU_FLAGS := -machine virt \
 	-device loader,file=$(TARGET),addr=$(ADDR) \
 	-nographic
 
-GDB := riscv64-elf-gdb
+GDB := rust-gdb
 GDB_FLAGS := -ex "file $(TARGET)" \
 	-ex "target remote :1234" \
 	-ex "set arch riscv:rv64" \
