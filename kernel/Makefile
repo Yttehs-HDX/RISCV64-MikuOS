@@ -16,11 +16,11 @@ QEMU_FLAGS := -machine virt \
 	-device loader,file=$(TARGET),addr=$(ADDR) \
 	-nographic
 
-GDB := riscv64-linux-gnu-gdb
+GDB := riscv64-elf-gdb
 GDB_FLAGS := -ex "file $(TARGET)" \
 	-ex "target remote :1234" \
 	-ex "set arch riscv:rv64" \
-	-ex "layout src"
+	-ex "layout src" \
 
 all: run
 
@@ -31,6 +31,7 @@ run: build
 	@$(QEMU) $(QEMU_FLAGS)
 
 debug:
+	@echo -e "\033[33m[+] Run 'make connect' in another terminal at the same dir\033[0m"
 	@$(QEMU) $(QEMU_FLAGS) -S -s
 
 connect:
