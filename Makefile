@@ -1,4 +1,4 @@
-.PHONY : all
+.PHONY : all setup
 
 all:
 	@cd kernel && make -s all
