@@ -8,5 +8,5 @@ _start:
     .globl boot_stack_lower_bound
     .globl boot_stack_top
 boot_stack_lower_bound:
-    .space 0x40000000 # 128 MB
+    .space 4096 * 16
 boot_stack_top:
