@@ -16,12 +16,10 @@ pub fn qemu_exit(code: u32) -> ! {
     QEMU_EXIT_HANDLE.exit(code)
 }
 
-#[allow(unused)]
 pub fn qemu_exit_success() -> ! {
     QEMU_EXIT_HANDLE.exit_success()
 }
 
-#[allow(unused)]
 pub fn qemu_exit_failure() -> ! {
     QEMU_EXIT_HANDLE.exit_failure()
 }

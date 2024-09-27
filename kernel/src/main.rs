@@ -16,7 +16,7 @@ mod board;
 fn rust_main() -> ! {
     clear_bss();
     println!("[Kernel] Hello, world!");
-    sbi::sbi_shutdown(0);
+    sbi::sbi_shutdown_success();
 }
 
 fn clear_bss() {
