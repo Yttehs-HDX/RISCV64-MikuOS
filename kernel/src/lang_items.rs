@@ -1,10 +1,11 @@
 use core::panic::PanicInfo;
-use crate::{println, sbi};
+use log::error;
+use crate::sbi;
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     if let Some(location) = info.location() {
-        println!(
+        error!(
             "Panicked at {} {}:{} {}",
             location.file(),
             location.line(),
@@ -12,7 +13,7 @@ fn panic(info: &PanicInfo) -> ! {
             info.message(),
         );
     } else {
-        println!(
+        error!(
             "Panicked: {}",
             info.message(),
         )
