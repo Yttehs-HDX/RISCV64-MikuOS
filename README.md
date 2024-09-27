@@ -19,9 +19,11 @@ make build
 ### Run
 
 ```bash
-make run
+make run LOG=<log_level>
 # or simply 'make'
 ```
+
+> log_level options: TRACE, DEBUG, INFO, WARN, ERROR
 
 ### Debug
 
