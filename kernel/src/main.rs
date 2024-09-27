@@ -3,6 +3,8 @@
 
 use core::arch::global_asm;
 
+use log::trace;
+
 global_asm!(include_str!("entry.S"));
 
 mod lang_items;
@@ -17,6 +19,7 @@ mod util;
 fn rust_main() -> ! {
     clear_bss();
     util::logger_init();
+    print_sections();
     println!("[Kernel] Hello, world!");
     sbi::sbi_shutdown_success();
 }
@@ -32,4 +35,21 @@ fn clear_bss() {
             (addr as *mut u8).write_volatile(0);
         }
     });
+}
+
+fn print_sections() {
+    extern "C" {
+        fn stext();
+        fn etext();
+        fn srodata();
+        fn erodata();
+        fn sdata();
+        fn edata();
+        fn sbss_with_stack();
+        fn ebss();
+    }
+    trace!(".text   [{:#x}, {:#x})", stext as usize, etext as usize);
+    trace!(".rodata [{:#x}, {:#x})", srodata as usize, erodata as usize);
+    trace!(".data   [{:#x}, {:#x})", sdata as usize, edata as usize);
+    trace!(".bss    [{:#x}, {:#x})", sbss_with_stack as usize, ebss as usize);
 }

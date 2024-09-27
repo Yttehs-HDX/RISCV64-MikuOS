@@ -42,6 +42,7 @@ SECTIONS {
     # data end
 
     .bss : {
+        sbss_with_stack = .;
         *(.bss.stack)
 
     # bss start
