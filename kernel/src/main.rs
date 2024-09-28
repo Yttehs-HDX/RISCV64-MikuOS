@@ -15,6 +15,7 @@ mod console;
 mod board;
 mod util;
 mod sync;
+mod batch;
 
 #[no_mangle]
 fn rust_main() -> ! {
@@ -22,6 +23,7 @@ fn rust_main() -> ! {
     util::logger_init();
     print_sections();
     println!("[Kernel] Hello, world!");
+    batch::print_app_info();
     sbi::sbi_shutdown_success();
 }
 
