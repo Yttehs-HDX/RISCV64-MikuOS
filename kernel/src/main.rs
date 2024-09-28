@@ -14,6 +14,7 @@ mod console;
 #[path ="boards/qemu.rs"]
 mod board;
 mod util;
+mod sync;
 
 #[no_mangle]
 fn rust_main() -> ! {
