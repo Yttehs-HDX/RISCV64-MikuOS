@@ -14,7 +14,7 @@ impl<T> UPSafeCell<T> {
         }
     }
 
-    pub fn exclusive_access<R>(&self) -> RefMut<T> {
+    pub fn exclusive_access(&self) -> RefMut<T> {
         self.inner.borrow_mut()
     }
 }
