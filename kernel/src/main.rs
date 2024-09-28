@@ -15,6 +15,7 @@ mod console;
 mod board;
 mod util;
 mod sync;
+mod config;
 mod batch;
 
 #[no_mangle]

@@ -1,11 +1,9 @@
 use core::arch::asm;
 use lazy_static::lazy_static;
 use log::{info, trace};
-use crate::sync::UPSafeCell;
+use crate::{config::{APP_BASE_ADDR, APP_SIZE_LIMIT, KERNEL_STACK_SIZE, USER_STACK_SIZE}, sync::UPSafeCell};
 
 // Before implementing file system, we use include_bytes! to load the binary of the app
-const APP_BASE_ADDR: usize = 0x80400000;
-const APP_SIZE_LIMIT: usize = 0x20000;
 const APP_NUM: usize = 1;
 const TEST_PRINT: &[u8] = include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/test_print.bin");
 
@@ -24,6 +22,31 @@ lazy_static! {
         UPSafeCell::new(AppManager { apps: app_arr })
     };
 }
+
+static KERNEL_STACK: KernelStack = KernelStack([0; KERNEL_STACK_SIZE]);
+static USER_STACK: UserStack = UserStack([0; USER_STACK_SIZE]);
+
+// region KernelStack begin
+#[repr(align(4096))]
+struct KernelStack([u8; KERNEL_STACK_SIZE]);
+
+impl KernelStack {
+    fn get_sp(&self) -> usize {
+        self.0.as_ptr() as usize + KERNEL_STACK_SIZE
+    }
+}
+// region KernelStack end
+
+// region UserStack begin
+#[repr(align(4096))]
+struct UserStack([u8; USER_STACK_SIZE]);
+
+impl UserStack {
+    fn get_sp(&self) -> usize {
+        self.0.as_ptr() as usize + USER_STACK_SIZE
+    }
+}
+// region UserStack end
 
 // region AppManager begin
 pub struct AppManager {
