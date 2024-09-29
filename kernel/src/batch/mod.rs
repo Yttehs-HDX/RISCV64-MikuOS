@@ -5,7 +5,7 @@ use crate::{config::{APP_BASE_ADDR, APP_SIZE_LIMIT, KERNEL_STACK_SIZE, USER_STAC
 
 // Before implementing file system, we use include_bytes! to load the binary of the app
 const APP_NUM: usize = 1;
-const TEST_PRINT: &[u8] = include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/test_print.bin");
+const TEST_PRINT: &[u8] = include_bytes!("../../../user/target/riscv64gc-unknown-none-elf/release/test_print.bin");
 
 pub fn init_batch() {
     print_app_info();
