@@ -28,8 +28,6 @@ fn rust_main() -> ! {
     println!("[Kernel] Hello, world!");
     trap::init_trap();
     batch::init_batch();
-    batch::run_app(0);
-    // sbi::sbi_shutdown_success();
 }
 
 fn clear_bss() {

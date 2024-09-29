@@ -7,8 +7,9 @@ use crate::{config::{APP_BASE_ADDR, APP_SIZE_LIMIT, KERNEL_STACK_SIZE, USER_STAC
 const APP_NUM: usize = 1;
 const TEST_PRINT: &[u8] = include_bytes!("../../../user/target/riscv64gc-unknown-none-elf/release/test_print.bin");
 
-pub fn init_batch() {
+pub fn init_batch() -> ! {
     print_app_info();
+    run_app(0);
 }
 
 pub fn run_next_app() -> ! {
@@ -24,7 +25,7 @@ pub fn run_next_app() -> ! {
     run_app(current_app);
 }
 
-pub fn run_app(id: usize) -> ! {
+fn run_app(id: usize) -> ! {
     let app_manager = APP_MANAGER.exclusive_access();
     unsafe { app_manager.load_app(id) };
     drop(app_manager);
