@@ -48,6 +48,7 @@ lazy_static! {
         let app_arr = [
             App::new("test_print", TEST_PRINT),
             App::new("test_sret", TEST_SRET),
+            App::new("test_page_fault", TEST_PAGE_FAULT),
         ];
         UPSafeCell::new(AppManager { current_app: 0, apps: app_arr })
     };
