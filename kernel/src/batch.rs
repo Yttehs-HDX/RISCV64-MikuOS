@@ -1,7 +1,7 @@
 use core::arch::asm;
 use lazy_static::lazy_static;
 use log::{info, trace};
-use crate::{config::{APP_BASE_ADDR, APP_SIZE_LIMIT, KERNEL_STACK_SIZE, USER_STACK_SIZE}, sync::UPSafeCell};
+use crate::{config::{APP_BASE_ADDR, APP_SIZE_LIMIT, KERNEL_STACK_SIZE, USER_STACK_SIZE}, sync::UPSafeCell, trap::{self, TrapContext}};
 
 // Before implementing file system, we use include_bytes! to load the binary of the app
 const APP_NUM: usize = 1;
@@ -12,6 +12,15 @@ pub fn print_app_info() {
     APP_MANAGER.exclusive_access().apps.iter().enumerate().for_each(|(i, app)| {
         trace!("App[{}]: {}, start: {:p}, len: 0x{:x}", i, app.name, app.as_ptr(), app.len());
     });
+}
+
+pub fn run_app(id: usize) {
+    let app_manager = APP_MANAGER.exclusive_access();
+    unsafe { app_manager.load_app(id) };
+    drop(app_manager);
+    let trap_cx = TrapContext::init_app_cx(APP_BASE_ADDR, USER_STACK.get_sp());
+    let cx_ptr = KERNEL_STACK.push_cx(trap_cx);
+    unsafe { trap::__restore_trap(cx_ptr as *const _ as usize) };
 }
 
 lazy_static! {
@@ -33,6 +42,15 @@ struct KernelStack([u8; KERNEL_STACK_SIZE]);
 impl KernelStack {
     fn get_sp(&self) -> usize {
         self.0.as_ptr() as usize + KERNEL_STACK_SIZE
+    }
+
+    fn push_cx(&self, cx: TrapContext) -> *mut TrapContext {
+        let cx_size = core::mem::size_of::<TrapContext>();
+        let cx_ptr = (KERNEL_STACK.get_sp() - cx_size) as *mut TrapContext;
+        unsafe {
+            cx_ptr.write(cx);
+            cx_ptr.as_mut().unwrap()
+        }
     }
 }
 // region KernelStack end

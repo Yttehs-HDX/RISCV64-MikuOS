@@ -28,6 +28,7 @@ fn rust_main() -> ! {
     println!("[Kernel] Hello, world!");
     trap::init_trap();
     batch::print_app_info();
+    batch::run_app(0);
     sbi::sbi_shutdown_success();
 }
 
