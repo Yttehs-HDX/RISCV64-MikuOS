@@ -14,6 +14,11 @@ mod console;
 #[path ="boards/qemu.rs"]
 mod board;
 mod util;
+mod sync;
+mod config;
+mod batch;
+mod syscall;
+mod trap;
 
 #[no_mangle]
 fn rust_main() -> ! {
@@ -21,7 +26,8 @@ fn rust_main() -> ! {
     util::logger_init();
     print_sections();
     println!("[Kernel] Hello, world!");
-    sbi::sbi_shutdown_success();
+    trap::init_trap();
+    batch::init_batch();
 }
 
 fn clear_bss() {
