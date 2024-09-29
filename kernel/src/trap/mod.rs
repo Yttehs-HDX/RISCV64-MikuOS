@@ -1,7 +1,7 @@
 use core::arch::global_asm;
 use log::{debug, error};
 use riscv::register::{scause::{self, Exception, Trap}, stval, stvec, utvec::TrapMode};
-use crate::syscall;
+use crate::{batch, syscall};
 
 pub use trap_context::*;
 
@@ -35,7 +35,7 @@ fn trap_handler(cx: &mut TrapContext) -> &mut TrapContext {
             error!("unhandled trap {:?} @ {:#x}", scause.cause(), cx.sepc);
         }
     }
-    loop {}
+    batch::run_next_app();
 }
 
 extern "C" {

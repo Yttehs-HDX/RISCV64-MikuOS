@@ -1,26 +1,44 @@
 use core::arch::asm;
 use lazy_static::lazy_static;
 use log::{info, trace};
-use crate::{config::{APP_BASE_ADDR, APP_SIZE_LIMIT, KERNEL_STACK_SIZE, USER_STACK_SIZE}, sync::UPSafeCell, trap::{self, TrapContext}};
+use crate::{config::{APP_BASE_ADDR, APP_SIZE_LIMIT, KERNEL_STACK_SIZE, USER_STACK_SIZE}, sbi, sync::UPSafeCell, trap::{self, TrapContext}};
 
 // Before implementing file system, we use include_bytes! to load the binary of the app
 const APP_NUM: usize = 1;
 const TEST_PRINT: &[u8] = include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/test_print.bin");
 
-pub fn print_app_info() {
-    info!("Total app count: {}", APP_NUM);
-    APP_MANAGER.exclusive_access().apps.iter().enumerate().for_each(|(i, app)| {
-        trace!("App[{}]: {}, start: {:p}, len: 0x{:x}", i, app.name, app.as_ptr(), app.len());
-    });
+pub fn init_batch() {
+    print_app_info();
 }
 
-pub fn run_app(id: usize) {
+pub fn run_next_app() -> ! {
+    let mut app_manager = APP_MANAGER.exclusive_access();
+    app_manager.current_app += 1;
+    let current_app = app_manager.current_app;
+    if current_app >= APP_NUM {
+        info!("All apps completed");
+        sbi::sbi_shutdown_success();
+    }
+
+    drop(app_manager);
+    run_app(current_app);
+}
+
+pub fn run_app(id: usize) -> ! {
     let app_manager = APP_MANAGER.exclusive_access();
     unsafe { app_manager.load_app(id) };
     drop(app_manager);
     let trap_cx = TrapContext::init_app_cx(APP_BASE_ADDR, USER_STACK.get_sp());
     let cx_ptr = KERNEL_STACK.push_cx(trap_cx);
     unsafe { trap::__restore_trap(cx_ptr as *const _ as usize) };
+    unreachable!();
+}
+
+fn print_app_info() {
+    info!("Total app count: {}", APP_NUM);
+    APP_MANAGER.exclusive_access().apps.iter().enumerate().for_each(|(i, app)| {
+        trace!("App[{}]: {}, start: {:p}, len: 0x{:x}", i, app.name, app.as_ptr(), app.len());
+    });
 }
 
 lazy_static! {
@@ -28,7 +46,7 @@ lazy_static! {
         let app_arr = [
             App::new("test_print", TEST_PRINT),
         ];
-        UPSafeCell::new(AppManager { apps: app_arr })
+        UPSafeCell::new(AppManager { current_app: 0, apps: app_arr })
     };
 }
 
@@ -68,6 +86,7 @@ impl UserStack {
 
 // region AppManager begin
 pub struct AppManager {
+    current_app: usize,
     apps: [App; APP_NUM],
 }
 
