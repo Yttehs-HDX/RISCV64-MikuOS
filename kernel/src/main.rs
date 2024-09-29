@@ -29,7 +29,7 @@ fn rust_main() -> ! {
     trap::init_trap();
     batch::init_batch();
     batch::run_app(0);
-    sbi::sbi_shutdown_success();
+    // sbi::sbi_shutdown_success();
 }
 
 fn clear_bss() {
