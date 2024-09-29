@@ -35,7 +35,7 @@ fn trap_handler(cx: &mut TrapContext) -> &mut TrapContext {
             error!("unhandled trap {:?} @ {:#x}", scause.cause(), cx.sepc);
         }
     }
-    batch::run_next_app();
+    batch::exit_handler();
 }
 
 extern "C" {
