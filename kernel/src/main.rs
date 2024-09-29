@@ -18,6 +18,7 @@ mod sync;
 mod config;
 mod batch;
 mod syscall;
+mod trap;
 
 #[no_mangle]
 fn rust_main() -> ! {
@@ -25,6 +26,7 @@ fn rust_main() -> ! {
     util::logger_init();
     print_sections();
     println!("[Kernel] Hello, world!");
+    trap::init_trap();
     batch::print_app_info();
     sbi::sbi_shutdown_success();
 }
