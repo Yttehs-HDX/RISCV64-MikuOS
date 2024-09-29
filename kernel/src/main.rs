@@ -17,6 +17,7 @@ mod util;
 mod sync;
 mod config;
 mod batch;
+mod syscall;
 
 #[no_mangle]
 fn rust_main() -> ! {
