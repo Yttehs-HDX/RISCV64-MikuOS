@@ -19,22 +19,22 @@ fn trap_handler(cx: &mut TrapContext) -> &mut TrapContext {
     let scause = scause::read();
     match scause.cause() {
         Trap::Exception(Exception::UserEnvCall) => {
-            debug!("ecall from U-mode @ {:#x}", cx.sepc);
+            debug!("Ecall from U-mode @ {:#x}", cx.sepc);
             cx.sepc += 4;
             syscall::syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]);
             cx
         }
         Trap::Exception(Exception::IllegalInstruction) => {
-            error!("illegal instruction @ {:#x}, badaddr {:#x}", cx.sepc, stval);
+            error!("Illegal instruction @ {:#x}, badaddr {:#x}", cx.sepc, stval);
             syscall::sys_exit(1);
         }
         Trap::Exception(Exception::StoreFault) |
         Trap::Exception(Exception::StorePageFault) => {
-            error!("store fault @ {:#x}, badaddr {:#x}", cx.sepc, stval);
+            error!("Store fault @ {:#x}, badaddr {:#x}", cx.sepc, stval);
             syscall::sys_exit(1);
         }
         _ => {
-            error!("unhandled trap {:?} @ {:#x}", scause.cause(), cx.sepc);
+            error!("Unhandled trap {:?} @ {:#x}", scause.cause(), cx.sepc);
             syscall::sys_exit(1);
         }
     }
