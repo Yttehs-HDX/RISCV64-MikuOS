@@ -1,6 +1,7 @@
 // Before implementing file system, we use include_bytes! to load the binary of the app
-pub const APP_NUM: usize = 1;
+pub const APP_NUM: usize = 2;
 pub const TEST_PRINT: &[u8] = include_bytes!("../../../user/target/riscv64gc-unknown-none-elf/release/test_print.bin");
+pub const TEST_SRET: &[u8] = include_bytes!("../../../user/target/riscv64gc-unknown-none-elf/release/test_sret.bin");
 
 // region App begin
 pub struct App {

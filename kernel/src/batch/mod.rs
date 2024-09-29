@@ -47,6 +47,7 @@ lazy_static! {
     pub static ref APP_MANAGER: UPSafeCell<AppManager> = unsafe {
         let app_arr = [
             App::new("test_print", TEST_PRINT),
+            App::new("test_sret", TEST_SRET),
         ];
         UPSafeCell::new(AppManager { current_app: 0, apps: app_arr })
     };
