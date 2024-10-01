@@ -14,7 +14,7 @@ pub fn init_trap() {
 }
 
 #[no_mangle]
-fn trap_handler(cx: &mut TrapContext) -> &mut TrapContext {
+fn trap_handler(cx: &mut TrapContext) {
     let stval = stval::read();
     let scause = scause::read();
     match scause.cause() {
@@ -22,7 +22,7 @@ fn trap_handler(cx: &mut TrapContext) -> &mut TrapContext {
             debug!("Ecall from U-mode @ {:#x}", cx.sepc);
             cx.sepc += 4;
             syscall::syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]);
-            cx
+            unsafe { __restore_trap(cx as *const _ as usize) };
         }
         Trap::Exception(Exception::IllegalInstruction) => {
             error!("Illegal instruction @ {:#x}, badaddr {:#x}", cx.sepc, stval);

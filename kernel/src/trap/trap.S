@@ -8,7 +8,6 @@
 
     .section .text
     .globl __save_trap
-    .globl __restore_trap
     .align 2 // 4 bytes
 __save_trap:                    // fn __save_trap()
     // before: sp -> UserStack, sscratch -> KernelStack
@@ -48,6 +47,9 @@ __save_trap:                    // fn __save_trap()
 
     // not the end              //     __retore_trap(a0);
 
+    .section .text
+    .globl __restore_trap
+    .align 2 // 4 bytes
 __restore_trap:                 // fn __retore_trap(cx: usize)
                                 //     let cx = cx as *mut TrapContext;
     mv sp, a0                   //     sp = cx; (at TrapContext top)
