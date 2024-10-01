@@ -30,7 +30,11 @@ fn run_app(id: usize) -> ! {
     let app_manager = APP_MANAGER.exclusive_access();
     unsafe { app_manager.load_app(id) };
     drop(app_manager);
-    let trap_cx = TrapContext::init_app_cx(APP_BASE_ADDR, USER_STACK.get_sp());
+    let trap_cx = TrapContext::init_app_cx(
+        APP_BASE_ADDR,
+        USER_STACK.get_sp(),
+        trap::trap_handler as usize,
+    );
     let cx_ptr = KERNEL_STACK.push_cx(trap_cx);
     unsafe { trap::__restore_trap(cx_ptr as *const _ as usize) };
     unreachable!();
