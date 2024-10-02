@@ -2,10 +2,11 @@
 #![no_main]
 
 use core::arch::global_asm;
-
 use log::trace;
 
 global_asm!(include_str!("entry.S"));
+
+mod app;
 
 mod lang_items;
 mod sbi;
@@ -16,7 +17,6 @@ mod board;
 mod util;
 mod sync;
 mod config;
-mod batch;
 mod syscall;
 mod trap;
 
@@ -27,7 +27,7 @@ fn rust_main() -> ! {
     print_sections();
     println!("[Kernel] Hello, world!");
     trap::init_trap();
-    batch::init_batch();
+    loop {}
 }
 
 fn clear_bss() {
