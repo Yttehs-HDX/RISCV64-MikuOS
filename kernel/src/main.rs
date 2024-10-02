@@ -19,6 +19,7 @@ mod sync;
 mod config;
 mod syscall;
 mod trap;
+mod task;
 
 #[no_mangle]
 fn rust_main() -> ! {
