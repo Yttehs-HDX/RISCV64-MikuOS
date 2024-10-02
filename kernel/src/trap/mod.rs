@@ -13,16 +13,16 @@ pub fn init_trap() {
     unsafe { stvec::write(__save_trap as usize, TrapMode::Direct) };
 }
 
-#[no_mangle]
-fn trap_handler(cx: &mut TrapContext) -> &mut TrapContext {
+pub fn trap_handler(cx: &mut TrapContext) {
     let stval = stval::read();
     let scause = scause::read();
     match scause.cause() {
         Trap::Exception(Exception::UserEnvCall) => {
             debug!("Ecall from U-mode @ {:#x}", cx.sepc);
+            debug!("cx.trap_handler: {:#x}", cx.trap_handler);
             cx.sepc += 4;
             syscall::syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]);
-            cx
+            unsafe { __restore_trap(cx as *const _ as usize) };
         }
         Trap::Exception(Exception::IllegalInstruction) => {
             error!("Illegal instruction @ {:#x}, badaddr {:#x}", cx.sepc, stval);
