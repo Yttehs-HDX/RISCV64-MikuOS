@@ -33,9 +33,10 @@ fn run_app(id: usize) -> ! {
     let trap_cx = TrapContext::init_app_cx(
         APP_BASE_ADDR,
         USER_STACK.get_sp(),
+        KERNEL_STACK.get_sp(),
         trap::trap_handler as usize,
     );
-    let cx_ptr = KERNEL_STACK.push_cx(trap_cx);
+    let cx_ptr = trap_cx.push_to_kstack();
     unsafe { trap::__restore_trap(cx_ptr as *const _ as usize) };
     unreachable!();
 }
