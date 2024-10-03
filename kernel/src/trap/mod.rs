@@ -3,9 +3,9 @@ use log::{debug, error};
 use riscv::register::{scause::{self, Exception, Trap}, stval, stvec, utvec::TrapMode};
 use crate::syscall;
 
-pub use trap_context::*;
+pub use context::*;
 
-mod trap_context;
+mod context;
 
 global_asm!(include_str!("trap.S"));
 

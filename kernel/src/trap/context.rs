@@ -16,7 +16,7 @@ impl TrapContext {
         self.x[2] = sp;
     }
 
-    pub fn init_app_cx(entry: usize, user_sp: usize, kernel_sp: usize, trap_handler: usize) -> Self {
+    pub fn new(entry: usize, user_sp: usize, kernel_sp: usize, trap_handler: usize) -> Self {
         let mut sstatus = sstatus::read();
         sstatus.set_spp(sstatus::SPP::User);
         let mut cx = Self {
