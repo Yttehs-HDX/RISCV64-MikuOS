@@ -12,10 +12,6 @@ pub struct TrapContext {
 }
 
 impl TrapContext {
-    pub fn set_sp(&mut self, sp: usize) {
-        self.x[2] = sp;
-    }
-
     pub fn new(entry: usize, user_sp: usize, kernel_sp: usize, trap_handler: usize) -> Self {
         let mut sstatus = sstatus::read();
         sstatus.set_spp(sstatus::SPP::User);
@@ -27,16 +23,22 @@ impl TrapContext {
             trap_handler,
         };
         cx.set_sp(user_sp);
+        cx.push_to_kstack();
         cx
     }
 
-    pub fn push_to_kstack(&self) -> *mut Self {
+    pub fn get_ptr_from_sp(&self) -> *mut Self {
         let cx_size = core::mem::size_of::<Self>();
-        let cx_ptr = (self.kernel_sp - cx_size) as *mut Self;
-        unsafe {
-            cx_ptr.write_volatile(*self);
-            cx_ptr.as_mut().unwrap()
-        }
+        (self.kernel_sp - cx_size) as *mut Self
+    }
+
+    fn set_sp(&mut self, sp: usize) {
+        self.x[2] = sp;
+    }
+
+    fn push_to_kstack(&self) {
+        let cx_ptr = self.get_ptr_from_sp();
+        unsafe { *cx_ptr = *self };
     }
 }
 // region TrapContext end
