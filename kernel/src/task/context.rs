@@ -10,7 +10,7 @@ pub struct TaskContext {
 
 impl TaskContext {
     pub fn empty() -> Self {
-        TaskContext {
+        Self {
             ra: 0,
             sp: 0,
             s: [0; 12],
@@ -18,7 +18,7 @@ impl TaskContext {
     }
 
     pub fn goto_restore(trap_cx: usize) -> Self {
-        TaskContext {
+        Self {
             ra: trap::__restore_trap as usize,
             sp: trap_cx,
             s: [0; 12],

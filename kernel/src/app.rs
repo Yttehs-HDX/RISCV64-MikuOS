@@ -7,7 +7,7 @@ pub const TEST_PRINT: &[u8] = include_bytes!("../../user/target/riscv64gc-unknow
 pub const TEST_SRET: &[u8] = include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/test_sret.bin");
 pub const TEST_PAGE_FAULT: &[u8] = include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/test_page_fault.bin");
 
-pub fn get_app(name: &str) -> Option<&'static App> {
+pub fn get_app(name: &str) -> Option<&App> {
     APPS.iter().find(|app| app.name() == name)
 }
 
