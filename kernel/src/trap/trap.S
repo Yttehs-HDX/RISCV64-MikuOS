@@ -54,8 +54,7 @@ __save_trap:                    // fn __save_trap()
     .align 2 // 4 bytes
 __restore_trap:                 // fn __retore_trap(cx: usize)
                                 //     let cx = cx as *const TrapContext;
-    mv sp, a0                   //     sp = cx; (at TrapContext top)
-
+    // sp is at cx
     // now: sp -> KernelStack, sscratch -> UserStack
 
     // restore sstatus
