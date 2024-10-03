@@ -17,10 +17,10 @@ impl TaskContext {
         }
     }
 
-    pub fn goto_restore(kernel_sp: usize) -> Self {
+    pub fn goto_restore(trap_cx: usize) -> Self {
         TaskContext {
             ra: trap::__restore_trap as usize,
-            sp: kernel_sp,
+            sp: trap_cx,
             s: [0; 12],
         }
     }
