@@ -8,6 +8,7 @@
 
     .section .text
     .globl __save_trap
+    .globl __restore_trap
     .align 2 // 4 bytes
 __save_trap:                    // fn __save_trap()
     // before: sp -> UserStack, sscratch -> KernelStack
@@ -17,7 +18,7 @@ __save_trap:                    // fn __save_trap()
     // TrapContext will be create at sp
 
     // allocate space for TrapContext
-    addi sp, sp, -36 * 8        //     let cx = TrapContext;
+    addi sp, sp, -35 * 8        //     let cx = TrapContext;
 
     // save general registers
     sd x1, 1 * 8(sp)            //     cx.x[1] = x1;
@@ -41,20 +42,13 @@ __save_trap:                    // fn __save_trap()
     csrr t2, sscratch           //     t2 = sscratch;
     sd t2, 2 * 8(sp)            //     cx.sscratch = t2;
 
-    // save trap_handler
-    ld t4, 35 * 8(sp)           //     t4 = cx.trap_handler
-
     // set formal parameter
     mv a0, sp                   //     a0 = &cx;
-    // goto trap_handler
-    jr t4                       //     trap_handler(a0);
 
-    .section .text
-    .globl __restore_trap
-    .align 2 // 4 bytes
-__restore_trap:                 // fn __retore_trap(cx: usize)
+    call trap_handler
+
+__restore_trap:                 // fn __retore_trap()
                                 //     let cx = cx as *const TrapContext;
-    // sp is at cx
     // now: sp -> KernelStack, sscratch -> UserStack
 
     // restore sstatus
@@ -79,7 +73,7 @@ __restore_trap:                 // fn __retore_trap(cx: usize)
     .endr
 
     // release space for TrapContext
-    addi sp, sp, 36 * 8         //     drop(cx);
+    addi sp, sp, 35 * 8         //     drop(cx);
 
     // before: sp -> KernelStack, sscratch -> UserStack
     csrrw sp, sscratch, sp      //     (sp, sscratch) = (sscratch, sp);
