@@ -1,4 +1,4 @@
-use core::cell::{RefCell, RefMut};
+use core::cell::{Ref, RefCell, RefMut};
 
 // region UPSafeCell begin
 pub struct UPSafeCell<T> {
@@ -16,6 +16,10 @@ impl<T> UPSafeCell<T> {
 
     pub fn exclusive_access(&self) -> RefMut<T> {
         self.inner.borrow_mut()
+    }
+
+    pub fn shared_access(&self) -> Ref<'_, T> {
+        self.inner.borrow()
     }
 }
 // region UPSafeCell end
