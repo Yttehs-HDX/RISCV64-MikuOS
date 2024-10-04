@@ -1,13 +1,16 @@
 #![no_std]
 #![no_main]
 
+#![feature(alloc_error_handler)]
+
 use core::arch::global_asm;
 use log::trace;
+
+extern crate alloc;
 
 global_asm!(include_str!("entry.S"));
 
 mod app;
-
 mod lang_items;
 mod sbi;
 #[macro_use]
@@ -20,14 +23,16 @@ mod config;
 mod syscall;
 mod trap;
 mod task;
+mod allocator;
 
 #[no_mangle]
 fn rust_main() -> ! {
     clear_bss();
     util::logger_init();
+    trap::init_trap();
+    allocator::init_heap();
     print_sections();
     println!("[Kernel] Hello, world!");
-    trap::init_trap();
     loop {}
 }
 
