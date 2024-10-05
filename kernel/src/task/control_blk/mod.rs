@@ -18,23 +18,25 @@ pub struct TaskControlBlock {
 }
 
 impl TaskControlBlock {
-    pub fn new(app: &App) -> Self {
-        let mut tcb = TaskControlBlock {
+    pub fn empty() -> Self {
+        TaskControlBlock {
             status: TaskStatus::Suspended,
             trap_cx: TrapContext::empty(),
             task_cx: TaskContext::empty(),
             kernel_stack: KernelStack::new(),
             user_stack: UserStack::new(),
-        };
-        tcb.trap_cx = TrapContext::new(
+        }
+    }
+
+    pub fn late_init(&mut self, app: &App) {
+        self.trap_cx = TrapContext::new(
             app.base_addr(),
-            tcb.user_stack.get_sp(),
-            tcb.kernel_stack.get_sp()
+            self.user_stack.get_sp(),
+            self.kernel_stack.get_sp()
         );
-        tcb.task_cx = TaskContext::goto_restore(
-            tcb.trap_cx.get_ptr_from_sp() as usize
+        self.task_cx = TaskContext::goto_restore(
+            self.trap_cx.get_ptr_from_sp() as usize
         );
-        tcb
     }
 }
 // region TaskControlBlock end
