@@ -7,6 +7,15 @@ pub fn add_task(app: &App) {
     TASK_MANAGER.add_task(app);
 }
 
+pub fn exit_handler() -> ! {
+    let current_task_i = TASK_MANAGER.find_task(TaskStatus::Running).unwrap();
+    let mut inner = TASK_MANAGER.inner.exclusive_access();
+    inner.tasks[current_task_i].status = TaskStatus::Zombie;
+    inner.task_num -= 1;
+    drop(inner);
+    run_task();
+}
+
 pub fn run_task() -> ! {
     let task_id = TASK_MANAGER.find_task(TaskStatus::Suspended).unwrap();
     debug!("find next task: {}", task_id);
