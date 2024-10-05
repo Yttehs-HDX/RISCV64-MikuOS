@@ -1,6 +1,7 @@
 .PHONY : all
 
 CARGO = cargo
+PYTHON = python3
 BUILD_TYPE = release
 CARGO_FLAGS = --$(BUILD_TYPE)
 
@@ -19,7 +20,7 @@ OBJCOPY_FLAGS = --strip-all -O binary
 all: objcopy
 
 build:
-	@$(CARGO) build $(CARGO_FLAGS)
+	@$(PYTHON) build.py
 
 objcopy: build
 	@$(foreach elf, $(ELFS), \
