@@ -9,6 +9,7 @@ mod context;
 mod stack;
 
 // region TaskControlBlock begin
+#[derive(Clone, Copy)]
 pub struct TaskControlBlock {
     pub status: TaskStatus,
     pub trap_cx: TrapContext,
@@ -20,7 +21,7 @@ pub struct TaskControlBlock {
 impl TaskControlBlock {
     pub fn empty() -> Self {
         TaskControlBlock {
-            status: TaskStatus::Suspended,
+            status: TaskStatus::Zombie,
             trap_cx: TrapContext::empty(),
             task_cx: TaskContext::empty(),
             kernel_stack: KernelStack::new(),

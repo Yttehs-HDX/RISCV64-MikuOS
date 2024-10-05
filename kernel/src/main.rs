@@ -38,7 +38,11 @@ fn rust_main() -> ! {
 }
 
 fn kernel_main() {
-    task::run_first_task();
+    task::add_task(app::get_app("test_print").unwrap());
+    task::add_task(app::get_app("test_sret").unwrap());
+    task::add_task(app::get_app("test_page_fault").unwrap());
+    task::print_task_info();
+    task::run_task();
 }
 
 fn clear_bss() {

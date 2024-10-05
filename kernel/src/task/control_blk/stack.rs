@@ -1,6 +1,7 @@
 use crate::config::{KERNEL_STACK_SIZE, USER_STACK_SIZE};
 
 // region UserStack begin
+#[derive(Clone, Copy)]
 pub struct UserStack {
     data: [u8; USER_STACK_SIZE],
 }
@@ -19,6 +20,7 @@ impl UserStack {
 // region UserStack end
 
 // region KernelStack begin
+#[derive(Clone, Copy)]
 pub struct KernelStack {
     data: [u8; KERNEL_STACK_SIZE],
 }
