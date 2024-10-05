@@ -32,7 +32,7 @@ fn rust_main() -> ! {
     trap::init_trap();
     allocator::init_heap();
     print_sections();
-    println!("[Kernel] Hello, world!");
+    println!("[Kernel] initialized");
     kernel_main();
     sbi::sbi_shutdown_success();
 }
