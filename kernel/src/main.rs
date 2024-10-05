@@ -33,7 +33,12 @@ fn rust_main() -> ! {
     allocator::init_heap();
     print_sections();
     println!("[Kernel] Hello, world!");
-    loop {}
+    kernel_main();
+    sbi::sbi_shutdown_success();
+}
+
+fn kernel_main() {
+    task::run_first_task();
 }
 
 fn clear_bss() {
