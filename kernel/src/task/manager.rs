@@ -12,13 +12,17 @@ pub fn exit_handler() -> ! {
     TASK_MANAGER.mark_task(current_task_i, TaskStatus::Zombie);
     TASK_MANAGER.info();
     if TASK_MANAGER.get_task_num() == 0 {
-        info!("All tasks are finished");
+        info!("TaskManager: all tasks are finished");
         sbi::sbi_shutdown_success();
     }
     run_task();
 }
 
 pub fn yield_handler() -> ! {
+    if TASK_MANAGER.get_task_num() == 1 {
+        let current_task_i = TASK_MANAGER.find_task(TaskStatus::Running).unwrap();
+        TASK_MANAGER.mark_task(current_task_i, TaskStatus::Suspended);
+    }
     run_task();
 }
 
