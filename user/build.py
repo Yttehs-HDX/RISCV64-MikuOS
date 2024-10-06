@@ -2,6 +2,7 @@ import os
 
 LINKER_SCRIPT = 'src/linker.ld'
 APPS = os.listdir('src/bin')
+APPS.sort()
 
 BASE_ADDR = 0x80400000
 SIZE_LIMIT = 0x20000

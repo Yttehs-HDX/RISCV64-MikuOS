@@ -2,10 +2,11 @@ use lazy_static::lazy_static;
 use crate::config::{APP_BASE_ADDR, APP_SIZE_LIMIT};
 
 // Before implementing file system, we use include_bytes! to load the binary of the app
-const APP_NUM: usize = 3;
-pub const TEST_PRINT: &[u8] = include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/test_print.bin");
-pub const TEST_SRET: &[u8] = include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/test_sret.bin");
-pub const TEST_PAGE_FAULT: &[u8] = include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/test_page_fault.bin");
+const APP_NUM: usize = 4;
+const TEST_PRINT: &[u8] = include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/01_test_print.bin");
+const TEST_SRET: &[u8] = include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/02_test_sret.bin");
+const TEST_PAGE_FAULT: &[u8] = include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/03_test_page_fault.bin");
+const TEST_YIELD: &[u8] = include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/04_test_yield.bin");
 
 pub fn get_app(name: &str) -> Option<&App> {
     APPS.iter().find(|app| app.name() == name)
@@ -16,6 +17,7 @@ lazy_static! {
         App::new(0, "test_print", TEST_PRINT),
         App::new(1, "test_sret", TEST_SRET),
         App::new(2, "test_page_fault", TEST_PAGE_FAULT),
+        App::new(3, "test_yield", TEST_YIELD),
     ];
 }
 
