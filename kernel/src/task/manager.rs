@@ -95,6 +95,7 @@ impl TaskManager {
 
         inner.tasks[i].status = TaskStatus::Running;
         let mut old_tcb = if let Some(old_task_i) = old_task_i_wrap {
+            debug!("TaskManager: suspend current task");
             inner.tasks[old_task_i].status = TaskStatus::Suspended;
             inner.tasks[old_task_i]
         } else {
