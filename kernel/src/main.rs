@@ -11,6 +11,7 @@ extern crate alloc;
 global_asm!(include_str!("entry.S"));
 
 mod app;
+mod app_stack;
 mod lang_items;
 mod sbi;
 #[macro_use]
