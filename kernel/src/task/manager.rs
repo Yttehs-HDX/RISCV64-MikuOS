@@ -10,6 +10,7 @@ pub fn add_task(app: &App) {
 pub fn exit_handler() -> ! {
     let current_task_i = TASK_MANAGER.find_task(TaskStatus::Running).unwrap();
     TASK_MANAGER.mark_task(current_task_i, TaskStatus::Zombie);
+    TASK_MANAGER.info();
     if TASK_MANAGER.get_task_num() == 0 {
         info!("All tasks are finished");
         sbi::sbi_shutdown_success();
@@ -24,7 +25,8 @@ pub fn run_task() -> ! {
 }
 
 pub fn print_task_info() {
-    info!("Task number: {}", TASK_MANAGER.get_task_num());
+    let num = TASK_MANAGER.get_task_num();
+    info!("TaskManager: task number: {}", num);
 }
 
 lazy_static! {
@@ -54,6 +56,20 @@ impl TaskManager {
 
     fn get_task_num(&self) -> usize {
         self.inner.shared_access().task_num
+    }
+
+    fn info(&self) {
+        let inner = self.inner.shared_access();
+        let mut running = 0;
+        let mut suspended = 0;
+        inner.tasks.iter().for_each( |tcb| {
+            match tcb.status {
+                TaskStatus::Running => running += 1,
+                TaskStatus::Suspended => suspended += 1,
+                _ => {},
+            }
+        });
+        debug!("TaskManager: running: {}, suspended: {}", running, suspended);
     }
 
     fn find_task(&self, status: TaskStatus) -> Option<usize> {
