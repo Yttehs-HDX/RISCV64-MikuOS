@@ -11,7 +11,7 @@ pub fn exit_handler() -> ! {
     let current_task_i = TASK_MANAGER.find_task(TaskStatus::Running).unwrap();
     TASK_MANAGER.mark_task(current_task_i, TaskStatus::Zombie);
     if TASK_MANAGER.get_task_num() == 0 {
-        info!("All tasks are finished.");
+        info!("All tasks are finished");
         sbi::sbi_shutdown_success();
     }
     run_task();
