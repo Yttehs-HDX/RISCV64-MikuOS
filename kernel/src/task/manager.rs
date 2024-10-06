@@ -1,6 +1,6 @@
 use lazy_static::lazy_static;
 use log::{debug, info};
-use crate::{app::App, config::MAX_TASK_NUM, sync::UPSafeCell, task::switch};
+use crate::{app::App, config::MAX_TASK_NUM, sbi, sync::UPSafeCell, task::switch};
 use super::{TaskControlBlock, TaskStatus};
 
 pub fn add_task(app: &App) {
@@ -9,10 +9,11 @@ pub fn add_task(app: &App) {
 
 pub fn exit_handler() -> ! {
     let current_task_i = TASK_MANAGER.find_task(TaskStatus::Running).unwrap();
-    let mut inner = TASK_MANAGER.inner.exclusive_access();
-    inner.tasks[current_task_i].status = TaskStatus::Zombie;
-    inner.task_num -= 1;
-    drop(inner);
+    TASK_MANAGER.mark_task(current_task_i, TaskStatus::Zombie);
+    if TASK_MANAGER.get_task_num() == 0 {
+        info!("All tasks are finished.");
+        sbi::sbi_shutdown_success();
+    }
     run_task();
 }
 
@@ -60,6 +61,14 @@ impl TaskManager {
         inner.tasks.iter().position( |tcb|
             tcb.status == status
         )
+    }
+
+    fn mark_task(&self, i: usize, status: TaskStatus) {
+        let mut inner = self.inner.exclusive_access();
+        inner.tasks[i].status = status;
+        if status == TaskStatus::Zombie {
+            inner.task_num -= 1;
+        }
     }
 
     fn run_task(&self, i: usize) -> ! {
