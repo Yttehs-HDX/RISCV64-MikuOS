@@ -28,7 +28,7 @@ pub fn yield_handler() -> ! {
 
 pub fn run_task() -> ! {
     let task_id = TASK_MANAGER.find_task(TaskStatus::Suspended).unwrap();
-    debug!("find next task: {}", task_id);
+    debug!("TaskManager: resume task {}", task_id);
     TASK_MANAGER.run_task(task_id);
 }
 
@@ -103,7 +103,7 @@ impl TaskManager {
 
         inner.tasks[i].status = TaskStatus::Running;
         let mut old_tcb = if let Some(old_task_i) = old_task_i_wrap {
-            debug!("TaskManager: suspend current task");
+            debug!("TaskManager: suspend task {}", old_task_i);
             inner.tasks[old_task_i].status = TaskStatus::Suspended;
             inner.tasks[old_task_i]
         } else {
