@@ -86,7 +86,6 @@ impl TaskManager {
         };
         let new_tcb = inner.tasks[i];
         drop(inner);
-        // let new_tcb= &self.inner.shared_access().tasks[i]; // ???
         unsafe {
             switch(&mut old_tcb, &new_tcb);
         }
