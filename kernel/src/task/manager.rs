@@ -18,6 +18,10 @@ pub fn exit_handler() -> ! {
     run_task();
 }
 
+pub fn yield_handler() -> ! {
+    run_task();
+}
+
 pub fn run_task() -> ! {
     let task_id = TASK_MANAGER.find_task(TaskStatus::Suspended).unwrap();
     debug!("find next task: {}", task_id);

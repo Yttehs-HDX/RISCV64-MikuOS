@@ -8,3 +8,7 @@ pub fn sys_exit(exit_code: usize) -> ! {
     }
     task::exit_handler();
 }
+
+pub fn sys_yield() -> ! {
+    task::yield_handler();
+}
