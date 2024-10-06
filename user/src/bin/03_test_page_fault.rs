@@ -11,5 +11,6 @@ fn main() -> i32 {
     unsafe {
         *ptr = 0;
     }
+    println!("[User] test_page_fault: done");
     0
 }

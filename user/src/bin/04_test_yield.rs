@@ -9,5 +9,6 @@ extern crate user_lib;
 fn main() -> i32 {
     println!("[User] test_yield");
     yield_();
+    println!("[User] test_yield: done");
     0
 }

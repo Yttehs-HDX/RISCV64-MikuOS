@@ -12,5 +12,6 @@ fn main() -> i32 {
     unsafe {
         asm!("sret");
     }
+    println!("[User] test_sret: done");
     0
 }
