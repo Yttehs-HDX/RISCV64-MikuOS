@@ -1,12 +1,17 @@
 #![no_std]
 #![no_main]
 
-use core::arch::global_asm;
+#![feature(alloc_error_handler)]
 
+use core::arch::global_asm;
 use log::trace;
+
+extern crate alloc;
 
 global_asm!(include_str!("entry.S"));
 
+mod app;
+mod app_stack;
 mod lang_items;
 mod sbi;
 #[macro_use]
@@ -16,18 +21,32 @@ mod board;
 mod util;
 mod sync;
 mod config;
-mod batch;
 mod syscall;
 mod trap;
+mod task;
+mod allocator;
+mod timer;
 
 #[no_mangle]
 fn rust_main() -> ! {
     clear_bss();
     util::logger_init();
-    print_sections();
-    println!("[Kernel] Hello, world!");
     trap::init_trap();
-    batch::init_batch();
+    trap::enable_timer_interrupt();
+    allocator::init_heap();
+    print_sections();
+    println!("[Kernel] initialized");
+    kernel_main();
+    sbi::sbi_shutdown_success();
+}
+
+fn kernel_main() {
+    task::add_task(app::get_app("test_print").unwrap());
+    task::add_task(app::get_app("test_sret").unwrap());
+    task::add_task(app::get_app("test_page_fault").unwrap());
+    task::add_task(app::get_app("test_yield").unwrap());
+    task::print_task_info();
+    task::run_task();
 }
 
 fn clear_bss() {

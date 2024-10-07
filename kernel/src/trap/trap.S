@@ -15,8 +15,10 @@ __save_trap:                    // fn __save_trap()
     csrrw sp, sscratch, sp      //     (sp, sscratch) = (sscratch, sp);
     // after: sp -> KernelStack, sscratch -> UserStack
 
+    // TrapContext will be create at sp
+
     // allocate space for TrapContext
-    addi sp, sp, -34 * 8        //     let cx = TrapContext;
+    addi sp, sp, -35 * 8        //     let cx = TrapContext;
 
     // save general registers
     sd x1, 1 * 8(sp)            //     cx.x[1] = x1;
@@ -28,34 +30,37 @@ __save_trap:                    // fn __save_trap()
         .set n, n + 1
     .endr
 
-    // save sstatus, sepc
+    // save sstatus
     csrr t0, sstatus            //     t0 = sstatus;
-    csrr t1, sepc               //     t1 = sepc;
     sd t0, 32 * 8(sp)           //     cx.sstatus = t0;
+
+    // save sepc
+    csrr t1, sepc               //     t1 = sepc;
     sd t1, 33 * 8(sp)           //     cx.sepc = t1;
 
     // save sscratch (actually sp)
     csrr t2, sscratch           //     t2 = sscratch;
     sd t2, 2 * 8(sp)            //     cx.sscratch = t2;
+
     // set formal parameter
     mv a0, sp                   //     a0 = &cx;
-    call trap_handler           //     a0 = trap_handler(a0);
 
-    // not the end              //     __retore_trap(a0);
+    call trap_handler
 
-__restore_trap:                  // fn __retore_trap(cx: usize)
-                                //     let cx = cx as *mut TrapContext;
-    mv sp, a0                   //     sp = cx;
-
+__restore_trap:                 // fn __retore_trap()
+                                //     let cx = cx as *const TrapContext;
     // now: sp -> KernelStack, sscratch -> UserStack
 
-    // restore sscratch, sepc
-    ld t0, 32 * 8(sp)           //     t0 = cx.sscratch;
-    ld t1, 33 * 8(sp)           //     t1 = cx.sepc;
-    ld t2, 2 * 8(sp)            //     t2 = cx.sscratch;
-
+    // restore sstatus
+    ld t0, 32 * 8(sp)           //     t0 = cx.sstatus;
     csrw sstatus, t0            //     cx.sstatus = t0;
+
+    // restore sepc
+    ld t1, 33 * 8(sp)           //     t1 = cx.sepc;
     csrw sepc, t1               //     cx.sepc = t1;
+
+    // restore sscratch
+    ld t2, 2 * 8(sp)            //     t2 = cx.sscratch;
     csrw sscratch, t2           //     cx.x[2] = t2;
 
     // restore general registers
@@ -68,7 +73,7 @@ __restore_trap:                  // fn __retore_trap(cx: usize)
     .endr
 
     // release space for TrapContext
-    addi sp, sp, 34 * 8         //     drop(cx);
+    addi sp, sp, 35 * 8         //     drop(cx);
 
     // before: sp -> KernelStack, sscratch -> UserStack
     csrrw sp, sscratch, sp      //     (sp, sscratch) = (sscratch, sp);

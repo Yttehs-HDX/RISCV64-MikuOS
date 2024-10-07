@@ -1,11 +1,11 @@
 use core::arch::global_asm;
 use log::{debug, error};
-use riscv::register::{scause::{self, Exception, Trap}, stval, stvec, utvec::TrapMode};
-use crate::syscall;
+use riscv::register::{scause::{self, Exception, Interrupt, Trap}, sie, stval, stvec, utvec::TrapMode};
+use crate::{syscall, task, timer};
 
-pub use trap_context::*;
+pub use context::*;
 
-mod trap_context;
+mod context;
 
 global_asm!(include_str!("trap.S"));
 
@@ -13,16 +13,25 @@ pub fn init_trap() {
     unsafe { stvec::write(__save_trap as usize, TrapMode::Direct) };
 }
 
+pub fn enable_timer_interrupt() {
+    unsafe { sie::set_stimer() };
+    timer::set_next_trigger();
+}
+
 #[no_mangle]
-fn trap_handler(cx: &mut TrapContext) -> &mut TrapContext {
+pub fn trap_handler(cx: &mut TrapContext) -> &TrapContext {
     let stval = stval::read();
     let scause = scause::read();
     match scause.cause() {
         Trap::Exception(Exception::UserEnvCall) => {
             debug!("Ecall from U-mode @ {:#x}", cx.sepc);
             cx.sepc += 4;
-            syscall::syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]);
+            cx.x[10] = syscall::syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]) as usize;
             cx
+        }
+        Trap::Interrupt(Interrupt::SupervisorTimer) => {
+            timer::set_next_trigger();
+            task::yield_handler();
         }
         Trap::Exception(Exception::IllegalInstruction) => {
             error!("Illegal instruction @ {:#x}, badaddr {:#x}", cx.sepc, stval);
@@ -42,5 +51,5 @@ fn trap_handler(cx: &mut TrapContext) -> &mut TrapContext {
 
 extern "C" {
     pub fn __save_trap();
-    pub fn __restore_trap(cx_addr: usize);
+    pub fn __restore_trap();
 }

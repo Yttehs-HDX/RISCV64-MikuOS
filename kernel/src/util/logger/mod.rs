@@ -27,7 +27,7 @@ struct Logger;
 
 impl Log for Logger {
     fn enabled(&self, _metadata: &log::Metadata) -> bool {
-        !matches!(option_env!("LOG"), None)
+        option_env!("LOG").is_some()
     }
 
     fn log(&self, record: &log::Record) {

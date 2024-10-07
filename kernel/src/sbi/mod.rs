@@ -1,9 +1,12 @@
 use core::arch::asm;
+
 pub use console::*;
 pub use system::*;
+pub use timer::*;
 
 mod console;
 mod system;
+mod timer;
 
 #[inline(always)]
 fn sbi_call(which: usize, args: [usize; 3]) -> usize {
