@@ -26,7 +26,7 @@ pub fn trap_handler(cx: &mut TrapContext) -> &TrapContext {
         Trap::Exception(Exception::UserEnvCall) => {
             debug!("Ecall from U-mode @ {:#x}", cx.sepc);
             cx.sepc += 4;
-            syscall::syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]);
+            cx.x[10] = syscall::syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]) as usize;
             cx
         }
         Trap::Interrupt(Interrupt::SupervisorTimer) => {
