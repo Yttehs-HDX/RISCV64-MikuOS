@@ -1,7 +1,7 @@
 use core::arch::global_asm;
 use log::{debug, error};
-use riscv::register::{scause::{self, Exception, Trap}, stval, stvec, utvec::TrapMode};
-use crate::syscall;
+use riscv::register::{scause::{self, Exception, Interrupt, Trap}, sie, stval, stvec, utvec::TrapMode};
+use crate::{syscall, task, timer};
 
 pub use context::*;
 
@@ -11,6 +11,11 @@ global_asm!(include_str!("trap.S"));
 
 pub fn init_trap() {
     unsafe { stvec::write(__save_trap as usize, TrapMode::Direct) };
+}
+
+pub fn enable_timer_interrupt() {
+    unsafe { sie::set_stimer() };
+    timer::set_next_trigger();
 }
 
 #[no_mangle]
@@ -23,6 +28,10 @@ pub fn trap_handler(cx: &mut TrapContext) -> &TrapContext {
             cx.sepc += 4;
             syscall::syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]);
             cx
+        }
+        Trap::Interrupt(Interrupt::SupervisorTimer) => {
+            timer::set_next_trigger();
+            task::yield_handler();
         }
         Trap::Exception(Exception::IllegalInstruction) => {
             error!("Illegal instruction @ {:#x}, badaddr {:#x}", cx.sepc, stval);

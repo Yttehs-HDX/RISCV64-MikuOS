@@ -25,12 +25,14 @@ mod syscall;
 mod trap;
 mod task;
 mod allocator;
+mod timer;
 
 #[no_mangle]
 fn rust_main() -> ! {
     clear_bss();
     util::logger_init();
     trap::init_trap();
+    trap::enable_timer_interrupt();
     allocator::init_heap();
     print_sections();
     println!("[Kernel] initialized");

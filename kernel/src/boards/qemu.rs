@@ -1,5 +1,7 @@
 use core::arch::asm;
 
+pub const CLOCK_FREQ: usize = 12500000;
+
 const EXIT_SUCCESS: u32 = 0x5555;
 const EXIT_FAILURE_FLAG: u32 = 0x3333;
 const EXIT_FAILURE: u32 = encode_exit_code(1);
