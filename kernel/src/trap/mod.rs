@@ -21,7 +21,7 @@ pub fn trap_handler(cx: &mut TrapContext) {
             debug!("Ecall from U-mode @ {:#x}", cx.sepc);
             debug!("cx.trap_handler: {:#x}", cx.trap_handler);
             cx.sepc += 4;
-            syscall::syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]);
+            cx.x[10] = syscall::syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]) as usize;
             unsafe { __restore_trap(cx as *const _ as usize) };
         }
         Trap::Exception(Exception::IllegalInstruction) => {
