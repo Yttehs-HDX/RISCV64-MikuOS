@@ -1,3 +1,5 @@
+use core::arch::asm;
+
 use lazy_static::lazy_static;
 use crate::config::{APP_BASE_ADDR, APP_SIZE_LIMIT};
 
@@ -63,6 +65,8 @@ impl App {
                 self.len()
             );
             dst.copy_from_slice(self.bin());
+            // flush the instruction cache
+            asm!("fence.i");
         }
     }
 }
