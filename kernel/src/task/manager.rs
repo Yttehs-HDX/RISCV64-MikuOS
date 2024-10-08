@@ -1,7 +1,7 @@
 use alloc::collections::vec_deque::VecDeque;
 use lazy_static::lazy_static;
 use log::{debug, info};
-use crate::{app::App, sync::UPSafeCell, task::switch};
+use crate::{app::App, sync::UPSafeCell, task::{switch, TaskContext, __switch}};
 use super::TaskControlBlock;
 
 pub fn add_task(app: &App) {
@@ -11,7 +11,8 @@ pub fn add_task(app: &App) {
 pub fn exit_handler() -> ! {
     TASK_MANAGER.info();
     TASK_MANAGER.exit_current_task();
-    if TASK_MANAGER.get_task_num() == 0 {
+    TASK_MANAGER.info();
+    if TASK_MANAGER.get_task_num(TaskStatus::All) == 0 {
         info!("TaskManager: all tasks are finished");
         crate::kernel_end();
     }
@@ -24,11 +25,11 @@ pub fn yield_handler() -> ! {
 }
 
 pub fn run_task() -> ! {
-    TASK_MANAGER.run_suspend_task();
+    TASK_MANAGER.run_task();
 }
 
 pub fn print_task_info() {
-    let num = TASK_MANAGER.get_task_num();
+    let num = TASK_MANAGER.get_task_num(TaskStatus::All);
     info!("TaskManager: task number: {}", num);
 }
 
@@ -51,8 +52,7 @@ struct TaskManager {
 impl TaskManager {
     fn add_task(&self, app: &App) {
         let mut inner = self.inner.exclusive_access();
-        let mut tcb = TaskControlBlock::empty();
-        tcb.late_init(app);
+        let tcb = TaskControlBlock::new(app);
         inner.waiting_tasks.push_back(tcb);
     }
 
@@ -64,31 +64,50 @@ impl TaskManager {
         }
     }
 
-    fn get_task_num(&self) -> usize {
+    fn get_task_num(&self, status: TaskStatus) -> usize {
         let running = self.inner.shared_access().running_tasks.len();
         let waiting = self.inner.shared_access().waiting_tasks.len();
-        running + waiting
+        match status {
+            TaskStatus::All => running + waiting,
+            TaskStatus::Running => running,
+            TaskStatus::Suspended => waiting,
+        }
     }
 
     fn info(&self) {
-        let running = self.inner.shared_access().running_tasks.len();
-        let waiting = self.inner.shared_access().waiting_tasks.len();
+        let running = self.get_task_num(TaskStatus::Running);
+        let waiting = self.get_task_num(TaskStatus::Suspended);
         debug!("TaskManager: running: {}, suspended: {}", running, waiting);
     }
 
-    fn run_suspend_task(&self) -> ! {
+    fn _run_first_task(&self) -> ! {
         let mut inner = self.inner.exclusive_access();
-        if inner.waiting_tasks.is_empty() {
+        let tcb = inner.waiting_tasks.pop_front().unwrap();
+        inner.running_tasks.push_back(tcb);
+        drop(inner);
+        unsafe {
+            __switch(&mut TaskContext::empty(), &tcb.task_cx);
+        }
+        unreachable!()
+    }
+
+    fn run_task(&self) -> ! {
+        if self.get_task_num(TaskStatus::Running) == 0 {
+            self._run_first_task();
+        }
+        if self.get_task_num(TaskStatus::Running) == 1 {
+            let mut inner = self.inner.exclusive_access();
             let tcb = inner.running_tasks.pop_front().unwrap();
             inner.waiting_tasks.push_back(tcb);
+            drop(inner);
+            self._run_first_task();
         }
-        let mut old_tcb = if inner.running_tasks.is_empty() {
-            TaskControlBlock::empty()
-        } else {
-            inner.running_tasks.pop_front().unwrap()
-        };
+
+        let mut inner = self.inner.exclusive_access();
         let new_tcb = inner.waiting_tasks.pop_front().unwrap();
+        let mut old_tcb = inner.running_tasks.pop_front().unwrap();
         inner.running_tasks.push_back(new_tcb);
+        inner.waiting_tasks.push_back(old_tcb);
         drop(inner);
         unsafe {
             switch(&mut old_tcb, &new_tcb);
@@ -104,3 +123,11 @@ struct TaskManagerInner {
     waiting_tasks: VecDeque<TaskControlBlock>,
 }
 // region TaskManagerInner end
+
+// region TaskStatus begin
+pub enum TaskStatus {
+    All,
+    Running,
+    Suspended,
+}
+// region TaskStatus end

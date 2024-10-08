@@ -11,15 +11,6 @@ pub struct TrapContext {
 }
 
 impl TrapContext {
-    pub fn empty() -> Self {
-        Self {
-            x: [0; 32],
-            sstatus: sstatus::read(),
-            sepc: 0,
-            kernel_sp: 0,
-        }
-    }
-
     pub fn new(entry: usize, user_sp: usize, kernel_sp: usize) -> Self {
         let mut sstatus = sstatus::read();
         sstatus.set_spp(sstatus::SPP::User);
