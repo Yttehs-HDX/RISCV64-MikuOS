@@ -1,5 +1,5 @@
 use log::{info, warn};
-use crate::{task, timer::{self, TimeType}};
+use crate::{task, timer};
 
 pub fn sys_exit(exit_code: usize) -> ! {
     match exit_code {
@@ -13,6 +13,10 @@ pub fn sys_yield() -> ! {
     task::yield_handler();
 }
 
-pub fn sys_get_time() -> isize {
-    timer::get_current_time().as_sec(TimeType::Raw) as isize
+pub use crate::timer::TimeVal;
+pub fn sys_get_time(ts: *mut TimeVal, _tz: usize) -> isize {
+    unsafe {
+        *ts = timer::get_current_time();
+    }
+    0
 }

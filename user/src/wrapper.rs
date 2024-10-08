@@ -8,8 +8,12 @@ pub fn yield_() -> isize {
     syscall::sys_yield()
 }
 
-pub fn get_time() -> isize {
-    syscall::sys_get_time()
+use crate::timer::TimeVal;
+
+pub fn get_time() -> TimeVal {
+    let mut ts = TimeVal::empty();
+    syscall::sys_get_time(&mut ts, 0);
+    ts
 }
 
 pub fn write(fd: usize, buf: &[u8]) -> isize {

@@ -1,28 +1,9 @@
 use core::ops;
 use alloc::string::String;
 use alloc::format;
-use crate::{config::CLOCK_FREQ, sbi};
 
 const MILLIS_PER_SEC: usize = 1_000;
 const MICRO_PER_SEC: usize = 1_000_000;
-
-const TIGGER_TIME: usize = 10_0000; // 10ms
-
-pub fn get_current_time() -> TimeVal {
-    let time = sbi::sbi_get_time();
-    TimeVal::from_reg(time)
-}
-
-pub fn set_timer(timer: TimeVal) {
-    let timer = timer.get_time(TimeUnit::Tick);
-    sbi::sbi_set_timer(timer);
-}
-
-pub fn set_next_trigger() {
-    let current_time = get_current_time();
-    let next_time = TimeVal::new(0, TIGGER_TIME);
-    set_timer(current_time + next_time);
-}
 
 // region TimeVal begin
 #[repr(C)]
@@ -33,13 +14,11 @@ pub struct TimeVal {
 }
 
 impl TimeVal {
-    pub fn new(sec: usize, usec: usize) -> Self {
-        TimeVal { sec, usec }
+    pub fn empty() -> Self {
+        TimeVal { sec: 0, usec: 0 }
     }
 
-    pub fn from_reg(time: usize) -> Self {
-        let sec = time / CLOCK_FREQ;
-        let usec = time % CLOCK_FREQ * MICRO_PER_SEC / CLOCK_FREQ;
+    pub fn new(sec: usize, usec: usize) -> Self {
         TimeVal { sec, usec }
     }
 
@@ -50,7 +29,6 @@ impl TimeVal {
             TimeUnit::Sec => self.sec,
             TimeUnit::Msec => self.sec * MILLIS_PER_SEC + self.usec / MICRO_PER_SEC,
             TimeUnit::Usec => self.sec * MICRO_PER_SEC + self.usec,
-            TimeUnit::Tick => self.sec * CLOCK_FREQ + self.usec * CLOCK_FREQ / MICRO_PER_SEC,
         }
     }
 
@@ -150,6 +128,5 @@ pub enum TimeUnit {
     Sec,
     Msec,
     Usec,
-    Tick,
 }
 // region TimeUnit end

@@ -12,6 +12,8 @@ pub fn sys_yield() -> isize {
     syscall(SYSCALL_YIELD, [0, 0, 0])
 }
 
-pub fn sys_get_time() -> isize {
-    syscall(SYSCALL_GET_TIME, [0, 0, 0])
+use crate::timer::TimeVal;
+
+pub fn sys_get_time(ts: *mut TimeVal, _tz: usize) -> isize {
+    syscall(SYSCALL_GET_TIME, [ts as usize, _tz, 0])
 }
