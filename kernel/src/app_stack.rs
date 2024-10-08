@@ -26,22 +26,24 @@ lazy_static! {
 
     static ref USER_STACKS: [UserStack; MAX_TASK_NUM] = {
         static mut STACKS: [UserStack; 16] = [UserStack { id: 0, data:[0;USER_STACK_SIZE] }; MAX_TASK_NUM];
-        for i in 0..MAX_TASK_NUM {
-            unsafe {
-                STACKS[i].id = i;
-            }
+        unsafe {
+            #[allow(static_mut_refs)]
+            STACKS.iter_mut().enumerate().for_each( |(i, stack)| {
+                stack.id = i;
+            });
+            STACKS
         }
-        unsafe { STACKS }
     };
 
     static ref KERNEL_STACKS: [KernelStack; MAX_TASK_NUM] = {
         static mut STACKS: [KernelStack; 16] = [KernelStack { id: 0, data:[0;KERNEL_STACK_SIZE] }; MAX_TASK_NUM];
-        for i in 0..MAX_TASK_NUM {
-            unsafe {
-                STACKS[i].id = i;
-            }
+        unsafe {
+            #[allow(static_mut_refs)]
+            STACKS.iter_mut().enumerate().for_each( |(i, stack)| {
+                stack.id = i;
+            });
+            STACKS
         }
-        unsafe { STACKS }
     };
 }
 
