@@ -1,6 +1,6 @@
 use lazy_static::lazy_static;
 use log::{debug, info};
-use crate::{app::App, config::MAX_TASK_NUM, sbi, sync::UPSafeCell, task::switch};
+use crate::{app::App, config::MAX_TASK_NUM, sync::UPSafeCell, task::switch};
 use super::{TaskControlBlock, TaskStatus};
 
 pub fn add_task(app: &App) {
@@ -13,7 +13,7 @@ pub fn exit_handler() -> ! {
     TASK_MANAGER.info();
     if TASK_MANAGER.get_task_num() == 0 {
         info!("TaskManager: all tasks are finished");
-        sbi::sbi_shutdown_success();
+        crate::kernel_end();
     }
     run_task();
 }

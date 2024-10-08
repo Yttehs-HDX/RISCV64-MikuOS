@@ -36,17 +36,23 @@ fn rust_main() -> ! {
     allocator::init_heap();
     print_sections();
     println!("[Kernel] initialized");
-    kernel_main();
+    kernel_start();
     sbi::sbi_shutdown_success();
 }
 
-fn kernel_main() {
+fn kernel_start() {
+    println!("[Kernel] current time: {}", timer::get_current_time().format());
     task::add_task(app::get_app("test_print").unwrap());
     task::add_task(app::get_app("test_sret").unwrap());
     task::add_task(app::get_app("test_page_fault").unwrap());
     task::add_task(app::get_app("test_yield").unwrap());
     task::print_task_info();
     task::run_task();
+}
+
+fn kernel_end() -> ! {
+    println!("[Kernel] current time: {}", timer::get_current_time().format());
+    sbi::sbi_shutdown_success();
 }
 
 fn clear_bss() {
