@@ -91,6 +91,7 @@ impl TaskManager {
         let mut inner = self.inner.exclusive_access();
         inner.tasks[i].status = status;
         if status == TaskStatus::Zombie {
+            inner.tasks[i].drop();
             inner.task_num -= 1;
         }
     }
