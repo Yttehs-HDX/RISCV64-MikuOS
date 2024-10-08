@@ -26,6 +26,7 @@ pub fn set_next_trigger() {
 
 // region TimeVal begin
 #[repr(C)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct TimeVal {
     sec: usize,
     usec: usize,
@@ -121,6 +122,22 @@ impl ops::Div<usize> for TimeVal {
             usec = (usec * MICRO_PER_SEC + remainder) / rhs;
         }
         TimeVal { sec, usec }
+    }
+}
+
+impl PartialOrd for TimeVal {
+    fn partial_cmp(&self, other: &TimeVal) -> Option<core::cmp::Ordering> {
+        if self.sec < other.sec {
+            Some(core::cmp::Ordering::Less)
+        } else if self.sec > other.sec {
+            Some(core::cmp::Ordering::Greater)
+        } else if self.usec < other.usec {
+            Some(core::cmp::Ordering::Less)
+        } else if self.usec > other.usec {
+            Some(core::cmp::Ordering::Greater)
+        } else {
+            Some(core::cmp::Ordering::Equal)
+        }
     }
 }
 // region TimeVal end
