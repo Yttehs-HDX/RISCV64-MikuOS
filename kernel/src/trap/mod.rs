@@ -4,10 +4,8 @@ use riscv::register::{scause::{self, Exception, Interrupt, Trap}, sie, stval, st
 use crate::{syscall, task, timer};
 
 pub use context::*;
-pub use stack_allocator::*;
 
 mod context;
-mod stack_allocator;
 
 global_asm!(include_str!("trap.S"));
 
