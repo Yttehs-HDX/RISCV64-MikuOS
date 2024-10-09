@@ -7,16 +7,26 @@ pub use stack::*;
 
 mod stack;
 
-pub fn get_kernel_stack() -> &'static KernelStack {
+pub fn alloc_kernel_stack() -> &'static KernelStack {
     let index = KERNEL_STACK_ALLOCATOR.exclusive_access().alloc().unwrap();
     debug!("KernelStack: get stack {}", index);
     &KERNEL_STACKS[index]
 }
 
-pub fn get_user_stack() -> &'static UserStack {
+pub fn alloc_user_stack() -> &'static UserStack {
     let index = USER_STACK_ALLOCATOR.exclusive_access().alloc().unwrap();
     debug!("UserStack: get stack {}", index);
     &USER_STACKS[index]
+}
+
+pub fn dealloc_kernel_stack(stack: &'static KernelStack) {
+    debug!("KernelStack: recycle stack {}", stack.id);
+    KERNEL_STACK_ALLOCATOR.exclusive_access().dealloc(stack.id);
+}
+
+pub fn dealloc_user_stack(stack: &'static UserStack) {
+    debug!("UserStack: recycle stack {}", stack.id);
+    USER_STACK_ALLOCATOR.exclusive_access().dealloc(stack.id);
 }
 
 lazy_static! {
