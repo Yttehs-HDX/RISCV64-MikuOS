@@ -1,4 +1,4 @@
-use crate::{app::App, app_stack::{self, KernelStack, UserStack}, trap::TrapContext};
+use crate::{app::App, trap::{self, KernelStack, TrapContext, UserStack}};
 
 pub use context::*;
 
@@ -14,8 +14,8 @@ pub struct TaskControlBlock {
 
 impl TaskControlBlock {
     pub fn new(app: &App) -> Self {
-        let kernel_stack = app_stack::get_kernel_stack();
-        let user_stack = app_stack::get_user_stack();
+        let kernel_stack = trap::get_kernel_stack();
+        let user_stack = trap::get_user_stack();
         let trap_cx = TrapContext::new(
             app.base_addr(),
             user_stack.get_sp(),
