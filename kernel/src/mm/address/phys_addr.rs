@@ -31,12 +31,6 @@ impl PhysAddr {
 
     pub fn ppn(&self) -> PhysPageNum { PhysPageNum(self.0 / PAGE_SIZE) }
 }
-
-impl From<PhysPageNum> for PhysAddr {
-    fn from(value: PhysPageNum) -> Self {
-        value.pa()
-    }
-}
 // region PhysAddr end
 
 // region PhysPageNum begin
@@ -70,13 +64,6 @@ impl PhysPageNum {
         unsafe {
             (pa.0 as *mut T).as_mut().unwrap()
         }
-    }
-}
-
-impl From<PhysAddr> for PhysPageNum {
-    fn from(value: PhysAddr) -> Self {
-        assert!(value.aligned());
-        value.ppn()
     }
 }
 // region PhysPageNum end

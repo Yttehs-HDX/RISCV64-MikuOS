@@ -33,12 +33,6 @@ impl VirtAddr {
 
     pub fn vpn(&self) -> VirtPageNum { VirtPageNum(self.0 / PAGE_SIZE) }
 }
-
-impl From<VirtPageNum> for VirtAddr {
-    fn from(value: VirtPageNum) -> Self {
-        value.va()
-    }
-}
 // region VirtAddr end
 
 // region VirtPageNum begin
@@ -57,28 +51,4 @@ impl VirtPageNum {
 
     pub fn va(&self) -> VirtAddr { VirtAddr(self.0 << PAGE_OFFSET) }
 }
-
-impl From<VirtAddr> for VirtPageNum {
-    fn from(value: VirtAddr) -> Self {
-        assert!(value.aligned());
-        value.vpn()
-    }
-}
 // region VirtPageNum end
-
-// usize relevant conversion
-impl From<usize> for VirtAddr {
-    fn from(addr: usize) -> Self { VirtAddr(addr) }
-}
-
-impl From<VirtAddr> for usize {
-    fn from(addr: VirtAddr) -> Self { addr.0 }
-}
-
-impl From<usize> for VirtPageNum {
-    fn from(addr: usize) -> Self { VirtPageNum(addr) }
-}
-
-impl From<VirtPageNum> for usize {
-    fn from(addr: VirtPageNum) -> Self { addr.0 }
-}
