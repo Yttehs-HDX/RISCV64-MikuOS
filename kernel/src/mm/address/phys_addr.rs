@@ -8,10 +8,10 @@
  *
  */
 
-use crate::config::{PAGE_OFFSET, PAGE_SIZE};
+use crate::{config::{PAGE_OFFSET, PAGE_SIZE}, mm::{PageTableEntry, PTE_SIZE}};
 
-const SV39_PPN_WIDTH: usize = 44;
-const SV39_PA_WIDTH: usize = SV39_PPN_WIDTH + PAGE_SIZE; // 56
+pub const SV39_PPN_WIDTH: usize = 44;
+pub const SV39_PA_WIDTH: usize = SV39_PPN_WIDTH + PAGE_SIZE; // 56
 
 // region PhysAddr begin
 pub struct PhysAddr(pub usize);
@@ -44,6 +44,33 @@ pub struct PhysPageNum(pub usize);
 
 impl PhysPageNum {
     pub fn pa(&self) -> PhysAddr { PhysAddr(self.0 << PAGE_OFFSET) }
+
+    pub fn as_pte_array(&self) -> &'static [PageTableEntry] {
+        let pa = self.pa();
+        unsafe {
+            core::slice::from_raw_parts_mut(
+                pa.0 as *mut PageTableEntry,
+                PAGE_SIZE / PTE_SIZE
+            )
+        }
+    }
+
+    pub fn as_bytes_array(&self) -> &'static [u8] {
+        let pa = self.pa();
+        unsafe {
+            core::slice::from_raw_parts_mut(
+                pa.0 as *mut u8,
+                PAGE_SIZE
+            )
+        }
+    }
+
+    pub fn as_mut<T>(&self) -> &'static mut T {
+        let pa = self.pa();
+        unsafe {
+            (pa.0 as *mut T).as_mut().unwrap()
+        }
+    }
 }
 
 impl From<PhysAddr> for PhysPageNum {

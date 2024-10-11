@@ -10,10 +10,10 @@
 
 use crate::config::{PAGE_OFFSET, PAGE_SIZE};
 
-const SV39_VPN_NUM: usize = 3;
-const SV39_PER_VPN_WIDTH: usize = 9;
-const SV39_VPN_WIDTH: usize = SV39_PER_VPN_WIDTH * SV39_VPN_NUM; // 27
-const SV39_VA_WIDTH: usize = SV39_VPN_WIDTH + PAGE_OFFSET; // 39
+pub const SV39_VPN_NUM: usize = 3;
+pub const SV39_PER_VPN_WIDTH: usize = 9;
+pub const SV39_VPN_WIDTH: usize = SV39_PER_VPN_WIDTH * SV39_VPN_NUM; // 27
+pub const SV39_VA_WIDTH: usize = SV39_VPN_WIDTH + PAGE_OFFSET; // 39
 
 // region VirtAddr begin
 pub struct VirtAddr(pub usize);
