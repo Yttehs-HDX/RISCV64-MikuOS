@@ -41,5 +41,17 @@ impl PageTable {
         }
         None
     }
+
+    pub fn map(&mut self, vpn: VirtPageNum, ppn: PhysPageNum, flags: PTEFlags) {
+        let pte = self.create_pte_by_vpn(vpn).unwrap();
+        assert!(!pte.has_flag(PTEFlags::V), "PageTable: mapping already exists");
+        *pte = PageTableEntry::new(ppn, flags | PTEFlags::V);
+    }
+
+    pub fn unmap(&mut self, vpn: VirtPageNum) {
+        let pte = self.create_pte_by_vpn(vpn).unwrap();
+        assert!(pte.has_flag(PTEFlags::V), "PageTable: no mapping");
+        *pte = PageTableEntry::empty();
+    }
 }
 // region PageTable end
