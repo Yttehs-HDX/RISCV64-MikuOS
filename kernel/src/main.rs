@@ -6,6 +6,7 @@
 use core::arch::global_asm;
 use log::trace;
 
+#[macro_use]
 extern crate alloc;
 
 global_asm!(include_str!("entry.S"));
