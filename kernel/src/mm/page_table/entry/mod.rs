@@ -19,6 +19,7 @@ pub const PPN_START_BIT: usize = 10;
 
 // region PageTableEntry begin
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct PageTableEntry {
     bits: usize,
 }
