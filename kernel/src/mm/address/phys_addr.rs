@@ -39,7 +39,7 @@ pub struct PhysPageNum(pub usize);
 impl PhysPageNum {
     pub fn pa(&self) -> PhysAddr { PhysAddr(self.0 << PAGE_OFFSET) }
 
-    pub fn as_pte_array(&self) -> &'static [PageTableEntry] {
+    pub fn as_pte_array(&self) -> &'static mut [PageTableEntry] {
         let pa = self.pa();
         unsafe {
             core::slice::from_raw_parts_mut(
@@ -49,7 +49,7 @@ impl PhysPageNum {
         }
     }
 
-    pub fn as_bytes_array(&self) -> &'static [u8] {
+    pub fn as_bytes_array(&self) -> &'static mut [u8] {
         let pa = self.pa();
         unsafe {
             core::slice::from_raw_parts_mut(

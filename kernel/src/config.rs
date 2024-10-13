@@ -12,3 +12,5 @@ pub use crate::board::CLOCK_FREQ;
 
 pub const PAGE_SIZE: usize = 0x1000; // 4KB
 pub const PAGE_OFFSET: usize = 12;
+
+pub const MEMORY_END: usize = 0x80800000;

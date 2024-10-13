@@ -69,18 +69,19 @@ fn clear_bss() {
 }
 
 fn print_sections() {
-    extern "C" {
-        fn stext();
-        fn etext();
-        fn srodata();
-        fn erodata();
-        fn sdata();
-        fn edata();
-        fn sbss_with_stack();
-        fn ebss();
-    }
     trace!(".text   [{:#x}, {:#x})", stext as usize, etext as usize);
     trace!(".rodata [{:#x}, {:#x})", srodata as usize, erodata as usize);
     trace!(".data   [{:#x}, {:#x})", sdata as usize, edata as usize);
     trace!(".bss    [{:#x}, {:#x})", sbss_with_stack as usize, ebss as usize);
+}
+
+extern "C" {
+    pub fn stext();
+    pub fn etext();
+    pub fn srodata();
+    pub fn erodata();
+    pub fn sdata();
+    pub fn edata();
+    pub fn sbss_with_stack();
+    pub fn ebss();
 }
