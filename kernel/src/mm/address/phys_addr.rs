@@ -34,6 +34,7 @@ impl PhysAddr {
 // region PhysAddr end
 
 // region PhysPageNum begin
+#[derive(Clone, Copy)]
 pub struct PhysPageNum(pub usize);
 
 impl PhysPageNum {

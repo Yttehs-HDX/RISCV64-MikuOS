@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 use alloc::vec::Vec;
 use crate::{config::MEMORY_END, sync::UPSafeCell};
-use super::PhysAddr;
+use super::{PhysAddr, PhysPageNum};
 
 pub use tracker::*;
 
@@ -9,8 +9,8 @@ pub fn alloc_frame() -> Option<FrameTracker> {
     FRAME_ALLOCATOR.alloc()
 }
 
-pub fn dealloc_frame(frame: FrameTracker) {
-    FRAME_ALLOCATOR.dealloc(frame);
+pub fn dealloc_frame(ppn: PhysPageNum) {
+    FRAME_ALLOCATOR.dealloc(ppn);
 }
 
 mod tracker;
@@ -44,19 +44,22 @@ impl FrameAllocator {
 
     fn alloc(&self) -> Option<FrameTracker> {
         let mut inner = self.inner.exclusive_access();
-        if let Some(frame) = inner.free_frames.pop() {
+        if let Some(mut frame) = inner.free_frames.pop() {
+            frame.clear_ppn();
             return Some(frame);
         }
         if inner.current < inner.end {
-            let frame = FrameTracker::new(inner.current);
+            let mut frame = FrameTracker::new(inner.current);
             inner.current += 1;
+            frame.clear_ppn();
             return Some(frame);
         }
         None
     }
 
-    fn dealloc(&self, frame: FrameTracker) {
+    fn dealloc(&self, ppn: PhysPageNum) {
         let mut inner = self.inner.exclusive_access();
+        let frame = FrameTracker { ppn };
         inner.free_frames.push(frame);
     }
 }
