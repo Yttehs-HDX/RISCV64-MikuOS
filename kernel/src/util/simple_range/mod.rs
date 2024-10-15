@@ -5,6 +5,7 @@ pub trait StepByOne {
 // region StepByOne end
 
 // region SimpleRange begin
+#[derive(Clone, Copy)]
 pub struct SimpleRange<T>
 where T: StepByOne + Copy + PartialEq + PartialOrd
 {

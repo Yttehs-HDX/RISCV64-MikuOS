@@ -8,7 +8,7 @@
  *
  */
 
-use crate::config::{PAGE_OFFSET, PAGE_SIZE};
+use crate::{config::{PAGE_OFFSET, PAGE_SIZE}, util::StepByOne};
 
 pub const SV39_VPN_NUM: usize = 3;
 pub const SV39_PER_VPN_WIDTH: usize = 9;
@@ -36,7 +36,14 @@ impl VirtAddr {
 // region VirtAddr end
 
 // region VirtPageNum begin
+#[derive(Clone, Copy, Eq, Ord, PartialEq, PartialOrd)]
 pub struct VirtPageNum(pub usize);
+
+impl StepByOne for VirtPageNum {
+    fn step(&mut self) {
+        self.0 += 1;
+    }
+}
 
 impl VirtPageNum {
     pub fn indexes(&self) -> [usize; SV39_VPN_NUM] {
