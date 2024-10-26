@@ -1,7 +1,7 @@
 pub use entry::*;
 
 use alloc::vec::Vec;
-use super::{alloc_ppn_tracker, PPNTracker, PhysPageNum, VirtPageNum};
+use super::{alloc_ppn_tracker, PPNTracker, PhysPageNum, VirtPageNum, SV39_PPN_BITS};
 
 mod entry;
 

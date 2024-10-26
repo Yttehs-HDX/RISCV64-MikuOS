@@ -9,11 +9,11 @@
  *                                                  | <- PTEFlags -> | 8 bits
  */
 
-pub use flasgs::*;
+pub use flags::*;
 
 use crate::mm::{PhysPageNum, SV39_PPN_BITS};
 
-mod flasgs;
+mod flags;
 
 pub const SV39_PTE_BITS: usize = 64;
 
