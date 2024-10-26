@@ -16,6 +16,7 @@ pub const SV39_PPN_BITS: usize = 44;
 const SV39_PPN_NUM: usize = 3;
 
 // region PhysAddr begin
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct PhysAddr(pub usize);
 
 impl PhysAddr {
@@ -34,6 +35,7 @@ impl PhysAddr {
 // region PhysAddr end
 
 // region PhysPageNum begin
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct PhysPageNum(pub usize);
 
 impl PhysPageNum {

@@ -17,6 +17,7 @@ const SV39_VPN_NUM: usize = 3;
 const SV39_VPN_PER_BITS: usize = SV39_VPN_BITS / SV39_VPN_NUM;
 
 // region VirtAddr begin
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct VirtAddr(pub usize);
 
 impl VirtAddr {
@@ -35,6 +36,7 @@ impl VirtAddr {
 // region VirtAddr end
 
 // region VirtPageNum begin
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct VirtPageNum(pub usize);
 
 impl VirtPageNum {

@@ -36,11 +36,11 @@ fn rust_main() -> ! {
     allocator::init_heap();
     print_sections();
     println!("[Kernel] initialized");
-    kernel_start();
+    os_start();
     sbi::sbi_shutdown_success();
 }
 
-fn kernel_start() {
+fn os_start() {
     println!("[Kernel] current time: {}", timer::get_current_time().format());
     task::add_task(app::get_app("test_print").unwrap());
     task::add_task(app::get_app("test_sret").unwrap());
@@ -50,18 +50,13 @@ fn kernel_start() {
     task::run_task();
 }
 
-fn kernel_end() -> ! {
+fn os_end() -> ! {
     println!("[Kernel] current time: {}", timer::get_current_time().format());
     sbi::sbi_shutdown_success();
 }
 
 fn clear_bss() {
-    extern "C" {
-        fn sbss();
-        fn ebss();
-    }
-
-    (sbss as usize..ebss as usize).for_each(|addr| {
+    (config::bss_start_stackless()..config::bss_end()).for_each(|addr| {
         unsafe {
             (addr as *mut u8).write_volatile(0);
         }
@@ -69,18 +64,8 @@ fn clear_bss() {
 }
 
 fn print_sections() {
-    extern "C" {
-        fn stext();
-        fn etext();
-        fn srodata();
-        fn erodata();
-        fn sdata();
-        fn edata();
-        fn sbss_with_stack();
-        fn ebss();
-    }
-    trace!(".text   [{:#x}, {:#x})", stext as usize, etext as usize);
-    trace!(".rodata [{:#x}, {:#x})", srodata as usize, erodata as usize);
-    trace!(".data   [{:#x}, {:#x})", sdata as usize, edata as usize);
-    trace!(".bss    [{:#x}, {:#x})", sbss_with_stack as usize, ebss as usize);
+    trace!(".text   [{:#x}, {:#x})", config::text_start(), config::text_end());
+    trace!(".rodata [{:#x}, {:#x})", config::rodata_start(), config::rodata_end());
+    trace!(".data   [{:#x}, {:#x})", config::data_start(), config::data_end());
+    trace!(".bss    [{:#x}, {:#x})", config::bss_start(), config::bss_end());
 }

@@ -14,7 +14,7 @@ pub fn exit_handler() -> ! {
     TASK_MANAGER.info();
     if TASK_MANAGER.get_task_num(TaskStatus::All) == 0 {
         info!("TaskManager: all tasks are finished");
-        crate::kernel_end();
+        crate::os_end();
     }
     run_task();
 }

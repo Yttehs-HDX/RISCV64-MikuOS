@@ -42,11 +42,11 @@ SECTIONS {
     # data end
 
     .bss : {
-        sbss_with_stack = .;
+        sbss = .;
         *(.bss.stack)
 
     # bss start
-        sbss = .;
+        sbss_no_stack = .;
         *(.bss .bss.*)
         *(.sbss .sbss.*)
     }
