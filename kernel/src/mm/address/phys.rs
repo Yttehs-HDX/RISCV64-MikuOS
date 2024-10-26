@@ -9,7 +9,7 @@
  * | <--------- PhysAddr -----------------> | 56 bits
  */
 
-use crate::config::{SV39_OFFSET_BITS, SV39_PAGE_SIZE};
+use crate::{config::{SV39_OFFSET_BITS, SV39_PAGE_SIZE}, mm::{PageTableEntry, SV39_PTE_BITS}};
 
 pub const SV39_PA_BITS: usize = 56;
 pub const SV39_PPN_BITS: usize = 44;
@@ -43,6 +43,16 @@ impl PhysPageNum {
         let pa = self.to_pa();
         unsafe {
             core::slice::from_raw_parts_mut(pa.0 as *mut u8, SV39_PAGE_SIZE)
+        }
+    }
+
+    pub fn get_pte_array(&self) -> &'static mut [PageTableEntry] {
+        let pa = self.to_pa();
+        unsafe {
+            core::slice::from_raw_parts_mut(
+                pa.0 as *mut PageTableEntry,
+                SV39_PAGE_SIZE / SV39_PTE_BITS
+            )
         }
     }
 
