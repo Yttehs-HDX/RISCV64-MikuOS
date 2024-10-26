@@ -31,7 +31,7 @@ impl PageTableEntry {
     }
 
     pub fn ppn(&self) -> PhysPageNum {
-        PhysPageNum(self.bits >> 10 & (1 << SV39_PPN_BITS - 1))
+        PhysPageNum(self.bits >> 10 & ((1 << SV39_PPN_BITS) - 1))
     }
 
     pub fn flags(&self) -> PTEFlags {
