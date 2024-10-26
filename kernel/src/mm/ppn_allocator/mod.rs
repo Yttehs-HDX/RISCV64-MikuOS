@@ -1,3 +1,4 @@
+use log::trace;
 pub use ppn_tracker::*;
 
 use lazy_static::lazy_static;
@@ -34,6 +35,8 @@ impl PPNAllocator {
     fn new(mem_begin: usize, mem_end: usize) -> Self {
         let start_ppn = PhysAddr(mem_begin).to_ppn_ceil();
         let end_ppn = PhysAddr(mem_end).to_ppn_floor();
+        trace!("PPNAllocator: Memory [{:#x}, {:#x})", mem_begin, mem_end);
+        trace!("PPNAllocator: PPN [{:#x}, {:#x})", start_ppn.0, end_ppn.0);
         Self {
             current_ppn: start_ppn.0,
             end_ppn: end_ppn.0,

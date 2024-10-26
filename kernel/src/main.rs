@@ -64,6 +64,7 @@ fn clear_bss() {
 }
 
 fn print_sections() {
+    trace!(" KERNEL [{:#x}, {:#x})", config::kernel_start(), config::kernel_end());
     trace!(".text   [{:#x}, {:#x})", config::text_start(), config::text_end());
     trace!(".rodata [{:#x}, {:#x})", config::rodata_start(), config::rodata_end());
     trace!(".data   [{:#x}, {:#x})", config::data_start(), config::data_end());
