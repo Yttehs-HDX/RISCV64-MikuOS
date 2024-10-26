@@ -19,6 +19,7 @@ pub const SV39_PTE_BITS: usize = 64;
 
 // region PageTableEntry begin
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct PageTableEntry {
     bits: usize,
 }

@@ -19,6 +19,20 @@ impl PageTable {
             ppn_tracker_list: Vec::new(),
         }
     }
+
+    pub fn from_satp(satp: usize) -> Self {
+        let ppn_bits = satp & ((1 << SV39_PPN_BITS) - 1);
+        Self {
+            root_ppn: PhysPageNum(ppn_bits),
+            ppn_tracker_list: Vec::new(),
+        }
+    }
+
+    pub fn as_satp(&self) -> usize {
+        let mode = 8usize;
+        let ppn_bits = self.root_ppn.0;
+        mode << 60 | ppn_bits
+    }
 }
 
 impl PageTable {
@@ -70,6 +84,10 @@ impl PageTable {
         let pte = self.get_pte(vpn).unwrap();
         assert!(pte.is_valid(), "PageTable: VPN {:#x} not mapped", vpn.0);
         *pte = PageTableEntry::empty();
+    }
+
+    pub fn tranlate(&self, vpn: VirtPageNum) -> Option<PageTableEntry> {
+        self.get_pte(vpn).map(|pte| *pte)
     }
 }
 // region PageTable end
