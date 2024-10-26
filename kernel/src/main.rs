@@ -25,6 +25,7 @@ mod trap;
 mod task;
 mod allocator;
 mod timer;
+mod mm;
 
 #[no_mangle]
 fn rust_main() -> ! {

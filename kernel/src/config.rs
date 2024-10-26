@@ -9,3 +9,6 @@ pub const USER_STACK_SIZE: usize = 4096;
 pub const KERNEL_HEAP_SIZE: usize = 0x20000;
 
 pub use crate::board::CLOCK_FREQ;
+
+pub const SV39_PAGE_SIZE: usize = 1 << 12; // 4096
+pub const SV39_OFFSET_BITS: usize = 12;
