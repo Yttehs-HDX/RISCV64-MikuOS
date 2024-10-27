@@ -1,15 +1,21 @@
 use log::trace;
 pub use ppn_tracker::*;
 
-use lazy_static::lazy_static;
-use alloc::vec::Vec;
-use crate::{config::{kernel_end, MEMORY_END}, sync::UPSafeCell};
 use super::{PhysAddr, PhysPageNum};
+use crate::{
+    config::{kernel_end, MEMORY_END},
+    sync::UPSafeCell,
+};
+use alloc::vec::Vec;
+use lazy_static::lazy_static;
 
 mod ppn_tracker;
 
 pub fn alloc_ppn_tracker() -> Option<PPNTracker> {
-    PPN_ALLOCATOR.exclusive_access().alloc().map(PPNTracker::new)
+    PPN_ALLOCATOR
+        .exclusive_access()
+        .alloc()
+        .map(PPNTracker::new)
 }
 
 pub fn dealloc_ppn(ppn: PhysPageNum) {
@@ -17,11 +23,8 @@ pub fn dealloc_ppn(ppn: PhysPageNum) {
 }
 
 lazy_static! {
-    static ref PPN_ALLOCATOR: UPSafeCell<PPNAllocator> = unsafe {
-        UPSafeCell::new(
-            PPNAllocator::new(kernel_end(), MEMORY_END)
-        )
-    };
+    static ref PPN_ALLOCATOR: UPSafeCell<PPNAllocator> =
+        unsafe { UPSafeCell::new(PPNAllocator::new(kernel_end(), MEMORY_END)) };
 }
 
 // region PPNAllocator begin

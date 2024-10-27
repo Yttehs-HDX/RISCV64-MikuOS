@@ -1,5 +1,5 @@
-use crate::board;
 use super::sbi_call;
+use crate::board;
 
 const SBI_SHUTDOWN: usize = 8;
 

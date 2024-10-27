@@ -1,4 +1,8 @@
-use crate::{allocator::{self, KernelStack, Stack, UserStack}, app::App, trap::TrapContext};
+use crate::{
+    allocator::{self, KernelStack, Stack, UserStack},
+    app::App,
+    trap::TrapContext,
+};
 
 pub use context::*;
 
@@ -16,11 +20,7 @@ impl TaskControlBlock {
     pub fn new(app: &App) -> Self {
         let kernel_stack = allocator::alloc_kernel_stack();
         let user_stack = allocator::alloc_user_stack();
-        let trap_cx = TrapContext::new(
-            app.base_addr(),
-            user_stack.get_sp(),
-            kernel_stack.get_sp(),
-        );
+        let trap_cx = TrapContext::new(app.base_addr(), user_stack.get_sp(), kernel_stack.get_sp());
         let task_cx = TaskContext::goto_restore(trap_cx.get_ptr_from_sp() as usize);
         Self {
             task_cx,

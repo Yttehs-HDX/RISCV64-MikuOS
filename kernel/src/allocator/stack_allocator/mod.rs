@@ -1,7 +1,10 @@
+use crate::{
+    config::{KERNEL_STACK_SIZE, MAX_TASK_NUM, USER_STACK_SIZE},
+    sync::UPSafeCell,
+};
 use alloc::vec::Vec;
 use lazy_static::lazy_static;
 use log::debug;
-use crate::{config::{KERNEL_STACK_SIZE, MAX_TASK_NUM, USER_STACK_SIZE}, sync::UPSafeCell};
 
 pub use stack::*;
 
@@ -30,33 +33,31 @@ pub fn dealloc_user_stack(stack: &'static UserStack) {
 }
 
 lazy_static! {
-    pub static ref USER_STACK_ALLOCATOR: UPSafeCell<StackAllocator> = unsafe {
-        UPSafeCell::new(StackAllocator::new())
-    };
-
-    pub static ref KERNEL_STACK_ALLOCATOR: UPSafeCell<StackAllocator> = unsafe {
-        UPSafeCell::new(StackAllocator::new())
-    };
-
+    pub static ref USER_STACK_ALLOCATOR: UPSafeCell<StackAllocator> =
+        unsafe { UPSafeCell::new(StackAllocator::new()) };
+    pub static ref KERNEL_STACK_ALLOCATOR: UPSafeCell<StackAllocator> =
+        unsafe { UPSafeCell::new(StackAllocator::new()) };
     static ref USER_STACKS: [UserStack; MAX_TASK_NUM] = {
-        static mut STACKS: [UserStack; MAX_TASK_NUM] = [
-            UserStack { id: 0, data:[0; USER_STACK_SIZE] };
-            MAX_TASK_NUM
-        ];
+        static mut STACKS: [UserStack; MAX_TASK_NUM] = [UserStack {
+            id: 0,
+            data: [0; USER_STACK_SIZE],
+        }; MAX_TASK_NUM];
         unsafe {
             #[allow(static_mut_refs)]
-            STACKS.iter_mut().enumerate().for_each( |(i, stack)| {
+            STACKS.iter_mut().enumerate().for_each(|(i, stack)| {
                 stack.id = i;
             });
             STACKS
         }
     };
-
     static ref KERNEL_STACKS: [KernelStack; MAX_TASK_NUM] = {
-        static mut STACKS: [KernelStack; 16] = [KernelStack { id: 0, data:[0; KERNEL_STACK_SIZE] }; MAX_TASK_NUM];
+        static mut STACKS: [KernelStack; 16] = [KernelStack {
+            id: 0,
+            data: [0; KERNEL_STACK_SIZE],
+        }; MAX_TASK_NUM];
         unsafe {
             #[allow(static_mut_refs)]
-            STACKS.iter_mut().enumerate().for_each( |(i, stack)| {
+            STACKS.iter_mut().enumerate().for_each(|(i, stack)| {
                 stack.id = i;
             });
             STACKS

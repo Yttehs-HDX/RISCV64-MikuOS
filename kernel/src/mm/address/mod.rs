@@ -1,5 +1,5 @@
-pub use virt::*;
 pub use phys::*;
+pub use virt::*;
 
-mod virt;
 mod phys;
+mod virt;

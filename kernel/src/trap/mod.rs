@@ -1,7 +1,11 @@
+use crate::{syscall, task, timer};
 use core::arch::global_asm;
 use log::{debug, error};
-use riscv::register::{scause::{self, Exception, Interrupt, Trap}, sie, stval, stvec, utvec::TrapMode};
-use crate::{syscall, task, timer};
+use riscv::register::{
+    scause::{self, Exception, Interrupt, Trap},
+    sie, stval, stvec,
+    utvec::TrapMode,
+};
 
 pub use context::*;
 
@@ -37,8 +41,7 @@ pub fn trap_handler(cx: &mut TrapContext) -> &TrapContext {
             error!("Illegal instruction @ {:#x}, badaddr {:#x}", cx.sepc, stval);
             syscall::sys_exit(1);
         }
-        Trap::Exception(Exception::StoreFault) |
-        Trap::Exception(Exception::StorePageFault) => {
+        Trap::Exception(Exception::StoreFault) | Trap::Exception(Exception::StorePageFault) => {
             error!("Store fault @ {:#x}, badaddr {:#x}", cx.sepc, stval);
             syscall::sys_exit(1);
         }

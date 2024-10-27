@@ -5,14 +5,16 @@ pub trait StepByOne {
 // region SimpleRange begin
 #[derive(Clone, Copy)]
 pub struct SimpleRange<T>
-where T: StepByOne + Copy + PartialEq + PartialOrd
+where
+    T: StepByOne + Copy + PartialEq + PartialOrd,
 {
     start: T,
     end: T,
 }
 
 impl<T> IntoIterator for SimpleRange<T>
-where T: StepByOne + Copy + PartialEq + PartialOrd
+where
+    T: StepByOne + Copy + PartialEq + PartialOrd,
 {
     type Item = T;
     type IntoIter = SimpleRangeIterator<T>;
@@ -26,27 +28,34 @@ where T: StepByOne + Copy + PartialEq + PartialOrd
 }
 
 impl<T> SimpleRange<T>
-where T: StepByOne + Copy + PartialEq + PartialOrd
+where
+    T: StepByOne + Copy + PartialEq + PartialOrd,
 {
     pub fn new(start: T, end: T) -> Self {
         Self { start, end }
     }
 
-    pub fn start(&self) -> T { self.start }
-    pub fn end(&self) -> T { self.end }
+    pub fn start(&self) -> T {
+        self.start
+    }
+    pub fn end(&self) -> T {
+        self.end
+    }
 }
 // region SimpleRange end
 
 // region SimpleRangeIterator begin
 pub struct SimpleRangeIterator<T>
-where T: StepByOne + Copy + PartialEq + PartialOrd
+where
+    T: StepByOne + Copy + PartialEq + PartialOrd,
 {
     range: SimpleRange<T>,
     current: T,
 }
 
 impl<T> Iterator for SimpleRangeIterator<T>
-where T: StepByOne + Copy + PartialEq + PartialOrd
+where
+    T: StepByOne + Copy + PartialEq + PartialOrd,
 {
     type Item = T;
 

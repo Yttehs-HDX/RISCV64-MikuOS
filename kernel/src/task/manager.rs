@@ -1,8 +1,12 @@
+use super::TaskControlBlock;
+use crate::{
+    app::App,
+    sync::UPSafeCell,
+    task::{switch, TaskContext, __switch},
+};
 use alloc::collections::vec_deque::VecDeque;
 use lazy_static::lazy_static;
 use log::{debug, info};
-use crate::{app::App, sync::UPSafeCell, task::{switch, TaskContext, __switch}};
-use super::TaskControlBlock;
 
 pub fn add_task(app: &App) {
     TASK_MANAGER.add_task(app);
@@ -35,12 +39,12 @@ pub fn print_task_info() {
 
 lazy_static! {
     static ref TASK_MANAGER: TaskManager = TaskManager {
-        inner: unsafe { UPSafeCell::new(
-            TaskManagerInner {
+        inner: unsafe {
+            UPSafeCell::new(TaskManagerInner {
                 running_tasks: VecDeque::new(),
                 waiting_tasks: VecDeque::new(),
-            }
-        )}
+            })
+        }
     };
 }
 

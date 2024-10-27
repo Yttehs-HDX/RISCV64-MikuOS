@@ -1,14 +1,18 @@
 use core::arch::asm;
 
-use lazy_static::lazy_static;
 use crate::config::{APP_BASE_ADDR, APP_SIZE_LIMIT};
+use lazy_static::lazy_static;
 
 // Before implementing file system, we use include_bytes! to load the binary of the app
 const APP_NUM: usize = 4;
-const TEST_PRINT: &[u8] = include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/01_test_print.bin");
-const TEST_SRET: &[u8] = include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/02_test_sret.bin");
-const TEST_PAGE_FAULT: &[u8] = include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/03_test_page_fault.bin");
-const TEST_YIELD: &[u8] = include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/04_test_yield.bin");
+const TEST_PRINT: &[u8] =
+    include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/01_test_print.bin");
+const TEST_SRET: &[u8] =
+    include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/02_test_sret.bin");
+const TEST_PAGE_FAULT: &[u8] =
+    include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/03_test_page_fault.bin");
+const TEST_YIELD: &[u8] =
+    include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/04_test_yield.bin");
 
 pub fn get_app(name: &str) -> Option<&App> {
     APPS.iter().find(|app| app.name() == name)
@@ -60,10 +64,7 @@ impl App {
 
     fn load_to_mem(&self) {
         unsafe {
-            let dst = core::slice::from_raw_parts_mut(
-                self.base_addr() as *mut u8,
-                self.len()
-            );
+            let dst = core::slice::from_raw_parts_mut(self.base_addr() as *mut u8, self.len());
             dst.copy_from_slice(self.bin());
             // flush the instruction cache
             asm!("fence.i");

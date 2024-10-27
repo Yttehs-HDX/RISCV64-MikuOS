@@ -1,5 +1,5 @@
-use log::{info, warn};
 use crate::{task, timer};
+use log::{info, warn};
 
 pub fn sys_exit(exit_code: usize) -> ! {
     match exit_code {

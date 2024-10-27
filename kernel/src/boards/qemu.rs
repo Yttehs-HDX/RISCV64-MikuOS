@@ -56,10 +56,7 @@ impl QEMUExit for RISCV64 {
 
             // loop if exit failed
             loop {
-                asm!(
-                    "wfi",
-                    options(nomem, nostack)
-                )
+                asm!("wfi", options(nomem, nostack))
             }
         }
     }

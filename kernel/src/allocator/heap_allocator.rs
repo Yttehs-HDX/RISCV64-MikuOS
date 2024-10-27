@@ -1,9 +1,11 @@
-use buddy_system_allocator::LockedHeap;
 use crate::config::KERNEL_HEAP_SIZE;
+use buddy_system_allocator::LockedHeap;
 
 pub fn init_heap() {
     unsafe {
-        HEAP_ALLOCATOR.lock().init(KERNEL_HEAP.as_ptr() as usize, KERNEL_HEAP_SIZE);
+        HEAP_ALLOCATOR
+            .lock()
+            .init(KERNEL_HEAP.as_ptr() as usize, KERNEL_HEAP_SIZE);
     }
 }
 

@@ -43,7 +43,6 @@ impl Log for Logger {
         }
     }
 
-    fn flush(&self) {
-    }
+    fn flush(&self) {}
 }
 // region Logger end

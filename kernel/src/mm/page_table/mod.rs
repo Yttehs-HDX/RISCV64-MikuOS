@@ -1,7 +1,7 @@
 pub use entry::*;
 
-use alloc::vec::Vec;
 use super::{alloc_ppn_tracker, PPNTracker, PhysPageNum, VirtPageNum, SV39_PPN_BITS};
+use alloc::vec::Vec;
 
 mod entry;
 
@@ -42,7 +42,8 @@ impl PageTable {
 
         for (i, &idx) in indexes.iter().enumerate() {
             let pte = &mut ppn.get_pte_array()[idx];
-            if i == indexes.len() - 1 { // last level
+            if i == indexes.len() - 1 {
+                // last level
                 return Some(pte);
             }
             if !pte.is_valid() {
@@ -62,7 +63,8 @@ impl PageTable {
 
         for (i, &idx) in indexes.iter().enumerate() {
             let pte = &mut ppn.get_pte_array()[idx];
-            if i == indexes.len() - 1 { // last level
+            if i == indexes.len() - 1 {
+                // last level
                 return Some(pte);
             }
             if !pte.is_valid() {
@@ -76,7 +78,11 @@ impl PageTable {
 
     pub fn map(&mut self, vpn: VirtPageNum, ppn: PhysPageNum, flags: PTEFlags) {
         let pte = self.get_create_pte(vpn).unwrap();
-        assert!(!pte.is_valid(), "PageTable: VPN {:#x} already mapped", vpn.0);
+        assert!(
+            !pte.is_valid(),
+            "PageTable: VPN {:#x} already mapped",
+            vpn.0
+        );
         *pte = PageTableEntry::new(ppn, flags | PTEFlags::V);
     }
 

@@ -1,14 +1,36 @@
-pub fn kernel_start() -> usize { skernel as usize }
-pub fn text_start() -> usize { stext as usize }
-pub fn text_end() -> usize { etext as usize }
-pub fn rodata_start() -> usize { srodata as usize }
-pub fn rodata_end() -> usize { erodata as usize }
-pub fn data_start() -> usize { sdata as usize }
-pub fn data_end() -> usize { edata as usize }
-pub fn bss_start() -> usize { sbss as usize }
-pub fn bss_start_stackless() -> usize { sbss_no_stack as usize }
-pub fn bss_end() -> usize { ebss as usize }
-pub fn kernel_end() -> usize { ekernel as usize }
+pub fn kernel_start() -> usize {
+    skernel as usize
+}
+pub fn text_start() -> usize {
+    stext as usize
+}
+pub fn text_end() -> usize {
+    etext as usize
+}
+pub fn rodata_start() -> usize {
+    srodata as usize
+}
+pub fn rodata_end() -> usize {
+    erodata as usize
+}
+pub fn data_start() -> usize {
+    sdata as usize
+}
+pub fn data_end() -> usize {
+    edata as usize
+}
+pub fn bss_start() -> usize {
+    sbss as usize
+}
+pub fn bss_start_stackless() -> usize {
+    sbss_no_stack as usize
+}
+pub fn bss_end() -> usize {
+    ebss as usize
+}
+pub fn kernel_end() -> usize {
+    ekernel as usize
+}
 
 pub const APP_BASE_ADDR: usize = 0x80400000;
 pub const APP_SIZE_LIMIT: usize = 0x20000;

@@ -1,4 +1,4 @@
-.PHONY : all build run debug connect clean
+.PHONY : all build run debug connect fmt clean
 
 ARCH := riscv64gc-unknown-none-elf
 BUILD_TYPE := release
@@ -36,6 +36,9 @@ debug:
 
 connect:
 	@$(GDB) $(GDB_FLAGS)
+
+fmt:
+	@$(CARGO) fmt
 
 clean:
 	@$(CARGO) clean

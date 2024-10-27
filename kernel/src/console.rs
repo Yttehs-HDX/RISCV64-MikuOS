@@ -1,5 +1,5 @@
-use core::fmt::{Arguments, Write};
 use crate::sbi;
+use core::fmt::{Arguments, Write};
 
 pub fn print(args: Arguments) {
     Console.write_fmt(args).unwrap();

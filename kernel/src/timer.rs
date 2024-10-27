@@ -1,7 +1,7 @@
-use core::ops;
-use alloc::string::String;
-use alloc::format;
 use crate::{config::CLOCK_FREQ, sbi};
+use alloc::format;
+use alloc::string::String;
+use core::ops;
 
 const MILLIS_PER_SEC: usize = 1_000;
 const MICRO_PER_SEC: usize = 1_000_000;

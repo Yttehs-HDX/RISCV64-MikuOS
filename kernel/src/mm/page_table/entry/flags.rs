@@ -15,13 +15,29 @@ bitflags! {
 }
 
 impl PTEFlags {
-    pub fn is_valid(&self) -> bool { self.contains(PTEFlags::V) }
-    pub fn is_readable(&self) -> bool { self.contains(PTEFlags::R) }
-    pub fn is_writable(&self) -> bool { self.contains(PTEFlags::W) }
-    pub fn is_executable(&self) -> bool { self.contains(PTEFlags::X) }
-    pub fn is_user(&self) -> bool { self.contains(PTEFlags::U) }
-    pub fn is_global(&self) -> bool { self.contains(PTEFlags::G) }
-    pub fn is_accessed(&self) -> bool { self.contains(PTEFlags::A) }
-    pub fn is_dirty(&self) -> bool { self.contains(PTEFlags::D) }
+    pub fn is_valid(&self) -> bool {
+        self.contains(PTEFlags::V)
+    }
+    pub fn is_readable(&self) -> bool {
+        self.contains(PTEFlags::R)
+    }
+    pub fn is_writable(&self) -> bool {
+        self.contains(PTEFlags::W)
+    }
+    pub fn is_executable(&self) -> bool {
+        self.contains(PTEFlags::X)
+    }
+    pub fn is_user(&self) -> bool {
+        self.contains(PTEFlags::U)
+    }
+    pub fn is_global(&self) -> bool {
+        self.contains(PTEFlags::G)
+    }
+    pub fn is_accessed(&self) -> bool {
+        self.contains(PTEFlags::A)
+    }
+    pub fn is_dirty(&self) -> bool {
+        self.contains(PTEFlags::D)
+    }
 }
 // region PTEFlags end

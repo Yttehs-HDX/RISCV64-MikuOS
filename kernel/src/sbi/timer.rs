@@ -1,5 +1,5 @@
-use riscv::register::time;
 use super::sbi_call;
+use riscv::register::time;
 
 const SBI_SET_TIMER: usize = 0;
 

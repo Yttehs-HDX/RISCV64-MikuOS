@@ -1,7 +1,10 @@
 pub use map_permission::*;
 pub use map_type::*;
 
-use crate::{mm::{alloc_ppn_tracker, PPNTracker, PTEFlags, PageTable, PhysPageNum, VirtAddr, VirtPageNum},util::SimpleRange};
+use crate::{
+    mm::{alloc_ppn_tracker, PPNTracker, PTEFlags, PageTable, PhysPageNum, VirtAddr, VirtPageNum},
+    util::SimpleRange,
+};
 use alloc::collections::btree_map::BTreeMap;
 
 mod map_permission;
