@@ -2,7 +2,7 @@ pub use entry::*;
 
 use crate::util::StepByOne;
 
-use super::{alloc_ppn_tracker, ppn_allocator, PPNTracker, PhysPageNum, VirtAddr, VirtPageNum, SV39_PPN_BITS};
+use super::{alloc_ppn_tracker, PPNTracker, PhysPageNum, VirtAddr, VirtPageNum, SV39_PPN_BITS};
 use alloc::vec::Vec;
 
 mod entry;
@@ -19,10 +19,14 @@ pub fn translate_bype_buffer(satp: usize, ptr: *const u8, len: usize) -> Vec<&'s
         let current_ppn = page_table.tranlate(vpn).unwrap().ppn();
         vpn.step();
         let right_va = vpn.to_va().min(end_va);
-        if right_va.aligned() { // more than one page
+        if right_va.aligned() {
+            // more than one page
             buffer.push(&mut current_ppn.get_bytes_array()[left_va.page_offset()..]);
-        } else { // less than one page
-            buffer.push(&mut current_ppn.get_bytes_array()[left_va.page_offset()..right_va.page_offset()]);
+        } else {
+            // less than one page
+            buffer.push(
+                &mut current_ppn.get_bytes_array()[left_va.page_offset()..right_va.page_offset()],
+            );
         }
 
         current_va = right_va;
