@@ -11,16 +11,16 @@ bitflags! {
 }
 
 impl MapPermission {
-    pub fn is_readable(self) -> bool {
+    pub fn is_readable(&self) -> bool {
         self.contains(Self::R)
     }
-    pub fn is_writable(self) -> bool {
+    pub fn is_writable(&self) -> bool {
         self.contains(Self::W)
     }
-    pub fn is_executable(self) -> bool {
+    pub fn is_executable(&self) -> bool {
         self.contains(Self::X)
     }
-    pub fn is_user(self) -> bool {
+    pub fn is_user(&self) -> bool {
         self.contains(Self::U)
     }
 }
