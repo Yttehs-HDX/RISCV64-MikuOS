@@ -55,6 +55,10 @@ impl StepByOne for VirtPageNum {
 }
 
 impl VirtPageNum {
+    pub fn to_va(&self) -> VirtAddr {
+        VirtAddr(self.0 << SV39_OFFSET_BITS)
+    }
+
     pub fn indexes(&self) -> [usize; SV39_VPN_NUM] {
         let mut vpn = self.0;
         let mut idxs = [0usize; SV39_VPN_NUM];
