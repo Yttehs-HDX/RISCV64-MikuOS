@@ -16,28 +16,28 @@ bitflags! {
 
 impl PTEFlags {
     pub fn is_valid(&self) -> bool {
-        self.contains(PTEFlags::V)
+        self.contains(Self::V)
     }
     pub fn is_readable(&self) -> bool {
-        self.contains(PTEFlags::R)
+        self.contains(Self::R)
     }
     pub fn is_writable(&self) -> bool {
-        self.contains(PTEFlags::W)
+        self.contains(Self::W)
     }
     pub fn is_executable(&self) -> bool {
-        self.contains(PTEFlags::X)
+        self.contains(Self::X)
     }
     pub fn is_user(&self) -> bool {
-        self.contains(PTEFlags::U)
+        self.contains(Self::U)
     }
     pub fn is_global(&self) -> bool {
-        self.contains(PTEFlags::G)
+        self.contains(Self::G)
     }
     pub fn is_accessed(&self) -> bool {
-        self.contains(PTEFlags::A)
+        self.contains(Self::A)
     }
     pub fn is_dirty(&self) -> bool {
-        self.contains(PTEFlags::D)
+        self.contains(Self::D)
     }
 }
 // region PTEFlags end
