@@ -1,42 +1,50 @@
-.altmacro
-.macro SAVE_SN n
-    sd s\n, (\n + 2) * 8(a0)
-.endm
-.macro LOAD_SN n
-    ld s\n, (\n + 2) * 8(a1)
-.endm
+    .altmacro
+    .macro SAVE_SN n
+        sd s\n, (\n + 2) * 8(a0)
+    .endm
+    .macro LOAD_SN n
+        ld s\n, (\n + 2) * 8(a1)
+    .endm
 
     .section .text
     .globl __switch
-__switch:                   // fn __swicth(current_task_cx: *mut TaskContext, next_task_cx: *const TaskContext)
-                            //     a0 = current_task_cx;
-                            //     a1 = next_task_cx;
-    // save current_task
-    // save sp (kernel_sp)
-    sd sp, 1 * 8(a0)        //     current_task_cx.sp = sp;
+
+// save the context of current_task
+// restore the context of next_task
+__switch:
+    // pub fn __swicth(
+    //    a0: *TaskContext,
+    //    a1: *TaskContext,
+    // )
+
+    // a0 -> current_task_cx_ptr, a1 -> next_task_cx_ptr
+
+    // save current TaskContext
+    // save sp
+    sd sp, 1 * 8(a0)
 
     // save ra
-    sd ra, 0 * 8(a0)        //     current_task_cx.ra = ra;
+    sd ra, 0 * 8(a0)
 
     // save s registers
-    .set n, 0               //     for n in 0..12
+    .set n, 0
     .rept 12
-        SAVE_SN %n          //         current_task_cx.s[n] = s(n);
+        SAVE_SN %n
         .set n, n + 1
     .endr
 
-    // restore next_task
+    // restore next TaskContext
     // restore s registers
-    .set n, 0               //     for n in 0..12
+    .set n, 0
     .rept 12
-        LOAD_SN %n          //         s(n) = next_task_cx.s[n];
+        LOAD_SN %n
         .set n, n + 1
     .endr
 
     // restore ra
-    ld ra, 0 * 8(a1)        //     ra = next_task_cx.ra;
+    ld ra, 0 * 8(a1)
 
     // restore sp
-    ld sp, 1 * 8(a1)        //     sp = next_task_cx.sp;
+    ld sp, 1 * 8(a1)
 
-    ret                     //     return
+    ret
