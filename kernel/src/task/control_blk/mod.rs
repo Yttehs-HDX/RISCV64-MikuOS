@@ -21,7 +21,7 @@ impl TaskControlBlock {
         let kernel_stack = allocator::alloc_kernel_stack();
         let user_stack = allocator::alloc_user_stack();
         let trap_cx = TrapContext::new(app.base_addr(), user_stack.get_sp(), kernel_stack.get_sp());
-        let task_cx = TaskContext::goto_restore(trap_cx.get_ptr_from_sp() as usize);
+        let task_cx = TaskContext::goto_restore(trap_cx.get_ptr_in_ksp() as usize);
         Self {
             task_cx,
             kernel_stack,

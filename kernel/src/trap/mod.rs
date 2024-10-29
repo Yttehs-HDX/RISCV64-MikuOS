@@ -54,5 +54,5 @@ pub fn trap_handler(cx: &mut TrapContext) -> &TrapContext {
 
 extern "C" {
     pub fn __save_trap();
-    pub fn __restore_trap();
+    pub fn __restore_trap(trap_cx_ptr: *const TrapContext, user_satp: usize);
 }
