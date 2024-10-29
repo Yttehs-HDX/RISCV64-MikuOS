@@ -88,8 +88,9 @@ __restore_trap:
     sfence.vma
     // now: satp -> UserSpace
 
+    csrw sscratch, a0
     mv sp, a0
-    // sp -> *TrapContext in UserSpace
+    // sp -> *TrapContext in UserSpace, ssratch -> *TrapContext in UserSpace
 
     // restore sstatus
     ld t0, 32 * 8(sp)
