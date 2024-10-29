@@ -11,6 +11,13 @@ SECTIONS {
     stext = .;
     .text : {
         *(.text.entry)
+
+        # trampoline costs a page (4096 bits)
+        . = ALIGN(4K);
+        strampoline = .;
+        *(.text.trampoline)
+        . = ALIGN(4K);
+
         *(.text .text.*)
         *(.stext .stext.*)
     }

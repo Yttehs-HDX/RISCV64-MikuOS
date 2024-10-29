@@ -6,7 +6,7 @@
         ld x\n, \n * 8(sp)
     .endm
 
-    .section .text
+    .section .text.trampoline
     .globl __save_trap
     .globl __restore_trap
     .align 2 // 4 bytes
