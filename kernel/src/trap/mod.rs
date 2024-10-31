@@ -1,5 +1,5 @@
-use crate::{syscall, task, timer};
-use core::arch::global_asm;
+use crate::{syscall, task, timer, USER_TRAMPOLINE, USER_TRAP_CX};
+use core::arch::{asm, global_asm};
 use log::{debug, error};
 use riscv::register::{
     scause::{self, Exception, Interrupt, Trap},
@@ -14,7 +14,7 @@ mod context;
 global_asm!(include_str!("trap.S"));
 
 pub fn init_trap() {
-    unsafe { stvec::write(__save_trap as usize, TrapMode::Direct) };
+    set_kernel_trap_entry();
 }
 
 pub fn enable_timer_interrupt() {
@@ -23,19 +23,20 @@ pub fn enable_timer_interrupt() {
 }
 
 #[no_mangle]
-pub fn trap_handler(cx: &mut TrapContext) -> &TrapContext {
+pub fn trap_handler(cx: &mut TrapContext) -> ! {
     let stval = stval::read();
     let scause = scause::read();
     match scause.cause() {
         Trap::Exception(Exception::UserEnvCall) => {
             debug!("Ecall from U-mode @ {:#x}", cx.sepc);
+            // move to next instruction
             cx.sepc += 4;
             cx.x[10] = syscall::syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]) as usize;
-            cx
+            trap_return();
         }
         Trap::Interrupt(Interrupt::SupervisorTimer) => {
             timer::set_next_trigger();
-            task::yield_handler();
+            syscall::sys_yield();
         }
         Trap::Exception(Exception::IllegalInstruction) => {
             error!("Illegal instruction @ {:#x}, badaddr {:#x}", cx.sepc, stval);
@@ -52,7 +53,36 @@ pub fn trap_handler(cx: &mut TrapContext) -> &TrapContext {
     }
 }
 
+#[no_mangle]
+pub fn trap_return() -> ! {
+    set_user_trap_entry();
+    let trap_cx_ptr = USER_TRAP_CX;
+    let user_satp = task::current_user_satp();
+    let restore_trap_va = __restore_trap as usize - __save_trap as usize + USER_TRAMPOLINE;
+    unsafe {
+        asm!(
+            "fence.i",
+            "jr {restore_trap}", restore_trap = in(reg) restore_trap_va,
+            in("a0") trap_cx_ptr,
+            in("a1") user_satp,
+            options(noreturn)
+        )
+    }
+}
+
+fn set_kernel_trap_entry() {
+    unsafe {
+        stvec::write(__save_trap as usize, TrapMode::Direct);
+    }
+}
+
+fn set_user_trap_entry() {
+    unsafe {
+        stvec::write(USER_TRAMPOLINE, TrapMode::Direct);
+    }
+}
+
 extern "C" {
-    pub fn __save_trap();
-    pub fn __restore_trap(trap_cx_ptr: *const TrapContext, user_satp: usize);
+    fn __save_trap();
+    fn __restore_trap(trap_cx_ptr: *const TrapContext, user_satp: usize);
 }

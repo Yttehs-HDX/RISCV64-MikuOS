@@ -17,10 +17,10 @@ impl TaskContext {
         }
     }
 
-    pub fn goto_restore(trap_cx: usize) -> Self {
+    pub fn goto_restore(trap_cx_ptr: usize) -> Self {
         Self {
-            ra: trap::__restore_trap as usize,
-            sp: trap_cx,
+            ra: trap::trap_handler as usize,
+            sp: trap_cx_ptr,
             s: [0; 12],
         }
     }
