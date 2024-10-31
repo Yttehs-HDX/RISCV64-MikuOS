@@ -16,29 +16,56 @@ pub fn get_app(name: &str) -> Option<&App> {
 }
 
 lazy_static! {
-    static ref APPS: [App; APP_NUM] = [
-        App::new("test_print", TEST_PRINT),
-        App::new("test_sret", TEST_SRET),
-        App::new("test_page_fault", TEST_PAGE_FAULT),
-        App::new("test_yield", TEST_YIELD),
-    ];
+    static ref APPS: [App; APP_NUM] = {
+        let mut no = 0;
+        [
+            App::new(no, "test_print", TEST_PRINT),
+            App::new(
+                {
+                    no += 1;
+                    no
+                },
+                "test_sret",
+                TEST_SRET,
+            ),
+            App::new(
+                {
+                    no += 1;
+                    no
+                },
+                "test_page_fault",
+                TEST_PAGE_FAULT,
+            ),
+            App::new(
+                {
+                    no += 1;
+                    no
+                },
+                "test_yield",
+                TEST_YIELD,
+            ),
+        ]
+    };
 }
 
 // region App begin
 pub struct App {
+    id: usize,
     name: &'static str,
     bin: &'static [u8],
 }
 
 impl App {
-    pub fn new(name: &'static str, bin: &'static [u8]) -> Self {
-        Self { name, bin }
+    pub fn new(id: usize, name: &'static str, bin: &'static [u8]) -> Self {
+        Self { id, name, bin }
     }
 
+    pub fn id(&self) -> usize {
+        self.id
+    }
     pub fn name(&self) -> &'static str {
         self.name
     }
-
     pub fn bin(&self) -> &'static [u8] {
         self.bin
     }
