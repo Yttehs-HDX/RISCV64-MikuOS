@@ -10,4 +10,10 @@ pub struct MemorySet {
     pub page_table: PageTable,
     pub areas: Vec<MapArea>,
 }
+
+impl MemorySet {
+    pub fn get_satp(&self) -> usize {
+        self.page_table.as_satp()
+    }
+}
 // region MemorySet end

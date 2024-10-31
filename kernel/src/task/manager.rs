@@ -99,7 +99,7 @@ impl TaskManager {
     fn get_current_user_satp(&self) -> usize {
         let inner = self.inner.shared_access();
         let running_task = inner.running_task.as_ref().unwrap();
-        running_task.memory_set.page_table.as_satp()
+        running_task.memory_set.get_satp()
     }
 }
 
