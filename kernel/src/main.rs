@@ -2,6 +2,7 @@
 #![no_main]
 #![feature(alloc_error_handler)]
 
+use config::*;
 use core::arch::global_asm;
 use log::trace;
 
@@ -61,35 +62,15 @@ fn os_end() -> ! {
 }
 
 fn clear_bss() {
-    (config::sbss_no_stack as usize..config::ebss as usize).for_each(|addr| unsafe {
+    (*SBSS_NO_STACK..*EBSS).for_each(|addr| unsafe {
         (addr as *mut u8).write_volatile(0);
     });
 }
 
 fn print_sections() {
-    trace!(
-        " KERNEL [{:#x}, {:#x})",
-        config::skernel as usize,
-        config::ekernel as usize
-    );
-    trace!(
-        ".text   [{:#x}, {:#x})",
-        config::stext as usize,
-        config::etext as usize
-    );
-    trace!(
-        ".rodata [{:#x}, {:#x})",
-        config::srodata as usize,
-        config::erodata as usize
-    );
-    trace!(
-        ".data   [{:#x}, {:#x})",
-        config::sdata as usize,
-        config::edata as usize
-    );
-    trace!(
-        ".bss    [{:#x}, {:#x})",
-        config::sbss as usize,
-        config::ebss as usize
-    );
+    trace!(" KERNEL [{:#x}, {:#x})", *SKERNEL, *EKERNEL);
+    trace!(".text   [{:#x}, {:#x})", *STEXT, *ETEXT);
+    trace!(".rodata [{:#x}, {:#x})", *SRODATA, *ERODATA);
+    trace!(".data   [{:#x}, {:#x})", *SDATA, *EDATA);
+    trace!(".bss    [{:#x}, {:#x})", *SBSS, *EBSS);
 }

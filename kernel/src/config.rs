@@ -24,20 +24,35 @@ pub const SV39_PAGE_SIZE: usize = 1 << 12; // 4096
 pub const SV39_OFFSET_BITS: usize = 12;
 pub const MEMORY_END: usize = 0x80800000;
 lazy_static! {
-    pub static ref PA_BEGIN: usize = ekernel as usize;
+    pub static ref PA_START: usize = *EKERNEL;
 }
 pub const PA_END: usize = MEMORY_END - MAX_TASK_NUM * (KERNEL_STACK_SIZE + SV39_PAGE_SIZE);
 
+// sections boundary
+lazy_static! {
+    pub static ref SKERNEL: usize = skernel as usize;
+    pub static ref STEXT: usize = stext as usize;
+    pub static ref ETEXT: usize = etext as usize;
+    pub static ref SRODATA: usize = srodata as usize;
+    pub static ref ERODATA: usize = erodata as usize;
+    pub static ref SDATA: usize = sdata as usize;
+    pub static ref EDATA: usize = edata as usize;
+    pub static ref SBSS: usize = sbss as usize;
+    pub static ref SBSS_NO_STACK: usize = sbss_no_stack as usize;
+    pub static ref EBSS: usize = ebss as usize;
+    pub static ref EKERNEL: usize = ekernel as usize;
+}
+
 extern "C" {
-    pub fn skernel();
-    pub fn stext();
-    pub fn etext();
-    pub fn srodata();
-    pub fn erodata();
-    pub fn sdata();
-    pub fn edata();
-    pub fn sbss();
-    pub fn sbss_no_stack();
-    pub fn ebss();
-    pub fn ekernel();
+    fn skernel();
+    fn stext();
+    fn etext();
+    fn srodata();
+    fn erodata();
+    fn sdata();
+    fn edata();
+    fn sbss();
+    fn sbss_no_stack();
+    fn ebss();
+    fn ekernel();
 }
