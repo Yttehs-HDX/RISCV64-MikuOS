@@ -2,7 +2,6 @@ use crate::trap;
 
 // region TaskContext begin
 #[repr(C)]
-#[derive(Clone, Copy)]
 pub struct TaskContext {
     ra: usize,      // +0
     sp: usize,      // +1
