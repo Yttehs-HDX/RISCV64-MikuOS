@@ -3,7 +3,7 @@ pub use ppn_tracker::*;
 
 use super::{PhysAddr, PhysPageNum};
 use crate::{
-    config::{kernel_end, MEMORY_END},
+    config::{ekernel, MEMORY_END},
     sync::UPSafeCell,
 };
 use alloc::vec::Vec;
@@ -24,7 +24,7 @@ pub fn dealloc_ppn(ppn: PhysPageNum) {
 
 lazy_static! {
     static ref PPN_ALLOCATOR: UPSafeCell<PPNAllocator> =
-        unsafe { UPSafeCell::new(PPNAllocator::new(kernel_end(), MEMORY_END)) };
+        unsafe { UPSafeCell::new(PPNAllocator::new(ekernel as usize, MEMORY_END)) };
 }
 
 // region PPNAllocator begin

@@ -61,7 +61,7 @@ fn os_end() -> ! {
 }
 
 fn clear_bss() {
-    (config::bss_start_stackless()..config::bss_end()).for_each(|addr| unsafe {
+    (config::sbss_no_stack as usize..config::ebss as usize).for_each(|addr| unsafe {
         (addr as *mut u8).write_volatile(0);
     });
 }
@@ -69,27 +69,27 @@ fn clear_bss() {
 fn print_sections() {
     trace!(
         " KERNEL [{:#x}, {:#x})",
-        config::kernel_start(),
-        config::kernel_end()
+        config::skernel as usize,
+        config::ekernel as usize
     );
     trace!(
         ".text   [{:#x}, {:#x})",
-        config::text_start(),
-        config::text_end()
+        config::stext as usize,
+        config::etext as usize
     );
     trace!(
         ".rodata [{:#x}, {:#x})",
-        config::rodata_start(),
-        config::rodata_end()
+        config::srodata as usize,
+        config::erodata as usize
     );
     trace!(
         ".data   [{:#x}, {:#x})",
-        config::data_start(),
-        config::data_end()
+        config::sdata as usize,
+        config::edata as usize
     );
     trace!(
         ".bss    [{:#x}, {:#x})",
-        config::bss_start(),
-        config::bss_end()
+        config::sbss as usize,
+        config::ebss as usize
     );
 }

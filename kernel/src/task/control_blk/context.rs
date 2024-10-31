@@ -4,8 +4,8 @@ use crate::trap;
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct TaskContext {
-    ra: usize, // +0
-    sp: usize, // +1
+    ra: usize,      // +0
+    sp: usize,      // +1
     s: [usize; 12], // +2 ~ +13
 }
 

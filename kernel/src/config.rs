@@ -1,37 +1,3 @@
-pub fn kernel_start() -> usize {
-    skernel as usize
-}
-pub fn text_start() -> usize {
-    stext as usize
-}
-pub fn text_end() -> usize {
-    etext as usize
-}
-pub fn rodata_start() -> usize {
-    srodata as usize
-}
-pub fn rodata_end() -> usize {
-    erodata as usize
-}
-pub fn data_start() -> usize {
-    sdata as usize
-}
-pub fn data_end() -> usize {
-    edata as usize
-}
-pub fn bss_start() -> usize {
-    sbss as usize
-}
-pub fn bss_start_stackless() -> usize {
-    sbss_no_stack as usize
-}
-pub fn bss_end() -> usize {
-    ebss as usize
-}
-pub fn kernel_end() -> usize {
-    ekernel as usize
-}
-
 #[deprecated]
 pub const APP_BASE_ADDR: usize = 0x80400000;
 #[deprecated]
@@ -60,15 +26,15 @@ pub const USER_TRAMPOLINE: usize = usize::MAX - SV39_PAGE_SIZE + 1;
 pub const USER_TRAP_CX: usize = USER_TRAMPOLINE - SV39_PAGE_SIZE;
 
 extern "C" {
-    fn skernel();
-    fn stext();
-    fn etext();
-    fn srodata();
-    fn erodata();
-    fn sdata();
-    fn edata();
-    fn sbss();
-    fn sbss_no_stack();
-    fn ebss();
-    fn ekernel();
+    pub fn skernel();
+    pub fn stext();
+    pub fn etext();
+    pub fn srodata();
+    pub fn erodata();
+    pub fn sdata();
+    pub fn edata();
+    pub fn sbss();
+    pub fn sbss_no_stack();
+    pub fn ebss();
+    pub fn ekernel();
 }
