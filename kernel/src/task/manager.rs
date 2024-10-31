@@ -2,7 +2,7 @@ use super::TaskControlBlock;
 use crate::{
     app::App,
     sync::UPSafeCell,
-    task::{switch, TaskContext, __switch},
+    task::{TaskContext, __switch},
 };
 use alloc::collections::vec_deque::VecDeque;
 use lazy_static::lazy_static;
@@ -62,10 +62,7 @@ impl TaskManager {
 
     fn exit_current_task(&self) {
         let mut inner = self.inner.exclusive_access();
-        let tcb = inner.running_tasks.pop_front();
-        if let Some(mut tcb) = tcb {
-            tcb.drop();
-        }
+        inner.running_tasks.pop_front();
     }
 
     fn get_task_num(&self, status: TaskStatus) -> usize {
@@ -86,11 +83,12 @@ impl TaskManager {
 
     fn _run_first_task(&self) -> ! {
         let mut inner = self.inner.exclusive_access();
-        let tcb = inner.waiting_tasks.pop_front().unwrap();
-        inner.running_tasks.push_back(tcb);
+        let next_tcb = inner.waiting_tasks.pop_front().unwrap();
+        let next_task_cx = next_tcb.task_cx;
+        inner.running_tasks.push_back(next_tcb);
         drop(inner);
         unsafe {
-            __switch(&mut TaskContext::empty(), &tcb.task_cx);
+            __switch(&mut TaskContext::empty(), &next_task_cx);
         }
         unreachable!()
     }
@@ -109,12 +107,14 @@ impl TaskManager {
 
         let mut inner = self.inner.exclusive_access();
         let new_tcb = inner.waiting_tasks.pop_front().unwrap();
-        let mut old_tcb = inner.running_tasks.pop_front().unwrap();
+        let old_tcb = inner.running_tasks.pop_front().unwrap();
+        let mut old_task_cx = old_tcb.task_cx;
+        let next_task_cx = new_tcb.task_cx;
         inner.running_tasks.push_back(new_tcb);
         inner.waiting_tasks.push_back(old_tcb);
         drop(inner);
         unsafe {
-            switch(&mut old_tcb, &new_tcb);
+            __switch(&mut old_task_cx, &next_task_cx);
         }
         unreachable!()
     }
