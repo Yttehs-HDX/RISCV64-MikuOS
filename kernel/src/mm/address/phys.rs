@@ -62,7 +62,7 @@ impl PhysPageNum {
         unsafe {
             core::slice::from_raw_parts_mut(
                 pa.0 as *mut PageTableEntry,
-                SV39_PAGE_SIZE / SV39_PTE_BITS,
+                SV39_PAGE_SIZE / (SV39_PTE_BITS / 8),
             )
         }
     }

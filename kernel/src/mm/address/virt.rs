@@ -63,7 +63,7 @@ impl VirtPageNum {
         let mut vpn = self.0;
         let mut idxs = [0usize; SV39_VPN_NUM];
         for i in (0..SV39_VPN_NUM).rev() {
-            idxs[i] = vpn & SV39_VPN_PER_BITS;
+            idxs[i] = vpn & ((1 << SV39_VPN_PER_BITS) - 1);
             vpn >>= SV39_VPN_PER_BITS;
         }
         idxs
