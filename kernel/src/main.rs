@@ -30,12 +30,12 @@ mod util;
 #[no_mangle]
 fn rust_main() -> ! {
     clear_bss();
-    mm::init();
     util::logger_init();
+    print_sections();
+    allocator::init_heap();
+    mm::init();
     trap::init_trap();
     trap::enable_timer_interrupt();
-    allocator::init_heap();
-    print_sections();
     println!("[Kernel] initialized");
     os_start();
     sbi::sbi_shutdown_success();
