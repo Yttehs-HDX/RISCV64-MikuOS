@@ -48,20 +48,19 @@ impl PPNAllocator {
         if let Some(ppn) = self.recycled_frame.pop() {
             return Some(PhysPageNum(ppn));
         }
-
-        if self.current_ppn < self.end_ppn {
-            let ppn = self.current_ppn;
-            self.current_ppn += 1;
-            return Some(PhysPageNum(ppn));
+        if self.current_ppn == self.end_ppn {
+            return None;
         }
 
-        None
+        let ppn = self.current_ppn;
+        self.current_ppn += 1;
+        return Some(PhysPageNum(ppn));
     }
 
     fn dealloc(&mut self, ppn: PhysPageNum) {
         let ppn = ppn.0;
         assert!(
-            ppn < self.current_ppn || self.recycled_frame.contains(&ppn),
+            ppn < self.current_ppn || !self.recycled_frame.contains(&ppn),
             "PPNAllocator: dealloc an unallocated frame"
         );
         self.recycled_frame.push(ppn);
