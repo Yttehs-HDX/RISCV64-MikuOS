@@ -12,6 +12,10 @@ use riscv::register::satp;
 
 mod map_area;
 
+pub fn activate_kernel_space() {
+    KERNEL_SPACE.activate();
+}
+
 lazy_static! {
     static ref KERNEL_SPACE: MemorySet = MemorySet::new_kernel();
 }
@@ -90,6 +94,14 @@ impl MemorySet {
         ));
 
         memory_set
+    }
+
+    pub fn activate(&self) {
+        let satp = self.get_satp();
+        unsafe {
+            satp::write(satp);
+            asm!("sfence.vma");
+        }
     }
 
     pub fn get_satp(&self) -> usize {

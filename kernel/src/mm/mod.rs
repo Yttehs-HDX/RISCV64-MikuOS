@@ -7,3 +7,7 @@ mod address;
 mod memory_set;
 mod page_table;
 mod ppn_allocator;
+
+pub fn init() {
+    memory_set::activate_kernel_space();
+}

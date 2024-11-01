@@ -30,6 +30,7 @@ mod util;
 #[no_mangle]
 fn rust_main() -> ! {
     clear_bss();
+    mm::init();
     util::logger_init();
     trap::init_trap();
     trap::enable_timer_interrupt();
