@@ -1,10 +1,11 @@
 use lazy_static::lazy_static;
+use log::trace;
 pub use map_area::*;
 
 use super::{PTEFlags, PageTable, PhysAddr, VirtAddr};
 use crate::{
     EBSS, EDATA, ERODATA, ETEXT, PA_END, PA_START, SBSS, SDATA, SRODATA, STEXT, STRAMPOLINE,
-    TRAMPOLINE,
+    SV39_PAGE_SIZE, TRAMPOLINE,
 };
 use alloc::vec::Vec;
 use core::arch::asm;
@@ -34,13 +35,15 @@ impl MemorySet {
         }
     }
 
-    fn insert_area(&mut self, area: MapArea) {
+    fn insert_area(&mut self, mut area: MapArea) {
+        area.map(&mut self.page_table);
         self.areas.push(area);
     }
 
-    fn inser_area_with_data(&mut self, area: MapArea, data: &[u8]) {
+    fn inser_area_with_data(&mut self, mut area: MapArea, data: &[u8]) {
         area.insert_raw_data(data, &mut self.page_table);
-        self.insert_area(area);
+        area.map(&mut self.page_table);
+        self.areas.push(area);
     }
 
     fn map_trampoline(&mut self) {
@@ -56,10 +59,17 @@ impl MemorySet {
     pub fn new_kernel() -> Self {
         let mut memory_set = Self::empty();
 
-        // map trampoline
+        trace!(
+            "MemorySet: map trampoline [{:#x}, {:#x}) -> [{:#x}, {:#x})",
+            TRAMPOLINE - SV39_PAGE_SIZE,
+            TRAMPOLINE,
+            *STRAMPOLINE - SV39_PAGE_SIZE,
+            *STRAMPOLINE
+        );
         memory_set.map_trampoline();
 
         // map sections
+        trace!("MemorySet: map .text [{:#x}, {:#x})", *STEXT, *ETEXT);
         memory_set.insert_area(MapArea::new(
             VirtAddr(*STEXT),
             VirtAddr(*ETEXT),
