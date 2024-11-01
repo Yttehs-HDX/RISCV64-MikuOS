@@ -1,5 +1,3 @@
-use lazy_static::lazy_static;
-use log::trace;
 pub use map_area::*;
 
 use super::{PTEFlags, PageTable, PhysAddr, VirtAddr};
@@ -9,6 +7,8 @@ use crate::{
 };
 use alloc::vec::Vec;
 use core::arch::asm;
+use lazy_static::lazy_static;
+use log::trace;
 use riscv::register::satp;
 
 mod map_area;
