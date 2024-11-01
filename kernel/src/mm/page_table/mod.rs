@@ -1,9 +1,9 @@
 pub use entry::*;
 
 use crate::util::StepByOne;
-
 use super::{alloc_ppn_tracker, PPNTracker, PhysPageNum, VirtAddr, VirtPageNum, SV39_PPN_BITS};
 use alloc::vec::Vec;
+use alloc::vec;
 
 mod entry;
 
@@ -42,10 +42,10 @@ pub struct PageTable {
 
 impl PageTable {
     pub fn new() -> Self {
-        let root_ppn = alloc_ppn_tracker().unwrap().ppn;
+        let root_ppn_tracker = alloc_ppn_tracker().unwrap();
         Self {
-            root_ppn,
-            ppn_tracker_list: Vec::new(),
+            root_ppn: root_ppn_tracker.ppn,
+            ppn_tracker_list: vec![root_ppn_tracker],
         }
     }
 
