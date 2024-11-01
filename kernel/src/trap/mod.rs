@@ -1,4 +1,4 @@
-use crate::{syscall, task, timer, USER_TRAMPOLINE, USER_TRAP_CX};
+use crate::{syscall, task, timer, TRAMPOLINE, USER_TRAP_CX};
 use core::arch::{asm, global_asm};
 use log::{debug, error};
 use riscv::register::{
@@ -58,7 +58,7 @@ pub fn trap_return() -> ! {
     set_user_trap_entry();
     let trap_cx_ptr = USER_TRAP_CX;
     let user_satp = task::current_user_satp();
-    let restore_trap_va = __restore_trap as usize - __save_trap as usize + USER_TRAMPOLINE;
+    let restore_trap_va = __restore_trap as usize - __save_trap as usize + TRAMPOLINE;
     unsafe {
         asm!(
             "fence.i",
@@ -78,7 +78,7 @@ fn set_kernel_trap_entry() {
 
 fn set_user_trap_entry() {
     unsafe {
-        stvec::write(USER_TRAMPOLINE, TrapMode::Direct);
+        stvec::write(TRAMPOLINE, TrapMode::Direct);
     }
 }
 

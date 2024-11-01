@@ -13,16 +13,16 @@ pub const fn KERNEL_STACK_POS(app_id: usize) -> (usize, usize) {
 }
 
 // trap
-pub const USER_TRAMPOLINE: usize = usize::MAX - SV39_PAGE_SIZE + 1;
-pub const USER_TRAP_CX: usize = USER_TRAMPOLINE - SV39_PAGE_SIZE;
+pub const TRAMPOLINE: usize = usize::MAX - SV39_PAGE_SIZE + 1;
+pub const USER_TRAP_CX: usize = TRAMPOLINE - SV39_PAGE_SIZE;
 
 // heap
 pub const KERNEL_HEAP_SIZE: usize = 0x20000;
 
 // memory mapping
+pub use crate::board::MEMORY_END;
 pub const SV39_PAGE_SIZE: usize = 1 << 12; // 4096
 pub const SV39_OFFSET_BITS: usize = 12;
-pub const MEMORY_END: usize = 0x80800000;
 lazy_static! {
     pub static ref PA_START: usize = *EKERNEL;
 }
@@ -32,6 +32,7 @@ pub const PA_END: usize = MEMORY_END - MAX_TASK_NUM * (KERNEL_STACK_SIZE + SV39_
 lazy_static! {
     pub static ref SKERNEL: usize = skernel as usize;
     pub static ref STEXT: usize = stext as usize;
+    pub static ref STRAMPOLINE: usize = strampoline as usize;
     pub static ref ETEXT: usize = etext as usize;
     pub static ref SRODATA: usize = srodata as usize;
     pub static ref ERODATA: usize = erodata as usize;
@@ -46,6 +47,7 @@ lazy_static! {
 extern "C" {
     fn skernel();
     fn stext();
+    fn strampoline();
     fn etext();
     fn srodata();
     fn erodata();
