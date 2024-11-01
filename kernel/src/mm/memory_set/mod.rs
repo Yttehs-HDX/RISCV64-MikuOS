@@ -1,10 +1,20 @@
+use lazy_static::lazy_static;
 pub use map_area::*;
 
 use super::{PTEFlags, PageTable, PhysAddr, VirtAddr};
-use crate::{EBSS, EDATA, ERODATA, ETEXT, SBSS, SDATA, SRODATA, STEXT, STRAMPOLINE, TRAMPOLINE};
+use crate::{
+    EBSS, EDATA, ERODATA, ETEXT, PA_END, PA_START, SBSS, SDATA, SRODATA, STEXT, STRAMPOLINE,
+    TRAMPOLINE,
+};
 use alloc::vec::Vec;
+use core::arch::asm;
+use riscv::register::satp;
 
 mod map_area;
+
+lazy_static! {
+    static ref KERNEL_SPACE: MemorySet = MemorySet::new_kernel();
+}
 
 // region MemorySet begin
 pub struct MemorySet {
@@ -67,6 +77,14 @@ impl MemorySet {
         memory_set.insert_area(MapArea::new(
             VirtAddr(*SBSS),
             VirtAddr(*EBSS),
+            MapType::Identity,
+            MapPermission::R | MapPermission::W,
+        ));
+
+        // map ppn range
+        memory_set.insert_area(MapArea::new(
+            VirtAddr(*PA_START),
+            VirtAddr(PA_END),
             MapType::Identity,
             MapPermission::R | MapPermission::W,
         ));
