@@ -69,25 +69,28 @@ impl MemorySet {
         memory_set.map_trampoline();
 
         // map sections
-        trace!("MemorySet: map .text [{:#x}, {:#x})", *STEXT, *ETEXT);
+        trace!("MemorySet: map .text      [{:#x}, {:#x})", *STEXT, *ETEXT);
         memory_set.insert_area(MapArea::new(
             VirtAddr(*STEXT),
             VirtAddr(*ETEXT),
             MapType::Identity,
             MapPermission::R | MapPermission::X,
         ));
+        trace!("MemorySet: map .rodata    [{:#x}, {:#x})", *SRODATA, *ERODATA);
         memory_set.insert_area(MapArea::new(
             VirtAddr(*SRODATA),
             VirtAddr(*ERODATA),
             MapType::Identity,
             MapPermission::R,
         ));
+        trace!("MemorySet: map .data      [{:#x}, {:#x})", *SDATA, *EDATA);
         memory_set.insert_area(MapArea::new(
             VirtAddr(*SDATA),
             VirtAddr(*EDATA),
             MapType::Identity,
             MapPermission::R | MapPermission::W,
         ));
+        trace!("MemorySet: map .bss       [{:#x}, {:#x})", *SBSS, *EBSS);
         memory_set.insert_area(MapArea::new(
             VirtAddr(*SBSS),
             VirtAddr(*EBSS),
@@ -96,6 +99,7 @@ impl MemorySet {
         ));
 
         // map ppn range
+        trace!("MemorySet: map phys space [{:#x}, {:#x})", *PA_START, PA_END);
         memory_set.insert_area(MapArea::new(
             VirtAddr(*PA_START),
             VirtAddr(PA_END),
