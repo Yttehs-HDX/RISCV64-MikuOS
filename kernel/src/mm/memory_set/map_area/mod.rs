@@ -13,10 +13,10 @@ mod map_type;
 
 // region MapArea begin
 pub struct MapArea {
-    vpn_range: SimpleRange<VirtPageNum>,
+    pub vpn_range: SimpleRange<VirtPageNum>,
     ppn_map: BTreeMap<VirtPageNum, PPNTracker>,
-    map_type: MapType,
-    map_perm: MapPermission,
+    pub map_type: MapType,
+    pub map_perm: MapPermission,
 }
 
 impl MapArea {

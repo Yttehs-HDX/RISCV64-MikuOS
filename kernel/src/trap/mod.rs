@@ -1,5 +1,5 @@
 use crate::{
-    config::{TRAMPOLINE, USER_TRAP_CX},
+    config::{TRAMPOLINE, TRAP_CX_PTR},
     syscall, task, timer,
 };
 use core::arch::{asm, global_asm};
@@ -59,7 +59,7 @@ pub fn trap_handler(cx: &mut TrapContext) -> ! {
 #[no_mangle]
 pub fn trap_return() -> ! {
     set_user_trap_entry();
-    let trap_cx_ptr = USER_TRAP_CX;
+    let trap_cx_ptr = TRAP_CX_PTR;
     let user_satp = task::current_user_satp();
     let restore_trap_va = __restore_trap as usize - __save_trap as usize + TRAMPOLINE;
     unsafe {

@@ -1,9 +1,12 @@
 pub use map_area::*;
 
 use super::{PTEFlags, PageTable, PhysAddr, VirtAddr};
-use crate::config::{
-    EBSS, EDATA, ERODATA, ETEXT, PA_END, PA_START, SBSS, SDATA, SRODATA, STEXT, STRAMPOLINE,
-    SV39_PAGE_SIZE, TRAMPOLINE,
+use crate::{
+    config::{
+        EBSS, EDATA, ERODATA, ETEXT, PA_END, PA_START, SBSS, SDATA, SRODATA, STEXT, STRAMPOLINE,
+        SV39_PAGE_SIZE, TRAMPOLINE, TRAP_CX_PTR, USER_STACK_BOTTOM,
+    },
+    mm::VirtPageNum,
 };
 use alloc::vec::Vec;
 use core::arch::asm;
@@ -53,18 +56,31 @@ impl MemorySet {
             PTEFlags::R | PTEFlags::X,
         );
     }
+
+    pub fn activate(&self) {
+        let satp = self.get_satp();
+        unsafe {
+            satp::write(satp);
+            asm!("sfence.vma");
+        }
+    }
+
+    pub fn get_satp(&self) -> usize {
+        self.page_table.as_satp()
+    }
 }
 
+// Kernel Space
 impl MemorySet {
     pub fn new_kernel() -> Self {
         let mut memory_set = Self::empty();
 
         trace!(
-            "MemorySet: map trampoline [{:#x}, {:#x}) -> [{:#x}, {:#x})",
-            TRAMPOLINE - SV39_PAGE_SIZE,
+            "MemorySet: map trampoline [{:#x}, {:#x}] -> [{:#x}, {:#x})",
             TRAMPOLINE,
-            *STRAMPOLINE - SV39_PAGE_SIZE,
-            *STRAMPOLINE
+            TRAMPOLINE - 1 + SV39_PAGE_SIZE,
+            *STRAMPOLINE,
+            *STRAMPOLINE + SV39_PAGE_SIZE
         );
         memory_set.map_trampoline();
 
@@ -117,17 +133,98 @@ impl MemorySet {
 
         memory_set
     }
+}
 
-    pub fn activate(&self) {
-        let satp = self.get_satp();
-        unsafe {
-            satp::write(satp);
-            asm!("sfence.vma");
+// User Space
+impl MemorySet {
+    pub fn from_elf(elf_data: &[u8]) -> Self {
+        use xmas_elf::{program::Type, ElfFile};
+        let mut memory_set = Self::empty();
+
+        // map trampoline
+        trace!(
+            "MemorySet: map trampoline [{:#x}, {:#x}] -> [{:#x}, {:#x})",
+            TRAMPOLINE,
+            TRAMPOLINE - 1 + SV39_PAGE_SIZE,
+            *STRAMPOLINE,
+            *STRAMPOLINE + SV39_PAGE_SIZE
+        );
+        memory_set.map_trampoline();
+
+        // handle elf
+        let elf = ElfFile::new(elf_data).unwrap();
+        let elf_header = elf.header;
+        let magic = elf_header.pt1.magic;
+        assert_eq!(magic, [0x7f, b'E', b'L', b'F'], "MemorySet: invalid elf");
+
+        // map elf program headers
+        let mut max_vpn = VirtPageNum(0);
+        let ph_count = elf_header.pt2.ph_count();
+        for i in 0..ph_count {
+            let ph = elf.program_header(i).unwrap();
+            if ph.get_type().unwrap() == Type::Load {
+                // read permission
+                let mut map_perm = MapPermission::U;
+                let ph_flags = ph.flags();
+                if ph_flags.is_read() {
+                    map_perm |= MapPermission::R;
+                }
+                if ph_flags.is_write() {
+                    map_perm |= MapPermission::W;
+                }
+                if ph_flags.is_execute() {
+                    map_perm |= MapPermission::X;
+                }
+
+                // map program header
+                let start_va = VirtAddr(ph.virtual_addr() as usize);
+                let end_va = VirtAddr(ph.virtual_addr() as usize + ph.mem_size() as usize);
+                let area = MapArea::new(start_va, end_va, MapType::Framed, map_perm);
+                max_vpn = area.vpn_range.end();
+                let elf_data =
+                    &elf.input[ph.offset() as usize..(ph.offset() + ph.file_size()) as usize];
+                memory_set.insert_area_with_data(area, elf_data);
+            }
         }
-    }
+        trace!("MemorySet: map elf ph [{:#x}, {:#x})", 0, max_vpn.0);
 
-    pub fn get_satp(&self) -> usize {
-        self.page_table.as_satp()
+        // map User Heap
+        let program_brk_va = max_vpn.to_va();
+        trace!("MemorySet: user program break at {:#x}", program_brk_va.0);
+        memory_set.insert_area(MapArea::new(
+            program_brk_va,
+            program_brk_va,
+            MapType::Framed,
+            MapPermission::U | MapPermission::R | MapPermission::W,
+        ));
+
+        // map User Stack
+        trace!(
+            "MemorySet: map User Stack [{:#x}, {:#x})",
+            USER_STACK_BOTTOM,
+            USER_STACK_BOTTOM + SV39_PAGE_SIZE
+        );
+        memory_set.insert_area(MapArea::new(
+            VirtAddr(USER_STACK_BOTTOM),
+            VirtAddr(USER_STACK_BOTTOM + SV39_PAGE_SIZE),
+            MapType::Framed,
+            MapPermission::U | MapPermission::R | MapPermission::W,
+        ));
+
+        // map Trap Context
+        trace!(
+            "MemorySet: map TrapContext [{:#x}, {:#x})",
+            TRAP_CX_PTR,
+            TRAP_CX_PTR + SV39_PAGE_SIZE
+        );
+        memory_set.insert_area(MapArea::new(
+            VirtAddr(TRAP_CX_PTR),
+            VirtAddr(TRAP_CX_PTR + SV39_PAGE_SIZE),
+            MapType::Framed,
+            MapPermission::R | MapPermission::W,
+        ));
+
+        memory_set
     }
 }
 // region MemorySet end
