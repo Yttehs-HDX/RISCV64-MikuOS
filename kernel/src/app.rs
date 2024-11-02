@@ -2,6 +2,7 @@ use lazy_static::lazy_static;
 
 // Before implementing file system, we use include_bytes! to load the binary of the app
 const APP_NUM: usize = 4;
+const APP_MAX_SIZE: usize = 0x20000;
 const TEST_PRINT: &[u8] =
     include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/01_test_print");
 const TEST_SRET: &[u8] =
@@ -48,16 +49,26 @@ lazy_static! {
     };
 }
 
+static ALIGNED_SPACES: [AlignedSpace; APP_NUM] = [AlignedSpace {
+    data: [0; APP_MAX_SIZE],
+}; APP_NUM];
+
 // region App begin
 pub struct App {
     id: usize,
     name: &'static str,
-    bin: &'static [u8],
+    bin: &'static AlignedSpace,
 }
 
 impl App {
     pub fn new(id: usize, name: &'static str, bin: &'static [u8]) -> Self {
-        Self { id, name, bin }
+        let mut aligned_space = ALIGNED_SPACES[id];
+        aligned_space.copy_data(bin);
+        Self {
+            id,
+            name,
+            bin: &ALIGNED_SPACES[id],
+        }
     }
 
     pub fn id(&self) -> usize {
@@ -67,7 +78,26 @@ impl App {
         self.name
     }
     pub fn bin(&self) -> &'static [u8] {
-        self.bin
+        &self.bin.get_data()
     }
 }
 // region App end
+
+// region AlignSpace begin
+#[repr(align(4096))]
+#[derive(Clone, Copy)]
+struct AlignedSpace {
+    data: [u8; APP_MAX_SIZE],
+}
+
+impl AlignedSpace {
+    pub fn copy_data(&mut self, data: &[u8]) {
+        self.data.fill(0);
+        self.data[..data.len()].copy_from_slice(data);
+    }
+
+    pub fn get_data(&self) -> &[u8] {
+        &self.data
+    }
+}
+// region AlignSpace end
