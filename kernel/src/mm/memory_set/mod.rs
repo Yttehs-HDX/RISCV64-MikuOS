@@ -3,7 +3,8 @@ pub use map_area::*;
 use super::{PTEFlags, PageTable, PageTableEntry, PhysAddr, VirtAddr};
 use crate::{
     config::{
-        EBSS, EDATA, ERODATA, ETEXT, PA_END, PA_START, SBSS, SDATA, SRODATA, STEXT, STRAMPOLINE, SV39_PAGE_SIZE, TRAMPOLINE, TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP
+        EBSS, EDATA, ERODATA, ETEXT, PA_END, PA_START, SBSS, SDATA, SRODATA, STEXT, STRAMPOLINE,
+        SV39_PAGE_SIZE, TRAMPOLINE, TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP,
     },
     mm::VirtPageNum,
     sync::UPSafeCell,
