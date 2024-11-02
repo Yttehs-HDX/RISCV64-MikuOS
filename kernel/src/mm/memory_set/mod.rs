@@ -1,7 +1,7 @@
 pub use map_area::*;
 
 use super::{PTEFlags, PageTable, PhysAddr, VirtAddr};
-use crate::{
+use crate::config::{
     EBSS, EDATA, ERODATA, ETEXT, PA_END, PA_START, SBSS, SDATA, SRODATA, STEXT, STRAMPOLINE,
     SV39_PAGE_SIZE, TRAMPOLINE,
 };
@@ -76,7 +76,11 @@ impl MemorySet {
             MapType::Identity,
             MapPermission::R | MapPermission::X,
         ));
-        trace!("MemorySet: map .rodata    [{:#x}, {:#x})", *SRODATA, *ERODATA);
+        trace!(
+            "MemorySet: map .rodata    [{:#x}, {:#x})",
+            *SRODATA,
+            *ERODATA
+        );
         memory_set.insert_area(MapArea::new(
             VirtAddr(*SRODATA),
             VirtAddr(*ERODATA),
@@ -99,7 +103,11 @@ impl MemorySet {
         ));
 
         // map ppn range
-        trace!("MemorySet: map phys space [{:#x}, {:#x})", *PA_START, PA_END);
+        trace!(
+            "MemorySet: map phys space [{:#x}, {:#x})",
+            *PA_START,
+            PA_END
+        );
         memory_set.insert_area(MapArea::new(
             VirtAddr(*PA_START),
             VirtAddr(PA_END),

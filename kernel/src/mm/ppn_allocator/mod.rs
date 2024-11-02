@@ -1,7 +1,10 @@
 pub use ppn_tracker::*;
 
 use super::{PhysAddr, PhysPageNum};
-use crate::{sync::UPSafeCell, PA_END, PA_START};
+use crate::{
+    config::{PA_END, PA_START},
+    sync::UPSafeCell,
+};
 use alloc::vec::Vec;
 use lazy_static::lazy_static;
 use log::trace;

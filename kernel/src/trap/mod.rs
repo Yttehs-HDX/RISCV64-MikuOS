@@ -1,4 +1,7 @@
-use crate::{syscall, task, timer, TRAMPOLINE, USER_TRAP_CX};
+use crate::{
+    config::{TRAMPOLINE, USER_TRAP_CX},
+    syscall, task, timer,
+};
 use core::arch::{asm, global_asm};
 use log::{debug, error};
 use riscv::register::{

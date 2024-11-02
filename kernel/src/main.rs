@@ -2,9 +2,7 @@
 #![no_main]
 #![feature(alloc_error_handler)]
 
-use config::*;
 use core::arch::global_asm;
-use log::trace;
 
 extern crate alloc;
 
@@ -31,7 +29,6 @@ mod util;
 fn rust_main() -> ! {
     clear_bss();
     util::logger_init();
-    print_sections();
     allocator::init_heap();
     mm::init();
     trap::init_trap();
@@ -62,15 +59,7 @@ fn os_end() -> ! {
 }
 
 fn clear_bss() {
-    (*SBSS_NO_STACK..*EBSS).for_each(|addr| unsafe {
+    (*config::SBSS_NO_STACK..*config::EBSS).for_each(|addr| unsafe {
         (addr as *mut u8).write_volatile(0);
     });
-}
-
-fn print_sections() {
-    trace!(" KERNEL [{:#x}, {:#x})", *SKERNEL, *EKERNEL);
-    trace!(".text   [{:#x}, {:#x})", *STEXT, *ETEXT);
-    trace!(".rodata [{:#x}, {:#x})", *SRODATA, *ERODATA);
-    trace!(".data   [{:#x}, {:#x})", *SDATA, *EDATA);
-    trace!(".bss    [{:#x}, {:#x})", *SBSS, *EBSS);
 }
