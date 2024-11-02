@@ -1,6 +1,4 @@
 use core::ops;
-use alloc::string::String;
-use alloc::format;
 
 const MILLIS_PER_SEC: usize = 1_000;
 const MICRO_PER_SEC: usize = 1_000_000;
@@ -30,16 +28,6 @@ impl TimeVal {
             TimeUnit::Msec => self.sec * MILLIS_PER_SEC + self.usec / MICRO_PER_SEC,
             TimeUnit::Usec => self.sec * MICRO_PER_SEC + self.usec,
         }
-    }
-
-    pub fn format(&self) -> String {
-        format!(
-            "{:02}:{:02}:{:02}.{:06}",
-            self.sec / 3600,
-            self.sec / 60 % 60,
-            self.sec % 60,
-            self.usec
-        )
     }
 }
 

@@ -16,7 +16,7 @@ ELFS = $(patsubst $(APP_DIR)/%.rs, $(TARGET_DIR)/%, $(APPS))
 all: build
 
 build:
-	@$(PYTHON) build.py
+	@$(CARGO) build $(CARGO_FLAGS)
 
 clean:
 	@$(CARGO) clean
