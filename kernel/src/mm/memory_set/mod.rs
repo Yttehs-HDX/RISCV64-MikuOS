@@ -59,8 +59,8 @@ impl MemorySet {
     }
 
     fn insert_area_with_data(&mut self, mut area: MapArea, data: &[u8]) {
-        area.insert_raw_data(data, &mut self.page_table);
         area.map(&mut self.page_table);
+        area.insert_raw_data(data, &mut self.page_table);
         self.areas.push(area);
     }
 
