@@ -2,7 +2,7 @@ pub use context::*;
 
 use crate::{
     app::App,
-    config::{kernel_stack_top, KERNEL_STACK_SIZE, SV39_PAGE_SIZE, TRAP_CX_PTR, USER_STACK_TOP},
+    config::{kernel_stack_top, KERNEL_STACK_SIZE, TRAP_CX_PTR, USER_STACK_TOP},
     mm::{self, MapPermission, MapType, MemorySet, PhysPageNum, VirtAddr},
     trap::{self, TrapContext},
 };
