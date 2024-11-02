@@ -69,9 +69,5 @@ impl App {
     pub fn bin(&self) -> &'static [u8] {
         self.bin
     }
-
-    pub fn len(&self) -> usize {
-        self.bin.len()
-    }
 }
 // region App end
