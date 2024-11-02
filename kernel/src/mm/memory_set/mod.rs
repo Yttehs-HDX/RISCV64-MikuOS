@@ -137,7 +137,8 @@ impl MemorySet {
 
 // User Space
 impl MemorySet {
-    pub fn from_elf(elf_data: &[u8]) -> Self {
+    // return MemorySet for user space, elf entry, program brk
+    pub fn from_elf(elf_data: &[u8]) -> (Self, usize, usize) {
         use xmas_elf::{program::Type, ElfFile};
         let mut memory_set = Self::empty();
 
@@ -224,7 +225,11 @@ impl MemorySet {
             MapPermission::R | MapPermission::W,
         ));
 
-        memory_set
+        (
+            memory_set,
+            elf_header.pt2.entry_point() as usize,
+            program_brk_va.0,
+        )
     }
 }
 // region MemorySet end
