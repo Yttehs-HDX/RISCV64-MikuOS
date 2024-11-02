@@ -2,8 +2,8 @@ pub use context::*;
 
 use crate::{
     app::App,
-    config::{kernel_stack_bottom, TRAP_CX_PTR, USER_STACK_BOTTOM},
-    mm::{self, MemorySet, PhysPageNum, VirtAddr},
+    config::{kernel_stack_top, KERNEL_STACK_SIZE, SV39_PAGE_SIZE, TRAP_CX_PTR, USER_STACK_TOP},
+    mm::{self, MapPermission, MapType, MemorySet, PhysPageNum, VirtAddr},
     trap::{self, TrapContext},
 };
 
@@ -24,26 +24,36 @@ pub struct TaskControlBlock {
 
 impl TaskControlBlock {
     pub fn new(app: &App) -> Self {
+        // init MemorySet
         let (memory_set, entry, base_size) = MemorySet::from_elf(&app.bin());
+
+        // alloc TrapContext
         let trap_cx_ppn = memory_set
             .translate(VirtAddr(TRAP_CX_PTR).to_vpn())
             .unwrap()
             .ppn();
 
-        let kstack_bottom = kernel_stack_bottom(app.id());
+        // map Kernel Stack
+        let kstack_top = kernel_stack_top(app.id());
+        mm::kernel_insert_area(
+            VirtAddr(kstack_top),
+            VirtAddr(kstack_top + KERNEL_STACK_SIZE),
+            MapType::Identity,
+            MapPermission::R | MapPermission::W,
+        );
 
         // init TrapContext
         *trap_cx_ppn.get_mut() = TrapContext::new(
             entry,
-            USER_STACK_BOTTOM,
-            kstack_bottom,
+            USER_STACK_TOP,
+            kstack_top,
             mm::kernel_satp(),
             trap::trap_handler as usize,
         );
 
         Self {
             id: app.id(),
-            task_cx: TaskContext::goto_restore(TRAP_CX_PTR),
+            task_cx: TaskContext::goto_trap_return(kstack_top + KERNEL_STACK_SIZE),
             memory_set,
             trap_cx_ppn,
             base_size,

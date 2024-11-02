@@ -3,8 +3,7 @@ pub use map_area::*;
 use super::{PTEFlags, PageTable, PageTableEntry, PhysAddr, VirtAddr};
 use crate::{
     config::{
-        EBSS, EDATA, ERODATA, ETEXT, PA_END, PA_START, SBSS, SDATA, SRODATA, STEXT, STRAMPOLINE,
-        SV39_PAGE_SIZE, TRAMPOLINE, TRAP_CX_PTR, USER_STACK_BOTTOM,
+        EBSS, EDATA, ERODATA, ETEXT, PA_END, PA_START, SBSS, SDATA, SRODATA, STEXT, STRAMPOLINE, SV39_PAGE_SIZE, TRAMPOLINE, TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP
     },
     mm::VirtPageNum,
     sync::UPSafeCell,
@@ -18,15 +17,27 @@ use riscv::register::satp;
 mod map_area;
 
 pub fn activate_kernel_space() {
-    KERNEL_SPACE.activate();
+    KERNEL_SPACE.exclusive_access().activate();
 }
 
 pub fn kernel_satp() -> usize {
-    KERNEL_SPACE.get_satp()
+    KERNEL_SPACE.exclusive_access().get_satp()
+}
+
+pub fn kernel_insert_area(
+    start_va: VirtAddr,
+    end_va: VirtAddr,
+    map_type: MapType,
+    map_perm: MapPermission,
+) {
+    KERNEL_SPACE
+        .exclusive_access()
+        .insert_area(MapArea::new(start_va, end_va, map_type, map_perm));
 }
 
 lazy_static! {
-    static ref KERNEL_SPACE: MemorySet = MemorySet::new_kernel();
+    static ref KERNEL_SPACE: UPSafeCell<MemorySet> =
+        unsafe { UPSafeCell::new(MemorySet::new_kernel()) };
 }
 
 // region MemorySet begin
@@ -211,12 +222,12 @@ impl MemorySet {
         // map User Stack
         trace!(
             "MemorySet: map User Stack [{:#x}, {:#x})",
-            USER_STACK_BOTTOM,
-            USER_STACK_BOTTOM + SV39_PAGE_SIZE
+            USER_STACK_TOP,
+            USER_STACK_TOP + USER_STACK_SIZE
         );
         memory_set.insert_area(MapArea::new(
-            VirtAddr(USER_STACK_BOTTOM),
-            VirtAddr(USER_STACK_BOTTOM + SV39_PAGE_SIZE),
+            VirtAddr(USER_STACK_TOP),
+            VirtAddr(USER_STACK_TOP + USER_STACK_SIZE),
             MapType::Framed,
             MapPermission::U | MapPermission::R | MapPermission::W,
         ));
