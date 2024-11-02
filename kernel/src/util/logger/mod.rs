@@ -18,8 +18,8 @@ pub fn logger_init() {
     };
     log::set_max_level(max_level);
 
-    debug!("[Logger] initialized");
-    debug!("[Logger] level: {}", max_level);
+    debug!("Logger: initialized");
+    debug!("Logger: set level {}", max_level);
 }
 
 // region Logger begin
