@@ -16,11 +16,10 @@ pub const SV39_OFFSET_BITS: usize = 12;
 
 // physical address
 pub use crate::board::MEMORY_END;
-pub const fn KERNEL_STACK_POS(app_id: usize) -> (usize, usize) {
+pub const fn kernel_stack_bottom(app_id: usize) -> usize {
     // left guard pages between kernel stacks
     let top = MEMORY_END - app_id * (KERNEL_STACK_SIZE + SV39_PAGE_SIZE);
-    let bottom = top - KERNEL_STACK_SIZE;
-    (bottom, top)
+    top - KERNEL_STACK_SIZE
 }
 lazy_static! {
     pub static ref PA_START: usize = *EKERNEL;

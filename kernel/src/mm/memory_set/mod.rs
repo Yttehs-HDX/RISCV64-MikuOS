@@ -1,12 +1,13 @@
 pub use map_area::*;
 
-use super::{PTEFlags, PageTable, PhysAddr, VirtAddr};
+use super::{PTEFlags, PageTable, PageTableEntry, PhysAddr, VirtAddr};
 use crate::{
     config::{
         EBSS, EDATA, ERODATA, ETEXT, PA_END, PA_START, SBSS, SDATA, SRODATA, STEXT, STRAMPOLINE,
         SV39_PAGE_SIZE, TRAMPOLINE, TRAP_CX_PTR, USER_STACK_BOTTOM,
     },
     mm::VirtPageNum,
+    sync::UPSafeCell,
 };
 use alloc::vec::Vec;
 use core::arch::asm;
@@ -18,6 +19,10 @@ mod map_area;
 
 pub fn activate_kernel_space() {
     KERNEL_SPACE.activate();
+}
+
+pub fn kernel_satp() -> usize {
+    KERNEL_SPACE.get_satp()
 }
 
 lazy_static! {
@@ -67,6 +72,10 @@ impl MemorySet {
 
     pub fn get_satp(&self) -> usize {
         self.page_table.as_satp()
+    }
+
+    pub fn translate(&self, vpn: VirtPageNum) -> Option<PageTableEntry> {
+        self.page_table.translate(vpn)
     }
 }
 

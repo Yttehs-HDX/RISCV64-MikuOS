@@ -81,7 +81,7 @@ impl MapArea {
         loop {
             let src = &data[data_start..data_end];
             let dst = &mut page_table
-                .tranlate(current_vpn)
+                .translate(current_vpn)
                 .unwrap()
                 .ppn()
                 .get_bytes_array()[..src.len()];
