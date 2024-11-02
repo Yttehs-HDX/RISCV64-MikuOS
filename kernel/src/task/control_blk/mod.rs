@@ -25,7 +25,7 @@ pub struct TaskControlBlock {
 impl TaskControlBlock {
     pub fn new(app: &App) -> Self {
         // init MemorySet
-        let (memory_set, entry, base_size) = MemorySet::from_elf(&app.bin());
+        let (memory_set, entry, base_size) = MemorySet::from_elf(&app.elf());
 
         // alloc TrapContext
         let trap_cx_ppn = memory_set

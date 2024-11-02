@@ -49,7 +49,7 @@ lazy_static! {
     };
 }
 
-static ALIGNED_SPACES: [AlignedSpace; APP_NUM] = [AlignedSpace {
+static mut ALIGNED_SPACES: [AlignedSpace; APP_NUM] = [AlignedSpace {
     data: [0; APP_MAX_SIZE],
 }; APP_NUM];
 
@@ -57,17 +57,18 @@ static ALIGNED_SPACES: [AlignedSpace; APP_NUM] = [AlignedSpace {
 pub struct App {
     id: usize,
     name: &'static str,
-    bin: &'static AlignedSpace,
+    space: &'static AlignedSpace,
 }
 
 impl App {
-    pub fn new(id: usize, name: &'static str, bin: &'static [u8]) -> Self {
-        let mut aligned_space = ALIGNED_SPACES[id];
-        aligned_space.copy_data(bin);
-        Self {
-            id,
-            name,
-            bin: &ALIGNED_SPACES[id],
+    pub fn new(id: usize, name: &'static str, elf: &'static [u8]) -> Self {
+        unsafe {
+            ALIGNED_SPACES[id].copy_data(elf);
+            Self {
+                id,
+                name,
+                space: &ALIGNED_SPACES[id]
+            }
         }
     }
 
@@ -77,8 +78,8 @@ impl App {
     pub fn name(&self) -> &'static str {
         self.name
     }
-    pub fn bin(&self) -> &'static [u8] {
-        &self.bin.get_data()
+    pub fn elf(&self) -> &'static [u8] {
+        &self.space.get_data()
     }
 }
 // region App end
@@ -92,7 +93,6 @@ struct AlignedSpace {
 
 impl AlignedSpace {
     pub fn copy_data(&mut self, data: &[u8]) {
-        self.data.fill(0);
         self.data[..data.len()].copy_from_slice(data);
     }
 
