@@ -174,8 +174,6 @@ impl MemorySet {
         // handle elf
         let elf = ElfFile::new(elf_data).unwrap();
         let elf_header = elf.header;
-        let magic = elf_header.pt1.magic;
-        assert_eq!(magic, [0x7f, b'E', b'L', b'F'], "MemorySet: invalid elf");
 
         // map elf program headers
         let mut max_vpn = VirtPageNum(0);
@@ -199,6 +197,7 @@ impl MemorySet {
                 // map program header
                 let start_va = VirtAddr(ph.virtual_addr() as usize);
                 let end_va = VirtAddr(ph.virtual_addr() as usize + ph.mem_size() as usize);
+                trace!("MemorySet: map elf ph [{:#x}, {:#x})", start_va.0, end_va.0);
                 let area = MapArea::new(start_va, end_va, MapType::Framed, map_perm);
                 max_vpn = area.vpn_range.end();
                 let elf_data =
@@ -206,7 +205,6 @@ impl MemorySet {
                 memory_set.insert_area_with_data(area, elf_data);
             }
         }
-        trace!("MemorySet: map elf ph [{:#x}, {:#x})", 0, max_vpn.0);
 
         // map User Heap
         let program_brk_va = max_vpn.to_va();
