@@ -20,6 +20,7 @@ pub fn init_trap() {
     set_kernel_trap_entry();
 }
 
+#[allow(unused)]
 pub fn enable_timer_interrupt() {
     unsafe { sie::set_stimer() };
     timer::set_next_trigger();
@@ -75,8 +76,12 @@ pub fn trap_return() -> ! {
 
 fn set_kernel_trap_entry() {
     unsafe {
-        stvec::write(__save_trap as usize, TrapMode::Direct);
+        stvec::write(kernel_trap_handler as usize, TrapMode::Direct);
     }
+}
+
+fn kernel_trap_handler() {
+    todo!();
 }
 
 fn set_user_trap_entry() {

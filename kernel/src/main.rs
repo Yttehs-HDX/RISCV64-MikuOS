@@ -32,7 +32,7 @@ fn rust_main() -> ! {
     allocator::init_heap();
     mm::init();
     trap::init_trap();
-    trap::enable_timer_interrupt();
+    // trap::enable_timer_interrupt();
     println!("[Kernel] initialized");
     os_start();
     sbi::sbi_shutdown_success();
