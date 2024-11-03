@@ -2,7 +2,7 @@ pub use context::*;
 
 use crate::{
     app::App,
-    config::{kernel_stack_top, KERNEL_STACK_SIZE, TRAP_CX_PTR, USER_STACK_TOP},
+    config::{kernel_stack_top, KERNEL_STACK_SIZE, TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP},
     mm::{self, MapPermission, MapType, MemorySet, PhysPageNum, VirtAddr},
     trap::{self, TrapContext},
 };
@@ -45,8 +45,8 @@ impl TaskControlBlock {
         // init TrapContext
         *trap_cx_ppn.get_mut() = TrapContext::new(
             entry,
-            USER_STACK_TOP,
-            kstack_top,
+            USER_STACK_TOP + USER_STACK_SIZE,
+            kstack_top + KERNEL_STACK_SIZE,
             mm::kernel_satp(),
             trap::trap_handler as usize,
         );
