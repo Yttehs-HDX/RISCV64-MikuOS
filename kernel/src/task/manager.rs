@@ -2,7 +2,7 @@ use super::TaskControlBlock;
 use crate::{
     app::App,
     sync::UPSafeCell,
-    task::{TaskContext, __switch},
+    task::{TaskContext, __switch}, trap::TrapContext,
 };
 use alloc::vec::Vec;
 use lazy_static::lazy_static;
@@ -18,6 +18,10 @@ pub fn run_task() -> ! {
 
 pub fn current_user_satp() -> usize {
     TASK_MANAGER.get_current_user_satp()
+}
+
+pub fn current_trap_cx() -> &'static mut TrapContext {
+    TASK_MANAGER.get_current_trap_cx()
 }
 
 pub fn exit_handler() -> ! {
@@ -63,12 +67,12 @@ impl TaskManager {
 
     fn get_running_task_id(&self) -> Option<usize> {
         let inner = self.inner.shared_access();
-        inner.running_task.as_ref().map(|tcb| tcb.id)
+        inner.running_task.as_ref().map(|tcb| tcb.id())
     }
 
     fn find_suspend_task_by_id(&self, id: usize) -> Option<usize> {
         let inner = self.inner.shared_access();
-        inner.suspend_tasks.iter().position(|tcb| tcb.id == id)
+        inner.suspend_tasks.iter().position(|tcb| tcb.id() == id)
     }
 
     fn remove_task_by_id(&self, id: usize) {
@@ -80,7 +84,7 @@ impl TaskManager {
         if self.has_running_task() {
             let mut inner = self.inner.exclusive_access();
             let running_task = inner.running_task.as_ref().unwrap();
-            if running_task.id == id {
+            if running_task.id() == id {
                 inner.running_task = None;
             }
         }
@@ -99,7 +103,13 @@ impl TaskManager {
     fn get_current_user_satp(&self) -> usize {
         let inner = self.inner.shared_access();
         let running_task = inner.running_task.as_ref().unwrap();
-        running_task.memory_set.get_satp()
+        running_task.get_satp()
+    }
+
+    fn get_current_trap_cx(&self) -> &'static mut TrapContext {
+        let inner = self.inner.shared_access();
+        let running_task = inner.running_task.as_ref().unwrap();
+        running_task.get_trap_cx()
     }
 }
 
@@ -117,7 +127,7 @@ impl TaskManager {
         let next_task_cx_ptr: usize;
         {
             // remove next task from suspend list
-            let next_tcb = match inner.suspend_tasks.iter().position(|tcb| tcb.id == id) {
+            let next_tcb = match inner.suspend_tasks.iter().position(|tcb| tcb.id() == id) {
                 Some(index) => inner.suspend_tasks.remove(index),
                 _ => panic!("TaskManager: no task with id {}", id),
             };
@@ -153,7 +163,7 @@ impl TaskManager {
 
     fn run_task(&self) -> ! {
         let inner = self.inner.shared_access();
-        let waiting_task_id = inner.suspend_tasks[0].id;
+        let waiting_task_id = inner.suspend_tasks[0].id();
         drop(inner); // drop lock manually
         self.run_task_by_id(waiting_task_id);
     }

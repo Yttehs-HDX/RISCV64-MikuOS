@@ -27,7 +27,9 @@ pub fn enable_timer_interrupt() {
 }
 
 #[no_mangle]
-pub fn trap_handler(cx: &mut TrapContext) -> ! {
+pub fn trap_handler() -> ! {
+    set_kernel_trap_entry();
+    let cx = task::current_trap_cx();
     let stval = stval::read();
     let scause = scause::read();
     match scause.cause() {

@@ -11,10 +11,10 @@ mod context;
 
 // region TaskControlBlock begin
 pub struct TaskControlBlock {
-    pub id: usize,
+    id: usize,
     pub task_cx: TaskContext,
-    pub memory_set: MemorySet,
-    pub trap_cx_ppn: PhysPageNum,
+    memory_set: MemorySet,
+    trap_cx_ppn: PhysPageNum,
 
     // User Heap
     pub base_size: usize,
@@ -60,6 +60,18 @@ impl TaskControlBlock {
             heap_bottom: base_size,
             program_brk: base_size,
         }
+    }
+
+    pub fn id(&self) -> usize {
+        self.id
+    }
+
+    pub fn get_trap_cx(&self) -> &'static mut TrapContext {
+        self.trap_cx_ppn.get_mut()
+    }
+
+    pub fn get_satp(&self) -> usize {
+        self.memory_set.get_satp()
     }
 }
 // region TaskControlBlock end
