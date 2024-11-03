@@ -67,7 +67,7 @@ impl App {
             Self {
                 id,
                 name,
-                space: &ALIGNED_SPACES[id]
+                space: &ALIGNED_SPACES[id],
             }
         }
     }

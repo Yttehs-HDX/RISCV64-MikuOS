@@ -5,7 +5,9 @@ use crate::{
     config::{
         EBSS, EDATA, ERODATA, ETEXT, PA_END, PA_START, SBSS, SDATA, SRODATA, STEXT, STRAMPOLINE,
         SV39_PAGE_SIZE, TRAMPOLINE, TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP,
-    }, console::print, mm::VirtPageNum, sync::UPSafeCell
+    },
+    mm::VirtPageNum,
+    sync::UPSafeCell,
 };
 use alloc::vec::Vec;
 use core::arch::asm;
