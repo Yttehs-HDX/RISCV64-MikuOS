@@ -46,7 +46,7 @@ fn os_start() {
     task::add_task(app::get_app("test_print").unwrap());
     task::add_task(app::get_app("test_sret").unwrap());
     task::add_task(app::get_app("test_page_fault").unwrap());
-    task::add_task(app::get_app("test_yield").unwrap());
+    // task::add_task(app::get_app("test_yield").unwrap());
     task::run_task();
 }
 
@@ -55,7 +55,9 @@ fn os_end() -> ! {
         "[Kernel] current time: {}",
         timer::get_current_time().format()
     );
-    sbi::sbi_shutdown_success();
+    println!("[Kernel] os end");
+    // sbi::sbi_shutdown_success();
+    sbi::sbi_legacy_shutdown(0);
 }
 
 fn clear_bss() {
