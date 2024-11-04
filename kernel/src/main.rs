@@ -46,8 +46,8 @@ fn os_start() {
     task::add_task(app::get_app("test_print").unwrap());
     task::add_task(app::get_app("test_sret").unwrap());
     task::add_task(app::get_app("test_page_fault").unwrap());
-    // task::add_task(app::get_app("test_yield").unwrap());
-    task::run_task();
+    task::add_task(app::get_app("test_yield").unwrap());
+    task::run_tasks();
 }
 
 fn os_end() -> ! {
