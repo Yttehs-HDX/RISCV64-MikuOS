@@ -1,5 +1,5 @@
-use core::fmt::{Arguments, Write};
 use crate::write;
+use core::fmt::{Arguments, Write};
 
 const STDOUT: usize = 1;
 

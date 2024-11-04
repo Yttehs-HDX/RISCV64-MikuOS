@@ -1,10 +1,9 @@
 #![no_std]
 #![no_main]
-
 #![feature(linkage)]
 
-pub use wrapper::*;
 pub use timer::*;
+pub use wrapper::*;
 
 mod lang_items;
 mod syscall;

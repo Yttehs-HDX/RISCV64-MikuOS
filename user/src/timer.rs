@@ -29,6 +29,18 @@ impl TimeVal {
             TimeUnit::Usec => self.sec * MICRO_PER_SEC + self.usec,
         }
     }
+
+    pub fn format(&self) -> &str {
+        format_args!(
+            "{:02}:{:02}:{:02}.{:06}",
+            self.sec / 3600,
+            self.sec % 3600 / 60,
+            self.sec % 60,
+            self.usec
+        )
+        .as_str()
+        .unwrap()
+    }
 }
 
 impl ops::Add<TimeVal> for TimeVal {
