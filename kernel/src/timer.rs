@@ -1,6 +1,5 @@
 use crate::{config::CLOCK_FREQ, sbi};
-use alloc::format;
-use alloc::string::String;
+use core::fmt::Display;
 use core::ops;
 
 const MILLIS_PER_SEC: usize = 1_000;
@@ -32,6 +31,18 @@ pub struct TimeVal {
     usec: usize,
 }
 
+impl Display for TimeVal {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(
+            f,
+            "{:02}:{:02}.{:06}",
+            self.sec / 60,
+            self.sec % 60,
+            self.usec
+        )
+    }
+}
+
 impl TimeVal {
     pub fn new(sec: usize, usec: usize) -> Self {
         TimeVal { sec, usec }
@@ -52,16 +63,6 @@ impl TimeVal {
             TimeUnit::Usec => self.sec * MICRO_PER_SEC + self.usec,
             TimeUnit::Tick => self.sec * CLOCK_FREQ + self.usec * CLOCK_FREQ / MICRO_PER_SEC,
         }
-    }
-
-    pub fn format(&self) -> String {
-        format!(
-            "{:02}:{:02}:{:02}.{:06}",
-            self.sec / 3600,
-            self.sec / 60 % 60,
-            self.sec % 60,
-            self.usec
-        )
     }
 }
 

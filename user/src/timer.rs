@@ -1,4 +1,4 @@
-use core::ops;
+use core::{fmt::Display, ops};
 
 const MILLIS_PER_SEC: usize = 1_000;
 const MICRO_PER_SEC: usize = 1_000_000;
@@ -9,6 +9,12 @@ const MICRO_PER_SEC: usize = 1_000_000;
 pub struct TimeVal {
     sec: usize,
     usec: usize,
+}
+
+impl Display for TimeVal {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "{:02}:{:02}.{:06}", self.sec / 60, self.sec % 60, self.usec)
+    }
 }
 
 impl TimeVal {
@@ -28,18 +34,6 @@ impl TimeVal {
             TimeUnit::Msec => self.sec * MILLIS_PER_SEC + self.usec / MICRO_PER_SEC,
             TimeUnit::Usec => self.sec * MICRO_PER_SEC + self.usec,
         }
-    }
-
-    pub fn format(&self) -> &str {
-        format_args!(
-            "{:02}:{:02}:{:02}.{:06}",
-            self.sec / 3600,
-            self.sec % 3600 / 60,
-            self.sec % 60,
-            self.usec
-        )
-        .as_str()
-        .unwrap()
     }
 }
 

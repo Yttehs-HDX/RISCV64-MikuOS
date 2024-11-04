@@ -39,10 +39,7 @@ fn rust_main() -> ! {
 }
 
 fn os_start() {
-    println!(
-        "[Kernel] current time: {}",
-        timer::get_current_time().format()
-    );
+    println!("[Kernel] current time: {}", timer::get_current_time());
     task::add_task(app::get_app("test_print").unwrap());
     task::add_task(app::get_app("test_sret").unwrap());
     task::add_task(app::get_app("test_page_fault").unwrap());
@@ -51,10 +48,7 @@ fn os_start() {
 }
 
 fn os_end() -> ! {
-    println!(
-        "[Kernel] current time: {}",
-        timer::get_current_time().format()
-    );
+    println!("[Kernel] current time: {}", timer::get_current_time());
     println!("[Kernel] os end");
     // sbi::sbi_shutdown_success();
     sbi::sbi_legacy_shutdown(0);
