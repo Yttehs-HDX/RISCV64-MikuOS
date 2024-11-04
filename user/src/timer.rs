@@ -13,7 +13,13 @@ pub struct TimeVal {
 
 impl Display for TimeVal {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "{:02}:{:02}.{:06}", self.sec / 60, self.sec % 60, self.usec)
+        write!(
+            f,
+            "{:02}:{:02}.{:06}",
+            self.sec / 60,
+            self.sec % 60,
+            self.usec
+        )
     }
 }
 
