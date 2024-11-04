@@ -1,4 +1,4 @@
-use crate::{task, timer};
+use crate::{mm, task, timer};
 use log::{info, warn};
 
 pub fn sys_exit(exit_code: usize) -> ! {
@@ -14,9 +14,15 @@ pub fn sys_yield() -> ! {
 }
 
 pub use crate::timer::TimeVal;
-pub fn sys_get_time(ts: *mut TimeVal, _tz: usize) -> isize {
-    unsafe {
-        *ts = timer::get_current_time();
-    }
+pub fn sys_get_time(ts: usize, _tz: usize) -> isize {
+    let time_val = mm::translate_bype_buffer(
+        task::current_user_satp(),
+        ts as *mut u8,
+        core::mem::size_of::<TimeVal>(),
+    )
+    .pop()
+    .unwrap();
+    let time_val_ptr = time_val.as_mut_ptr() as *mut TimeVal;
+    unsafe { *time_val_ptr = timer::get_current_time() };
     0
 }

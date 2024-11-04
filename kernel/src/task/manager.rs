@@ -1,5 +1,10 @@
 use super::TaskControlBlock;
-use crate::{app::App, sync::UPSafeCell, task::{TaskContext, __switch}, trap::TrapContext};
+use crate::{
+    app::App,
+    sync::UPSafeCell,
+    task::{TaskContext, __switch},
+    trap::TrapContext,
+};
 use alloc::collections::vec_deque::VecDeque;
 use lazy_static::lazy_static;
 use log::info;
@@ -21,7 +26,7 @@ pub fn run_tasks() -> ! {
         Some(tcb) => {
             TASK_MANAGER.set_current_task(tcb);
             TASK_MANAGER.resume_current_task();
-        },
+        }
         _ => {
             info!("TaskManager: no task to run");
             crate::os_end()
@@ -92,7 +97,10 @@ impl TaskManager {
 
     fn set_current_task(&self, tcb: TaskControlBlock) {
         let mut inner = self.inner.exclusive_access();
-        assert!(inner.running_task.is_none(), "TaskManager: already has running task");
+        assert!(
+            inner.running_task.is_none(),
+            "TaskManager: already has running task"
+        );
         inner.running_task = Some(tcb);
     }
 
