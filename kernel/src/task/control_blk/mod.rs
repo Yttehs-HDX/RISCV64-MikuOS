@@ -17,7 +17,7 @@ pub struct TaskControlBlock {
     trap_cx_ppn: PhysPageNum,
 
     // User Heap
-    pub base_size: usize,
+    base_size: usize,
     pub heap_bottom: usize,
     pub program_brk: usize,
 }
@@ -66,12 +66,41 @@ impl TaskControlBlock {
         self.id
     }
 
+    pub fn base_size(&self) -> usize {
+        self.base_size
+    }
+
     pub fn get_trap_cx(&self) -> &'static mut TrapContext {
         self.trap_cx_ppn.get_mut()
     }
 
     pub fn get_satp(&self) -> usize {
         self.memory_set.get_satp()
+    }
+
+    pub fn set_break(&mut self, new_brk: usize) -> Option<usize> {
+        let old_brk = self.program_brk;
+        if new_brk < self.base_size() {
+            return None;
+        }
+
+        self.memory_set
+            .set_break(VirtAddr(self.heap_bottom), VirtAddr(new_brk));
+        self.program_brk = new_brk;
+        Some(old_brk)
+    }
+
+    pub fn add_break(&mut self, size: i32) -> Option<usize> {
+        let old_brk = self.program_brk;
+        let new_brk = (old_brk as i32 + size) as usize;
+        if new_brk < self.base_size() {
+            return None;
+        }
+
+        self.memory_set
+            .set_break(VirtAddr(self.heap_bottom), VirtAddr(new_brk));
+        self.program_brk = new_brk;
+        Some(old_brk)
     }
 }
 // region TaskControlBlock end

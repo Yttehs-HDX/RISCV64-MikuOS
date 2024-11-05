@@ -21,6 +21,10 @@ pub fn current_trap_cx() -> &'static mut TrapContext {
     TASK_MANAGER.get_current_trap_cx()
 }
 
+pub fn change_current_brk(increase: i32) -> Option<usize> {
+    TASK_MANAGER.change_current_brk(increase)
+}
+
 pub fn run_tasks() -> ! {
     match TASK_MANAGER.get_available_task() {
         Some(tcb) => {
@@ -83,6 +87,12 @@ impl TaskManager {
         let inner = self.inner.shared_access();
         let running_task = inner.running_task.as_ref().unwrap();
         running_task.get_trap_cx()
+    }
+
+    fn change_current_brk(&self, increase: i32) -> Option<usize> {
+        let mut inner = self.inner.exclusive_access();
+        let running_task = inner.running_task.as_mut().unwrap();
+        running_task.add_break(increase)
     }
 }
 

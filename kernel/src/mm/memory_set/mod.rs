@@ -74,6 +74,20 @@ impl MemorySet {
         );
     }
 
+    pub fn set_break(&mut self, start: VirtAddr, new_end: VirtAddr) -> bool {
+        // find data segment
+        if let Some(area) = self
+            .areas
+            .iter_mut()
+            .find(|area| area.vpn_range.start() == start.to_vpn_floor())
+        {
+            area.change_vpn_range(new_end.to_vpn_ceil(), &mut self.page_table);
+            return true;
+        }
+
+        false
+    }
+
     pub fn activate(&self) {
         let satp = self.get_satp();
         unsafe {

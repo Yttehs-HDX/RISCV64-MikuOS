@@ -26,3 +26,11 @@ pub fn sys_get_time(ts: usize, _tz: usize) -> isize {
     unsafe { *time_val_ptr = timer::get_current_time() };
     0
 }
+
+pub fn sys_sbrk(increase: i32) -> isize {
+    let old_brk = task::change_current_brk(increase);
+    match old_brk {
+        Some(brk) => brk as isize,
+        None => -1,
+    }
+}

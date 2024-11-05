@@ -7,6 +7,7 @@ use crate::{
     util::{SimpleRange, StepByOne},
 };
 use alloc::collections::btree_map::BTreeMap;
+use core::cmp::Ordering;
 
 mod map_permission;
 mod map_type;
@@ -56,6 +57,22 @@ impl MapArea {
             }
         }
         page_table.unmap(vpn);
+    }
+
+    pub fn change_vpn_range(&mut self, new_end_vpn: VirtPageNum, page_table: &mut PageTable) {
+        match new_end_vpn.cmp(&self.vpn_range.end()) {
+            Ordering::Less => {
+                for vpn in SimpleRange::new(new_end_vpn, self.vpn_range.end()) {
+                    self.unmap_one(vpn, page_table);
+                }
+            }
+            Ordering::Equal => {}
+            Ordering::Greater => {
+                for vpn in SimpleRange::new(self.vpn_range.end(), new_end_vpn) {
+                    self.map_one(vpn, page_table);
+                }
+            }
+        }
     }
 
     pub fn map(&mut self, page_table: &mut PageTable) {
