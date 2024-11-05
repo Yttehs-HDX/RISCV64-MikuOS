@@ -1,4 +1,3 @@
-
 #![no_std]
 #![no_main]
 
@@ -14,7 +13,10 @@ fn main() -> i32 {
     let new_ptr = sbrk(0) as *mut u8;
     println!("[User] test_sbrk: sbrk(0) = {:#x}", new_ptr as usize);
 
-    println!("[User] test_sbrk: heap size = {}", new_ptr as usize - old_ptr as usize);
+    println!(
+        "[User] test_sbrk: heap size = {}",
+        new_ptr as usize - old_ptr as usize
+    );
 
     println!("[User] test_sbrk: write to old_ptr");
     unsafe {
@@ -28,7 +30,10 @@ fn main() -> i32 {
     sbrk(-4096);
     let new_ptr = sbrk(0) as *mut u8;
     println!("[User] test_sbrk: sbrk(-4096) = {:#x}", new_ptr as usize);
-    println!("[User] test_sbrk: heap size = {}", new_ptr as usize - old_ptr as usize);
+    println!(
+        "[User] test_sbrk: heap size = {}",
+        new_ptr as usize - old_ptr as usize
+    );
 
     println!("[User] test_sbrk: done");
     0

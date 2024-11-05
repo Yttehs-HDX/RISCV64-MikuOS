@@ -1,5 +1,6 @@
 use crate::{
-    config::{TRAMPOLINE, TRAP_CX_PTR}, sbi, syscall, task, timer
+    config::{TRAMPOLINE, TRAP_CX_PTR},
+    sbi, syscall, task, timer,
 };
 use core::arch::{asm, global_asm};
 use log::{debug, error};
