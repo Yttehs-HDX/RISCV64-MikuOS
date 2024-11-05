@@ -5,14 +5,14 @@ pub use crate::board::CLOCK_FREQ;
 
 // task
 pub const MAX_TASK_NUM: usize = 16;
-pub const USER_STACK_SIZE: usize = SV39_PAGE_SIZE;
+pub const USER_STACK_SIZE: usize = 0x200000; // 2 MB
 pub const KERNEL_STACK_SIZE: usize = SV39_PAGE_SIZE;
 
 // heap
-pub const KERNEL_HEAP_SIZE: usize = 0x20000;
+pub const KERNEL_HEAP_SIZE: usize = 0x200000; // 2 MB
 
 // memory mapping
-pub const SV39_PAGE_SIZE: usize = 1 << 12; // 4096
+pub const SV39_PAGE_SIZE: usize = 1 << 12; // 4 KB
 pub const SV39_OFFSET_BITS: usize = 12;
 
 // physical address

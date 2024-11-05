@@ -1,7 +1,7 @@
 use core::arch::asm;
 
 pub const CLOCK_FREQ: usize = 12500000;
-pub const MEMORY_END: usize = 0x80800000;
+pub const MEMORY_END: usize = 0x88000000;
 
 const EXIT_SUCCESS: u32 = 0x5555;
 const EXIT_FAILURE_FLAG: u32 = 0x3333;
