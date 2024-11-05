@@ -8,7 +8,7 @@ pub fn init_heap() {
         trace!(
             "HeapAllocator: heap [{:#x?}, {:#x?})",
             KERNEL_HEAP.as_mut_ptr(),
-            KERNEL_HEAP.as_mut_ptr().offset(KERNEL_HEAP_SIZE as isize)
+            KERNEL_HEAP.as_mut_ptr().add(KERNEL_HEAP_SIZE)
         );
         HEAP_ALLOCATOR
             .lock()

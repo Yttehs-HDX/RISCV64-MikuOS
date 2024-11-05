@@ -14,6 +14,7 @@ bitflags! {
     }
 }
 
+#[allow(unused)]
 impl PTEFlags {
     pub fn is_valid(&self) -> bool {
         self.contains(Self::V)

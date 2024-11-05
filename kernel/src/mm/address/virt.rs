@@ -14,7 +14,6 @@ use crate::{
     util::StepByOne,
 };
 
-pub const SV39_VA_BITS: usize = 39;
 pub const SV39_VPN_BITS: usize = 27;
 const SV39_VPN_NUM: usize = 3;
 const SV39_VPN_PER_BITS: usize = SV39_VPN_BITS / SV39_VPN_NUM;
@@ -31,14 +30,14 @@ impl VirtAddr {
         self.page_offset() == 0
     }
 
-    pub fn to_vpn(&self) -> VirtPageNum {
+    pub fn to_vpn(self) -> VirtPageNum {
         assert!(self.aligned());
         VirtPageNum(self.0 >> SV39_OFFSET_BITS)
     }
-    pub fn to_vpn_floor(&self) -> VirtPageNum {
+    pub fn to_vpn_floor(self) -> VirtPageNum {
         VirtPageNum(self.0 >> SV39_OFFSET_BITS)
     }
-    pub fn to_vpn_ceil(&self) -> VirtPageNum {
+    pub fn to_vpn_ceil(self) -> VirtPageNum {
         VirtPageNum((self.0 + SV39_PAGE_SIZE - 1) >> SV39_OFFSET_BITS)
     }
 }
@@ -55,7 +54,7 @@ impl StepByOne for VirtPageNum {
 }
 
 impl VirtPageNum {
-    pub fn to_va(&self) -> VirtAddr {
+    pub fn to_va(self) -> VirtAddr {
         VirtAddr(self.0 << SV39_OFFSET_BITS)
     }
 

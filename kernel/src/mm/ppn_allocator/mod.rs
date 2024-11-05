@@ -23,18 +23,18 @@ pub fn dealloc_ppn(ppn: PhysPageNum) {
 }
 
 lazy_static! {
-    static ref PPN_ALLOCATOR: UPSafeCell<PPNAllocator> =
-        unsafe { UPSafeCell::new(PPNAllocator::new(*PA_START, PA_END)) };
+    static ref PPN_ALLOCATOR: UPSafeCell<PpnAllocator> =
+        unsafe { UPSafeCell::new(PpnAllocator::new(*PA_START, PA_END)) };
 }
 
 // region PPNAllocator begin
-struct PPNAllocator {
+struct PpnAllocator {
     current_ppn: usize,
     end_ppn: usize,
     recycled_frame: Vec<usize>,
 }
 
-impl PPNAllocator {
+impl PpnAllocator {
     fn new(mem_begin: usize, mem_end: usize) -> Self {
         let start_ppn = PhysAddr(mem_begin).to_ppn_ceil();
         let end_ppn = PhysAddr(mem_end).to_ppn_floor();
@@ -57,7 +57,7 @@ impl PPNAllocator {
 
         let ppn = self.current_ppn;
         self.current_ppn += 1;
-        return Some(PhysPageNum(ppn));
+        Some(PhysPageNum(ppn))
     }
 
     fn dealloc(&mut self, ppn: PhysPageNum) {

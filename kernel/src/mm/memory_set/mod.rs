@@ -47,6 +47,14 @@ pub struct MemorySet {
     areas: Vec<MapArea>,
 }
 
+impl Drop for MemorySet {
+    fn drop(&mut self) {
+        for area in self.areas.iter_mut() {
+            area.unmap(&mut self.page_table);
+        }
+    }
+}
+
 impl MemorySet {
     fn empty() -> Self {
         Self {

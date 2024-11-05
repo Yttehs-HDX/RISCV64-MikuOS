@@ -55,7 +55,7 @@ impl App {
         self.name
     }
     pub fn elf(&self) -> &'static [u8] {
-        &self.space.get_data()
+        self.space.get_data()
     }
 }
 // region App end

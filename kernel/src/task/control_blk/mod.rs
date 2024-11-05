@@ -11,6 +11,7 @@ mod context;
 
 // region TaskControlBlock begin
 pub struct TaskControlBlock {
+    #[allow(unused)]
     id: usize,
     pub task_cx: TaskContext,
     memory_set: MemorySet,
@@ -25,7 +26,7 @@ pub struct TaskControlBlock {
 impl TaskControlBlock {
     pub fn new(app: &App) -> Self {
         // init MemorySet
-        let (memory_set, entry, base_size) = MemorySet::from_elf(&app.elf());
+        let (memory_set, entry, base_size) = MemorySet::from_elf(app.elf());
 
         // alloc TrapContext
         let trap_cx_ppn = memory_set
@@ -62,6 +63,7 @@ impl TaskControlBlock {
         }
     }
 
+    #[allow(unused)]
     pub fn id(&self) -> usize {
         self.id
     }
@@ -78,6 +80,7 @@ impl TaskControlBlock {
         self.memory_set.get_satp()
     }
 
+    #[allow(unused)]
     pub fn set_break(&mut self, new_brk: usize) -> Option<usize> {
         let old_brk = self.program_brk;
         if new_brk < self.base_size() {

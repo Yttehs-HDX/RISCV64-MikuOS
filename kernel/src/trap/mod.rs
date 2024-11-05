@@ -1,6 +1,5 @@
 use crate::{
-    config::{TRAMPOLINE, TRAP_CX_PTR},
-    syscall, task, timer,
+    config::{TRAMPOLINE, TRAP_CX_PTR}, sbi, syscall, task, timer
 };
 use core::arch::{asm, global_asm};
 use log::{debug, error};
@@ -83,7 +82,7 @@ fn set_kernel_trap_entry() {
 }
 
 fn kernel_trap_handler() {
-    loop {}
+    sbi::sbi_legacy_shutdown(1);
 }
 
 fn set_user_trap_entry() {
@@ -94,5 +93,6 @@ fn set_user_trap_entry() {
 
 extern "C" {
     fn __save_trap();
+    #[allow(improper_ctypes)]
     fn __restore_trap(trap_cx_ptr: *const TrapContext, user_satp: usize);
 }

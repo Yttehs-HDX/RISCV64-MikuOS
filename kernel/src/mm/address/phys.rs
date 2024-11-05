@@ -14,9 +14,7 @@ use crate::{
     mm::{PageTableEntry, SV39_PTE_BITS},
 };
 
-pub const SV39_PA_BITS: usize = 56;
 pub const SV39_PPN_BITS: usize = 44;
-const SV39_PPN_NUM: usize = 3;
 
 // region PhysAddr begin
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -30,14 +28,14 @@ impl PhysAddr {
         self.page_offset() == 0
     }
 
-    pub fn to_ppn(&self) -> PhysPageNum {
+    pub fn to_ppn(self) -> PhysPageNum {
         assert!(self.aligned());
         PhysPageNum(self.0 >> SV39_OFFSET_BITS)
     }
-    pub fn to_ppn_floor(&self) -> PhysPageNum {
+    pub fn to_ppn_floor(self) -> PhysPageNum {
         PhysPageNum(self.0 >> SV39_OFFSET_BITS)
     }
-    pub fn to_ppn_ceil(&self) -> PhysPageNum {
+    pub fn to_ppn_ceil(self) -> PhysPageNum {
         PhysPageNum((self.0 + SV39_PAGE_SIZE - 1) >> SV39_OFFSET_BITS)
     }
 }
@@ -48,7 +46,7 @@ impl PhysAddr {
 pub struct PhysPageNum(pub usize);
 
 impl PhysPageNum {
-    pub fn to_pa(&self) -> PhysAddr {
+    pub fn to_pa(self) -> PhysAddr {
         PhysAddr(self.0 << SV39_OFFSET_BITS)
     }
 

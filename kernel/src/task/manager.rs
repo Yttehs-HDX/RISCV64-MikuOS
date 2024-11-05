@@ -99,7 +99,7 @@ impl TaskManager {
 impl TaskManager {
     fn get_available_task(&self) -> Option<TaskControlBlock> {
         let mut inner = self.inner.exclusive_access();
-        if inner.suspend_tasks.len() == 0 {
+        if inner.suspend_tasks.is_empty() {
             return None;
         }
 
