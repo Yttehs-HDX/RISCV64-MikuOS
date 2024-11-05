@@ -19,3 +19,7 @@ pub fn get_time() -> TimeVal {
 pub fn write(fd: usize, buf: &[u8]) -> isize {
     syscall::sys_write(fd, buf)
 }
+
+pub fn sbrk(inc: i32) -> isize {
+    syscall::sys_sbrk(inc)
+}

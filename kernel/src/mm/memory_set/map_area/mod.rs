@@ -73,6 +73,7 @@ impl MapArea {
                 }
             }
         }
+        self.vpn_range = SimpleRange::new(self.vpn_range.start(), new_end_vpn);
     }
 
     pub fn map(&mut self, page_table: &mut PageTable) {
