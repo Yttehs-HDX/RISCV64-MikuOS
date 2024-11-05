@@ -3,16 +3,16 @@ use buddy_system_allocator::LockedHeap;
 use log::trace;
 
 pub fn init_heap() {
+    #[allow(static_mut_refs)]
     unsafe {
         trace!(
             "HeapAllocator: heap [{:#x?}, {:#x?})",
-            KERNEL_HEAP.as_ptr(),
-            KERNEL_HEAP.as_ptr().offset(KERNEL_HEAP_SIZE as isize)
+            KERNEL_HEAP.as_mut_ptr(),
+            KERNEL_HEAP.as_mut_ptr().offset(KERNEL_HEAP_SIZE as isize)
         );
-        #[allow(static_mut_refs)]
         HEAP_ALLOCATOR
             .lock()
-            .init(KERNEL_HEAP.as_ptr() as usize, KERNEL_HEAP_SIZE);
+            .init(KERNEL_HEAP.as_mut_ptr() as usize, KERNEL_HEAP_SIZE);
     }
 }
 
@@ -24,4 +24,15 @@ fn alloc_error_handler(layout: core::alloc::Layout) -> ! {
 #[global_allocator]
 static HEAP_ALLOCATOR: LockedHeap<KERNEL_HEAP_SIZE> = LockedHeap::empty();
 
-static mut KERNEL_HEAP: [u8; KERNEL_HEAP_SIZE] = [0; KERNEL_HEAP_SIZE];
+// region KernelHeap begin
+#[repr(align(4096))]
+struct KernelHeap([u8; KERNEL_HEAP_SIZE]);
+
+impl KernelHeap {
+    fn as_mut_ptr(&mut self) -> *mut u8 {
+        self.0.as_mut_ptr()
+    }
+}
+// region KernelHeap end
+
+static mut KERNEL_HEAP: KernelHeap = KernelHeap([0; KERNEL_HEAP_SIZE]);
