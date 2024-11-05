@@ -45,7 +45,9 @@ pub fn yield_handler() -> ! {
     TASK_MANAGER.suspend_current_task();
 
     // run other task
-    run_tasks();
+    let tcb = TASK_MANAGER.get_available_task().unwrap();
+    TASK_MANAGER.set_current_task(tcb);
+    TASK_MANAGER.save_last_and_resume_current();
 }
 
 lazy_static! {
@@ -122,12 +124,34 @@ impl TaskManager {
         assert!(inner.running_task.is_some(), "TaskManager: no running task");
 
         // get the task context
-        let running_task = inner.running_task.as_ref().unwrap();
-        let task_cx = &running_task.task_cx as *const TaskContext;
+        let running_tcb = inner.running_task.as_ref().unwrap();
+        let running_task_cx = &running_tcb.task_cx as *const TaskContext;
 
         drop(inner);
         unsafe {
-            __switch(&mut TaskContext::empty(), task_cx);
+            __switch(&mut TaskContext::empty(), running_task_cx);
+        }
+        unreachable!();
+    }
+
+    fn save_last_and_resume_current(&self) -> ! {
+        let mut inner = self.inner.exclusive_access();
+        assert!(inner.running_task.is_some(), "TaskManager: no running task");
+
+        // get the running task context
+        let running_tcb = inner.running_task.as_ref().unwrap();
+        let running_task_cx = &running_tcb.task_cx as *const TaskContext;
+
+        // get the suspend task context
+        let suspend_tcb = match inner.suspend_tasks.back_mut() {
+            Some(tcb) => tcb,
+            None => inner.running_task.as_mut().unwrap(),
+        };
+        let suspend_task_cx = &mut suspend_tcb.task_cx as *mut TaskContext;
+
+        drop(inner);
+        unsafe {
+            __switch(suspend_task_cx, running_task_cx);
         }
         unreachable!();
     }

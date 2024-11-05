@@ -83,7 +83,7 @@ fn set_kernel_trap_entry() {
 }
 
 fn kernel_trap_handler() {
-    todo!();
+    loop {}
 }
 
 fn set_user_trap_entry() {

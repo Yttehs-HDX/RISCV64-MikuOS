@@ -23,8 +23,7 @@ __switch:
     // save sp
     sd sp, 1 * 8(a0)
 
-    // save ra
-    sd ra, 0 * 8(a0)
+    // do not save ra, because it is the return address of __switch
 
     // save s registers
     .set n, 0
