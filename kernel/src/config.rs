@@ -4,7 +4,6 @@ use lazy_static::lazy_static;
 pub use crate::board::CLOCK_FREQ;
 
 // task
-pub const MAX_TASK_NUM: usize = 16;
 pub const USER_STACK_SIZE: usize = 0x200000; // 2 MB
 pub const KERNEL_STACK_SIZE: usize = SV39_PAGE_SIZE;
 
@@ -17,21 +16,21 @@ pub const SV39_OFFSET_BITS: usize = 12;
 
 // physical address
 pub use crate::board::MEMORY_END;
-pub const fn kernel_stack_top(app_id: usize) -> usize {
-    // left guard pages between kernel stacks
-    let bottom = MEMORY_END - app_id * (KERNEL_STACK_SIZE + SV39_PAGE_SIZE);
-    bottom - KERNEL_STACK_SIZE
-}
 lazy_static! {
     pub static ref PA_START: usize = *EKERNEL;
 }
-pub const PA_END: usize = MEMORY_END - MAX_TASK_NUM * (KERNEL_STACK_SIZE + SV39_PAGE_SIZE);
+pub const PA_END: usize = MEMORY_END;
 
 // virtual address
 pub const TRAMPOLINE: usize = usize::MAX - SV39_PAGE_SIZE + 1;
 pub const TRAP_CX_PTR: usize = TRAMPOLINE - SV39_PAGE_SIZE;
 // left a guard page for user stack
 pub const USER_STACK_TOP: usize = TRAP_CX_PTR - (USER_STACK_SIZE + SV39_PAGE_SIZE);
+pub const fn kernel_stack_top(app_id: usize) -> usize {
+    // left guard pages between kernel stacks
+    let bottom = USER_STACK_TOP - app_id * (KERNEL_STACK_SIZE + SV39_PAGE_SIZE);
+    bottom - KERNEL_STACK_SIZE
+}
 
 // sections boundary
 lazy_static! {

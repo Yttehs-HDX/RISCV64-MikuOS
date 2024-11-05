@@ -39,7 +39,7 @@ impl TaskControlBlock {
         mm::kernel_insert_area(
             VirtAddr(kstack_top),
             VirtAddr(kstack_top + KERNEL_STACK_SIZE),
-            MapType::Identity,
+            MapType::Framed,
             MapPermission::R | MapPermission::W,
         );
 
