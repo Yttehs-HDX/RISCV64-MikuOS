@@ -25,6 +25,10 @@ fn main() -> i32 {
     let value = unsafe { *old_ptr };
     println!("[User] test_sbrk: *old_ptr = {}", value);
 
+    sbrk(-4096);
+    let new_ptr = sbrk(0) as *mut u8;
+    println!("[User] test_sbrk: sbrk(-4096) = {:#x}", new_ptr as usize);
+
     println!("[User] test_sbrk: done");
     0
 }
