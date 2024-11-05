@@ -17,36 +17,12 @@ pub fn get_app(name: &str) -> Option<&App> {
 }
 
 lazy_static! {
-    static ref APPS: [App; APP_NUM] = {
-        let mut no = 0;
-        [
-            App::new(no, "test_print", TEST_PRINT),
-            App::new(
-                {
-                    no += 1;
-                    no
-                },
-                "test_sret",
-                TEST_SRET,
-            ),
-            App::new(
-                {
-                    no += 1;
-                    no
-                },
-                "test_page_fault",
-                TEST_PAGE_FAULT,
-            ),
-            App::new(
-                {
-                    no += 1;
-                    no
-                },
-                "test_yield",
-                TEST_YIELD,
-            ),
-        ]
-    };
+    static ref APPS: [App; APP_NUM] = [
+        App::new(0, "test_print", TEST_PRINT),
+        App::new(1, "test_sret", TEST_SRET),
+        App::new(2, "test_page_fault", TEST_PAGE_FAULT),
+        App::new(3, "test_yield", TEST_YIELD),
+    ];
 }
 
 static mut ALIGNED_SPACES: [AlignedSpace; APP_NUM] = [AlignedSpace {
