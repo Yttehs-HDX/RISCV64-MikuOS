@@ -5,7 +5,7 @@ use core::ops;
 const MILLIS_PER_SEC: usize = 1_000;
 const MICRO_PER_SEC: usize = 1_000_000;
 
-const TIGGER_TIME: usize = 10_0000; // 10ms
+const TIGGER_TIME: usize = 100_000; // 100 ms
 
 pub fn get_current_time() -> TimeVal {
     let time = sbi::sbi_get_time();
