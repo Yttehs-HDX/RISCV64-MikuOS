@@ -83,7 +83,7 @@ fn set_kernel_trap_entry() {
 }
 
 fn kernel_trap_handler() {
-    sbi::sbi_legacy_shutdown(1);
+    sbi::sbi_shutdown_failure();
 }
 
 fn set_user_trap_entry() {
