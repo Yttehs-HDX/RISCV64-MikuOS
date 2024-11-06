@@ -51,8 +51,7 @@ fn os_start() {
 fn os_end() -> ! {
     println!("[Kernel] current time: {}", timer::get_current_time());
     println!("[Kernel] os end");
-    // sbi::sbi_shutdown_success();
-    sbi::sbi_legacy_shutdown(0);
+    sbi::sbi_shutdown_success();
 }
 
 fn clear_bss() {

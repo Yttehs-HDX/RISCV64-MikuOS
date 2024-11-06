@@ -16,6 +16,7 @@ pub const SV39_OFFSET_BITS: usize = 12;
 
 // physical address
 pub use crate::board::MEMORY_END;
+pub use crate::board::MMIO;
 lazy_static! {
     pub static ref PA_START: usize = *EKERNEL;
 }
