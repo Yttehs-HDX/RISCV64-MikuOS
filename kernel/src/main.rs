@@ -14,7 +14,7 @@ mod sbi;
 #[macro_use]
 mod console;
 mod allocator;
-#[path = "boards/qemu.rs"]
+#[path = "boards/qemu/mod.rs"]
 mod board;
 mod config;
 mod mm;
