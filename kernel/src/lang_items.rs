@@ -13,7 +13,7 @@ fn panic(info: &PanicInfo) -> ! {
             info.message(),
         );
     } else {
-        error!("Panicked: {}", info.message(),)
+        error!("Panicked: {}", info.message())
     }
     sbi::sbi_shutdown_failure();
 }
