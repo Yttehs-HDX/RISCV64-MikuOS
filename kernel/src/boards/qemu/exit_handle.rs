@@ -10,21 +10,13 @@ const fn encode_exit_code(code: u32) -> u32 {
 
 pub const VIRT_TEST: u64 = 0x100000;
 
-pub fn qemu_exit(code: u32) -> ! {
-    QEMU_EXIT_HANDLE.exit(code)
-}
-
-pub fn qemu_exit_success() -> ! {
-    QEMU_EXIT_HANDLE.exit_success()
-}
-
-pub fn qemu_exit_failure() -> ! {
-    QEMU_EXIT_HANDLE.exit_failure()
+pub fn get_qemu_exit_handle() -> &'static impl QEMUExit {
+    &QEMU_EXIT_HANDLE
 }
 
 const QEMU_EXIT_HANDLE: RISCV64 = RISCV64 { addr: VIRT_TEST };
 
-trait QEMUExit {
+pub trait QEMUExit {
     fn exit(&self, code: u32) -> !;
     fn exit_success(&self) -> ! {
         self.exit(0);
