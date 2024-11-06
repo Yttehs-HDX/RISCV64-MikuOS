@@ -1,9 +1,9 @@
 pub use entry::*;
 
 use super::{alloc_ppn_tracker, PPNTracker, PhysPageNum, VirtAddr, VirtPageNum, SV39_PPN_BITS};
-use crate::util::StepByOne;
 use alloc::vec;
 use alloc::vec::Vec;
+use simple_range::StepByOne;
 
 mod entry;
 

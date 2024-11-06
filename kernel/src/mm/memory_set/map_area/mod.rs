@@ -4,10 +4,10 @@ pub use map_type::*;
 use crate::{
     config::SV39_PAGE_SIZE,
     mm::{alloc_ppn_tracker, PPNTracker, PTEFlags, PageTable, PhysPageNum, VirtAddr, VirtPageNum},
-    util::{SimpleRange, StepByOne},
 };
 use alloc::collections::btree_map::BTreeMap;
 use core::cmp::Ordering;
+use simple_range::{SimpleRange, StepByOne};
 
 mod map_permission;
 mod map_type;

@@ -9,10 +9,8 @@
  * | <---- VirtAddr -----------------> | 39 bits
  */
 
-use crate::{
-    config::{SV39_OFFSET_BITS, SV39_PAGE_SIZE},
-    util::StepByOne,
-};
+use crate::config::{SV39_OFFSET_BITS, SV39_PAGE_SIZE};
+use simple_range::StepByOne;
 
 pub const SV39_VPN_BITS: usize = 27;
 const SV39_VPN_NUM: usize = 3;
