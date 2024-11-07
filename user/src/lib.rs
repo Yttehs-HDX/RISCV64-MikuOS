@@ -1,16 +1,19 @@
 #![no_std]
 #![no_main]
-#![feature(linkage)]
+#![feature(linkage, alloc_error_handler)]
 
+pub use console::*;
+pub use heap_allocator::*;
 pub use timer::*;
 pub use wrapper::*;
 
 mod lang_items;
 mod syscall;
-pub mod wrapper;
+mod wrapper;
 #[macro_use]
-pub mod console;
-pub mod timer;
+mod console;
+mod heap_allocator;
+mod timer;
 
 #[no_mangle]
 #[link_section = ".text.entry"]

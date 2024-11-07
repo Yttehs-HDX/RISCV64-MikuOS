@@ -26,7 +26,7 @@ impl Write for Console {
 
 #[macro_export]
 macro_rules! print {
-    ($($arg:tt)*) => ($crate::console::print(format_args!($($arg)*)));
+    ($($arg:tt)*) => ($crate::print(format_args!($($arg)*)));
 }
 
 #[macro_export]
