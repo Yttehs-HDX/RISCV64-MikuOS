@@ -1,7 +1,13 @@
-use crate::write;
+use crate::{read, write};
 use core::fmt::{Arguments, Write};
 
 const STDOUT: usize = 1;
+
+pub fn get_char() -> u8 {
+    let mut buf = [0u8; 1];
+    read(&mut buf);
+    buf[0]
+}
 
 pub fn print(args: Arguments) {
     Console.write_fmt(args).unwrap();

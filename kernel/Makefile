@@ -2,7 +2,7 @@
 
 ARCH := riscv64gc-unknown-none-elf
 BUILD_TYPE := release
-BIOS := opensbi.bin
+BIOS := rustsbi.bin
 KERNEL := kernel
 TARGET := target/$(ARCH)/$(BUILD_TYPE)/$(KERNEL)
 ADDR := 0x80200000

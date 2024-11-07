@@ -16,6 +16,11 @@ pub fn get_time() -> TimeVal {
     ts
 }
 
+pub fn read(buf: &mut [u8]) -> isize {
+    let fd = 0;
+    syscall::sys_read(fd, buf)
+}
+
 pub fn write(fd: usize, buf: &[u8]) -> isize {
     syscall::sys_write(fd, buf)
 }
