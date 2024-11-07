@@ -1,13 +1,10 @@
-pub use context::*;
-
 use crate::{
     app::App,
     config::{kernel_stack_top, KERNEL_STACK_SIZE, TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP},
     mm::{self, MapPermission, MapType, MemorySet, PhysPageNum, VirtAddr},
+    task::TaskContext,
     trap::{self, TrapContext},
 };
-
-mod context;
 
 // region TaskControlBlock begin
 pub struct TaskControlBlock {
