@@ -11,62 +11,70 @@ use log::trace;
 
 mod ppn_tracker;
 
-pub fn alloc_ppn_tracker() -> Option<PPNTracker> {
-    PPN_ALLOCATOR
-        .exclusive_access()
-        .alloc()
-        .map(PPNTracker::new)
+pub fn alloc_ppn_tracker() -> Option<PpnTracker> {
+    PPN_ALLOCATOR.alloc().map(PpnTracker::new)
 }
 
 pub fn dealloc_ppn(ppn: PhysPageNum) {
-    PPN_ALLOCATOR.exclusive_access().dealloc(ppn);
+    PPN_ALLOCATOR.dealloc(ppn);
 }
 
 lazy_static! {
-    static ref PPN_ALLOCATOR: UPSafeCell<PpnAllocator> =
-        unsafe { UPSafeCell::new(PpnAllocator::new(*PA_START, PA_END)) };
+    static ref PPN_ALLOCATOR: PpnAllocator = PpnAllocator::new(*PA_START, PA_END);
 }
 
-// region PPNAllocator begin
+// region PpnAllocator begin
 struct PpnAllocator {
-    current_ppn: usize,
-    end_ppn: usize,
-    recycled_frame: Vec<usize>,
+    inner: UPSafeCell<PpnAllocatorInner>,
 }
 
 impl PpnAllocator {
-    fn new(mem_begin: usize, mem_end: usize) -> Self {
-        let start_ppn = PhysAddr(mem_begin).to_ppn_ceil();
-        let end_ppn = PhysAddr(mem_end).to_ppn_floor();
-        trace!("PPNAllocator: PA  [{:#x}, {:#x})", mem_begin, mem_end);
-        trace!("PPNAllocator: PPN [{:#x}, {:#x})", start_ppn.0, end_ppn.0);
+    fn new(pa_begin: usize, pa_end: usize) -> Self {
+        let start_ppn = PhysAddr(pa_begin).to_ppn_ceil();
+        let end_ppn = PhysAddr(pa_end).to_ppn_floor();
+        trace!("PpnAllocator: PA  [{:#x}, {:#x})", pa_begin, pa_end);
+        trace!("PpnAllocator: PPN [{:#x}, {:#x})", start_ppn.0, end_ppn.0);
         Self {
-            current_ppn: start_ppn.0,
-            end_ppn: end_ppn.0,
-            recycled_frame: Vec::new(),
+            inner: unsafe {
+                UPSafeCell::new(PpnAllocatorInner {
+                    ppn_start: start_ppn.0,
+                    ppn_end: end_ppn.0,
+                    recycled_ppn: Vec::new(),
+                })
+            },
         }
     }
 
-    fn alloc(&mut self) -> Option<PhysPageNum> {
-        if let Some(ppn) = self.recycled_frame.pop() {
+    fn alloc(&self) -> Option<PhysPageNum> {
+        let mut inner = self.inner.exclusive_access();
+        if let Some(ppn) = inner.recycled_ppn.pop() {
             return Some(PhysPageNum(ppn));
         }
-        if self.current_ppn == self.end_ppn {
+        if inner.ppn_start == inner.ppn_end {
             return None;
         }
 
-        let ppn = self.current_ppn;
-        self.current_ppn += 1;
+        let ppn = inner.ppn_start;
+        inner.ppn_start += 1;
         Some(PhysPageNum(ppn))
     }
 
-    fn dealloc(&mut self, ppn: PhysPageNum) {
+    fn dealloc(&self, ppn: PhysPageNum) {
+        let mut inner = self.inner.exclusive_access();
         let ppn = ppn.0;
         assert!(
-            ppn < self.current_ppn || !self.recycled_frame.contains(&ppn),
-            "PPNAllocator: dealloc an unallocated frame"
+            ppn < inner.ppn_start || !inner.recycled_ppn.contains(&ppn),
+            "PpnAllocator: dealloc an unallocated ppn"
         );
-        self.recycled_frame.push(ppn);
+        inner.recycled_ppn.push(ppn);
     }
 }
-// region PPNAllocator end
+// region PpnAllocator end
+
+// region PpnAllocatorInner begin
+struct PpnAllocatorInner {
+    ppn_start: usize,
+    ppn_end: usize,
+    recycled_ppn: Vec<usize>,
+}
+// region PpnAllocatorInner end

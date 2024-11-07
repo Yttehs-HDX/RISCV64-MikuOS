@@ -1,6 +1,6 @@
 pub use entry::*;
 
-use super::{alloc_ppn_tracker, PPNTracker, PhysPageNum, VirtAddr, VirtPageNum, SV39_PPN_BITS};
+use super::{alloc_ppn_tracker, PhysPageNum, PpnTracker, VirtAddr, VirtPageNum, SV39_PPN_BITS};
 use alloc::vec;
 use alloc::vec::Vec;
 use simple_range::StepByOne;
@@ -21,11 +21,11 @@ pub fn translate_bype_buffer(satp: usize, ptr: *const u8, len: usize) -> Vec<&'s
         let right_va = vpn.to_va().min(end_va);
         if right_va.aligned() {
             // more than one page
-            buffer.push(&mut current_ppn.get_bytes_array()[left_va.page_offset()..]);
+            buffer.push(&mut current_ppn.as_bytes_array()[left_va.page_offset()..]);
         } else {
             // less than one page
             buffer.push(
-                &mut current_ppn.get_bytes_array()[left_va.page_offset()..right_va.page_offset()],
+                &mut current_ppn.as_bytes_array()[left_va.page_offset()..right_va.page_offset()],
             );
         }
 
@@ -37,7 +37,7 @@ pub fn translate_bype_buffer(satp: usize, ptr: *const u8, len: usize) -> Vec<&'s
 // region PageTable begin
 pub struct PageTable {
     root_ppn: PhysPageNum,
-    ppn_tracker_list: Vec<PPNTracker>,
+    ppn_tracker_list: Vec<PpnTracker>,
 }
 
 impl PageTable {
@@ -70,7 +70,7 @@ impl PageTable {
         let mut ppn = self.root_ppn;
 
         for (i, &idx) in indexes.iter().enumerate() {
-            let pte = &mut ppn.get_pte_array()[idx];
+            let pte = &mut ppn.as_pte_array()[idx];
             if i == indexes.len() - 1 {
                 // last level
                 return Some(pte);
@@ -91,7 +91,7 @@ impl PageTable {
         let mut ppn = self.root_ppn;
 
         for (i, &idx) in indexes.iter().enumerate() {
-            let pte = &mut ppn.get_pte_array()[idx];
+            let pte = &mut ppn.as_pte_array()[idx];
             if i == indexes.len() - 1 {
                 // last level
                 return Some(pte);

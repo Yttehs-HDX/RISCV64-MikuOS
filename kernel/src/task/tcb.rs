@@ -41,7 +41,7 @@ impl TaskControlBlock {
         );
 
         // init TrapContext
-        *trap_cx_ppn.get_mut() = TrapContext::new(
+        *trap_cx_ppn.as_mut() = TrapContext::new(
             entry,
             USER_STACK_TOP + USER_STACK_SIZE,
             kstack_top + KERNEL_STACK_SIZE,
@@ -70,7 +70,7 @@ impl TaskControlBlock {
     }
 
     pub fn get_trap_cx(&self) -> &'static mut TrapContext {
-        self.trap_cx_ppn.get_mut()
+        self.trap_cx_ppn.as_mut()
     }
 
     pub fn get_satp(&self) -> usize {

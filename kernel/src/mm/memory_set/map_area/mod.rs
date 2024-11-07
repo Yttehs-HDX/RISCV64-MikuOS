@@ -3,7 +3,7 @@ pub use map_type::*;
 
 use crate::{
     config::SV39_PAGE_SIZE,
-    mm::{alloc_ppn_tracker, PPNTracker, PTEFlags, PageTable, PhysPageNum, VirtAddr, VirtPageNum},
+    mm::{alloc_ppn_tracker, PTEFlags, PageTable, PhysPageNum, PpnTracker, VirtAddr, VirtPageNum},
 };
 use alloc::collections::btree_map::BTreeMap;
 use core::cmp::Ordering;
@@ -15,7 +15,7 @@ mod map_type;
 // region MapArea begin
 pub struct MapArea {
     pub vpn_range: SimpleRange<VirtPageNum>,
-    ppn_map: BTreeMap<VirtPageNum, PPNTracker>,
+    ppn_map: BTreeMap<VirtPageNum, PpnTracker>,
     pub map_type: MapType,
     pub map_perm: MapPermission,
 }
@@ -102,7 +102,7 @@ impl MapArea {
                 .translate(current_vpn)
                 .unwrap()
                 .ppn()
-                .get_bytes_array()[..src.len()];
+                .as_bytes_array()[..src.len()];
             dst.copy_from_slice(src);
 
             data_start += SV39_PAGE_SIZE;

@@ -1,22 +1,22 @@
+use super::dealloc_ppn;
 use crate::mm::PhysPageNum;
 
-use super::dealloc_ppn;
-
-// region PPNFrame begin
-pub struct PPNTracker {
+// region PpnTracker begin
+pub struct PpnTracker {
     pub ppn: PhysPageNum,
 }
 
-impl Drop for PPNTracker {
+impl Drop for PpnTracker {
     fn drop(&mut self) {
         dealloc_ppn(self.ppn);
     }
 }
 
-impl PPNTracker {
+impl PpnTracker {
     pub fn new(ppn: PhysPageNum) -> Self {
-        ppn.get_bytes_array().fill(0);
+        // clear the page
+        ppn.as_bytes_array().fill(0);
         Self { ppn }
     }
 }
-// region PPNFrame end
+// region PpnTracker end

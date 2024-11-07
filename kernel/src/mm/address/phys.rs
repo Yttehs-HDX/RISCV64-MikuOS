@@ -50,12 +50,12 @@ impl PhysPageNum {
         PhysAddr(self.0 << SV39_OFFSET_BITS)
     }
 
-    pub fn get_bytes_array(&self) -> &'static mut [u8] {
+    pub fn as_bytes_array(&self) -> &'static mut [u8] {
         let pa = self.to_pa();
         unsafe { core::slice::from_raw_parts_mut(pa.0 as *mut u8, SV39_PAGE_SIZE) }
     }
 
-    pub fn get_pte_array(&self) -> &'static mut [PageTableEntry] {
+    pub fn as_pte_array(&self) -> &'static mut [PageTableEntry] {
         let pa = self.to_pa();
         unsafe {
             core::slice::from_raw_parts_mut(
@@ -65,7 +65,7 @@ impl PhysPageNum {
         }
     }
 
-    pub fn get_mut<T>(&self) -> &'static mut T {
+    pub fn as_mut<T>(&self) -> &'static mut T {
         let pa = self.to_pa();
         unsafe { (pa.0 as *mut T).as_mut().unwrap() }
     }
