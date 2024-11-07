@@ -7,6 +7,17 @@ use simple_range::StepByOne;
 
 mod entry;
 
+pub fn translate_ptr(satp: usize, ptr: *const u8) -> Option<*const u8> {
+    let page_table = PageTable::from_satp(satp);
+    let va = VirtAddr(ptr as usize);
+    let offset = va.page_offset();
+    if let Some(pte) = page_table.translate(va.to_vpn_floor()) {
+        Some((pte.ppn().0 + offset) as *const u8)
+    } else {
+        None
+    }
+}
+
 pub fn translate_bype_buffer(satp: usize, ptr: *const u8, len: usize) -> Vec<&'static mut [u8]> {
     let page_table = PageTable::from_satp(satp);
     let mut buffer = Vec::new();
