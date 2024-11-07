@@ -1,23 +1,48 @@
 use crate::{
     app::App,
     config::{kernel_stack_top, KERNEL_STACK_SIZE, TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP},
-    mm::{self, MapPermission, MapType, MemorySet, PhysPageNum, VirtAddr},
+    mm::{self, MapArea, MapPermission, MapType, MemorySet, PhysPageNum, VirtAddr},
     task::TaskContext,
     trap::{self, TrapContext},
 };
 
 // region TaskControlBlock begin
 pub struct TaskControlBlock {
-    #[allow(unused)]
     id: usize,
-    pub task_cx: TaskContext,
-    memory_set: MemorySet,
     trap_cx_ppn: PhysPageNum,
-
-    // User Heap
+    task_cx: TaskContext,
+    memory_set: MemorySet,
+    // User Heap lower bound
     base_size: usize,
-    pub heap_bottom: usize,
-    pub program_brk: usize,
+    // User Heap higher bound
+    program_brk: usize,
+}
+
+impl TaskControlBlock {
+    #[allow(unused)]
+    pub fn id(&self) -> usize {
+        self.id
+    }
+
+    pub fn base_size(&self) -> usize {
+        self.base_size
+    }
+
+    pub fn get_trap_cx_mut(&self) -> &'static mut TrapContext {
+        self.trap_cx_ppn.as_mut()
+    }
+
+    pub fn get_task_cx_ref(&self) -> &TaskContext {
+        &self.task_cx
+    }
+
+    pub fn get_task_cx_mut(&mut self) -> &mut TaskContext {
+        &mut self.task_cx
+    }
+
+    pub fn get_satp(&self) -> usize {
+        self.memory_set.get_satp()
+    }
 }
 
 impl TaskControlBlock {
@@ -25,7 +50,7 @@ impl TaskControlBlock {
         // init MemorySet
         let (memory_set, entry, base_size) = MemorySet::from_elf(app.elf());
 
-        // alloc TrapContext
+        // get TrapContext ppn
         let trap_cx_ppn = memory_set
             .translate(VirtAddr(TRAP_CX_PTR).to_vpn())
             .unwrap()
@@ -55,26 +80,8 @@ impl TaskControlBlock {
             memory_set,
             trap_cx_ppn,
             base_size,
-            heap_bottom: base_size,
             program_brk: base_size,
         }
-    }
-
-    #[allow(unused)]
-    pub fn id(&self) -> usize {
-        self.id
-    }
-
-    pub fn base_size(&self) -> usize {
-        self.base_size
-    }
-
-    pub fn get_trap_cx(&self) -> &'static mut TrapContext {
-        self.trap_cx_ppn.as_mut()
-    }
-
-    pub fn get_satp(&self) -> usize {
-        self.memory_set.get_satp()
     }
 
     pub fn set_break(&mut self, increase: i32) -> Option<usize> {
@@ -85,9 +92,27 @@ impl TaskControlBlock {
         }
 
         self.memory_set
-            .change_area_end(VirtAddr(self.heap_bottom), VirtAddr(new_brk));
+            .change_area_end(VirtAddr(self.base_size()), VirtAddr(new_brk));
         self.program_brk = new_brk;
         Some(old_brk)
+    }
+
+    pub fn insert_new_area(
+        &mut self,
+        start_va: VirtAddr,
+        end_va: VirtAddr,
+        map_perm: MapPermission,
+    ) {
+        self.memory_set
+            .insert_area(MapArea::new(start_va, end_va, MapType::Framed, map_perm));
+    }
+
+    pub fn remove_area(&mut self, start_va: VirtAddr) {
+        self.memory_set.remove_area(start_va.to_vpn_floor());
+    }
+
+    pub fn change_area_end(&mut self, start_va: VirtAddr, new_end_va: VirtAddr) {
+        self.memory_set.change_area_end(start_va, new_end_va);
     }
 }
 // region TaskControlBlock end

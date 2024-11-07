@@ -7,6 +7,7 @@ use simple_range::StepByOne;
 
 mod entry;
 
+#[allow(unused)]
 pub fn translate_ptr(satp: usize, ptr: *const u8) -> Option<*const u8> {
     let page_table = PageTable::from_satp(satp);
     let va = VirtAddr(ptr as usize);
