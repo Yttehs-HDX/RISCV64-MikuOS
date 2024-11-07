@@ -1,13 +1,14 @@
 pub use ppn_tracker::*;
 
-use super::{PhysAddr, PhysPageNum};
 use crate::{
     config::{PA_END, PA_START},
+    mm::{PhysAddr, PhysPageNum},
     sync::UPSafeCell,
 };
 use alloc::vec::Vec;
 use lazy_static::lazy_static;
 use log::trace;
+use simple_range::{SimpleRange, StepByOne};
 
 mod ppn_tracker;
 
@@ -37,35 +38,37 @@ impl PpnAllocator {
         Self {
             inner: unsafe {
                 UPSafeCell::new(PpnAllocatorInner {
-                    ppn_start: start_ppn.0,
-                    ppn_end: end_ppn.0,
+                    ppn_range: SimpleRange::new(start_ppn, end_ppn),
                     recycled_ppn: Vec::new(),
                 })
             },
         }
     }
 
+    fn contains(&self, ppn: PhysPageNum) -> bool {
+        self.inner.shared_access().contains(ppn)
+    }
+
     fn alloc(&self) -> Option<PhysPageNum> {
         let mut inner = self.inner.exclusive_access();
         if let Some(ppn) = inner.recycled_ppn.pop() {
-            return Some(PhysPageNum(ppn));
+            return Some(ppn);
         }
-        if inner.ppn_start == inner.ppn_end {
+        if inner.ppn_range.start() == inner.ppn_range.end() {
             return None;
         }
 
-        let ppn = inner.ppn_start;
-        inner.ppn_start += 1;
-        Some(PhysPageNum(ppn))
+        let ppn = inner.ppn_range.start();
+        inner.ppn_range.get_start_mut().step();
+        Some(ppn)
     }
 
     fn dealloc(&self, ppn: PhysPageNum) {
-        let mut inner = self.inner.exclusive_access();
-        let ppn = ppn.0;
         assert!(
-            ppn < inner.ppn_start || !inner.recycled_ppn.contains(&ppn),
+            self.contains(ppn),
             "PpnAllocator: dealloc an unallocated ppn"
         );
+        let mut inner = self.inner.exclusive_access();
         inner.recycled_ppn.push(ppn);
     }
 }
@@ -73,8 +76,13 @@ impl PpnAllocator {
 
 // region PpnAllocatorInner begin
 struct PpnAllocatorInner {
-    ppn_start: usize,
-    ppn_end: usize,
-    recycled_ppn: Vec<usize>,
+    ppn_range: SimpleRange<PhysPageNum>,
+    recycled_ppn: Vec<PhysPageNum>,
+}
+
+impl PpnAllocatorInner {
+    fn contains(&self, ppn: PhysPageNum) -> bool {
+        ppn < self.ppn_range.start() && !self.recycled_ppn.contains(&ppn)
+    }
 }
 // region PpnAllocatorInner end

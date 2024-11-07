@@ -41,8 +41,17 @@ where
     pub fn start(&self) -> T {
         self.start
     }
+
+    pub fn get_start_mut(&mut self) -> &mut T {
+        &mut self.start
+    }
+
     pub fn end(&self) -> T {
         self.end
+    }
+
+    pub fn get_end_mut(&mut self) -> &mut T {
+        &mut self.end
     }
 }
 // region SimpleRange end

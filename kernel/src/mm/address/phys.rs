@@ -9,6 +9,8 @@
  * | <--------- PhysAddr -----------------> | 56 bits
  */
 
+use simple_range::StepByOne;
+
 use crate::{
     config::{SV39_OFFSET_BITS, SV39_PAGE_SIZE},
     mm::{PageTableEntry, SV39_PTE_BITS},
@@ -44,6 +46,12 @@ impl PhysAddr {
 // region PhysPageNum begin
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct PhysPageNum(pub usize);
+
+impl StepByOne for PhysPageNum {
+    fn step(&mut self) {
+        self.0 += 1;
+    }
+}
 
 impl PhysPageNum {
     pub fn to_pa(self) -> PhysAddr {
