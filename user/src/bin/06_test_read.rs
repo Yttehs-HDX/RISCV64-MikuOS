@@ -1,7 +1,7 @@
 #![no_std]
 #![no_main]
 
-use user_lib::{console::get_char, print, println};
+use user_lib::{get_char, print, println};
 
 extern crate user_lib;
 
