@@ -13,7 +13,6 @@ mod lang_items;
 mod sbi;
 #[macro_use]
 mod console;
-mod allocator;
 #[path = "boards/qemu/mod.rs"]
 mod board;
 mod config;
@@ -29,7 +28,6 @@ mod util;
 fn rust_main() -> ! {
     clear_bss();
     util::logger_init();
-    allocator::init_heap();
     mm::init();
     trap::init_trap();
     // trap::enable_timer_interrupt();
