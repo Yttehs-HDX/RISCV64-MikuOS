@@ -38,12 +38,13 @@ fn rust_main() -> ! {
 
 fn os_start() {
     println!("[Kernel] current time: {}", timer::get_current_time());
-    task::add_task(app::get_app("test_print").unwrap());
-    task::add_task(app::get_app("test_sret").unwrap());
-    task::add_task(app::get_app("test_page_fault").unwrap());
-    task::add_task(app::get_app("test_yield").unwrap());
-    task::add_task(app::get_app("test_sbrk").unwrap());
-    task::add_task(app::get_app("test_read").unwrap());
+    // task::add_task(app::get_app("test_print").unwrap());
+    // task::add_task(app::get_app("test_sret").unwrap());
+    // task::add_task(app::get_app("test_page_fault").unwrap());
+    // task::add_task(app::get_app("test_yield").unwrap());
+    // task::add_task(app::get_app("test_sbrk").unwrap());
+    // task::add_task(app::get_app("test_read").unwrap());
+    task::add_task(app::get_app("user_shell").unwrap());
     task::run_tasks();
 }
 

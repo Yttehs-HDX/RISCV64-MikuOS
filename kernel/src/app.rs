@@ -1,8 +1,8 @@
 use lazy_static::lazy_static;
 
 // Before implementing file system, we use include_bytes! to load the binary of the app
-const APP_NUM: usize = 6;
-const APP_MAX_SIZE: usize = 0x20000;
+const APP_NUM: usize = 7;
+const APP_MAX_SIZE: usize = 0x40000;
 const TEST_PRINT: &[u8] =
     include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/01_test_print");
 const TEST_SRET: &[u8] =
@@ -15,6 +15,8 @@ const TEST_SBRK: &[u8] =
     include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/05_test_sbrk");
 const TEST_READ: &[u8] =
     include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/06_test_read");
+const USER_SHELL: &[u8] =
+    include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/user_shell");
 
 pub fn get_app(name: &str) -> Option<&App> {
     APPS.iter().find(|app| app.name() == name)
@@ -28,6 +30,7 @@ lazy_static! {
         App::new(3, "test_yield", TEST_YIELD),
         App::new(4, "test_sbrk", TEST_SBRK),
         App::new(5, "test_read", TEST_READ),
+        App::new(6, "user_shell", USER_SHELL),
     ];
 }
 
