@@ -21,7 +21,8 @@ pub fn dealloc_ppn(ppn: PhysPageNum) {
 }
 
 lazy_static! {
-    static ref PPN_ALLOCATOR: PpnAllocator = PpnAllocator::new(*PA_START, PA_END);
+    static ref PPN_ALLOCATOR: PpnAllocator =
+        PpnAllocator::new(PhysAddr(*PA_START), PhysAddr(PA_END));
 }
 
 // region PpnAllocator begin
@@ -30,10 +31,10 @@ struct PpnAllocator {
 }
 
 impl PpnAllocator {
-    fn new(pa_begin: usize, pa_end: usize) -> Self {
-        let start_ppn = PhysAddr(pa_begin).to_ppn_ceil();
-        let end_ppn = PhysAddr(pa_end).to_ppn_floor();
-        trace!("PpnAllocator: PA  [{:#x}, {:#x})", pa_begin, pa_end);
+    fn new(pa_begin: PhysAddr, pa_end: PhysAddr) -> Self {
+        let start_ppn = pa_begin.to_ppn_ceil();
+        let end_ppn = pa_end.to_ppn_floor();
+        trace!("PpnAllocator: PA  [{:#x}, {:#x})", pa_begin.0, pa_end.0);
         trace!("PpnAllocator: PPN [{:#x}, {:#x})", start_ppn.0, end_ppn.0);
         Self {
             inner: unsafe {
