@@ -99,7 +99,7 @@ impl MapArea {
         let data_end = data.len();
 
         loop {
-            let src = &data[data_start..data_end];
+            let src = &data[data_start..data_end.min(data_start + SV39_PAGE_SIZE)];
             let dst = &mut page_table
                 .translate(current_vpn)
                 .unwrap()
