@@ -7,14 +7,13 @@ use simple_range::StepByOne;
 
 mod entry;
 
-#[allow(unused)]
-pub fn translate_ptr(satp: usize, ptr: *const u8) -> Option<*const u8> {
+pub fn translate_ptr(satp: usize, ptr: *const u8) -> Option<*mut u8> {
     let page_table = PageTable::from_satp(satp);
     let va = VirtAddr(ptr as usize);
     let offset = va.page_offset();
     page_table.translate(va.to_vpn_floor()).map(|pte| {
         let pa = pte.ppn().to_pa();
-        (pa.0 + offset) as *const u8
+        (pa.0 + offset) as *mut u8
     })
 }
 
