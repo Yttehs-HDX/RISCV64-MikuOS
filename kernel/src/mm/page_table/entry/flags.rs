@@ -13,32 +13,4 @@ bitflags! {
         const D = 1 << 7;
     }
 }
-
-#[allow(unused)]
-impl PTEFlags {
-    pub fn is_valid(&self) -> bool {
-        self.contains(Self::V)
-    }
-    pub fn is_readable(&self) -> bool {
-        self.contains(Self::R)
-    }
-    pub fn is_writable(&self) -> bool {
-        self.contains(Self::W)
-    }
-    pub fn is_executable(&self) -> bool {
-        self.contains(Self::X)
-    }
-    pub fn is_user(&self) -> bool {
-        self.contains(Self::U)
-    }
-    pub fn is_global(&self) -> bool {
-        self.contains(Self::G)
-    }
-    pub fn is_accessed(&self) -> bool {
-        self.contains(Self::A)
-    }
-    pub fn is_dirty(&self) -> bool {
-        self.contains(Self::D)
-    }
-}
 // region PTEFlags end
