@@ -3,7 +3,7 @@ pub use map_type::*;
 
 use crate::{
     config::SV39_PAGE_SIZE,
-    mm::{alloc_ppn_tracker, PTEFlags, PageTable, PhysPageNum, PpnTracker, VirtAddr, VirtPageNum},
+    mm::{alloc_ppn_tracker, PageTable, PhysPageNum, PpnTracker, VirtAddr, VirtPageNum},
 };
 use alloc::collections::btree_map::BTreeMap;
 use core::cmp::Ordering;
@@ -16,8 +16,8 @@ mod map_type;
 pub struct MapArea {
     pub vpn_range: SimpleRange<VirtPageNum>,
     ppn_map: BTreeMap<VirtPageNum, PpnTracker>,
-    pub map_type: MapType,
-    pub map_perm: MapPermission,
+    map_type: MapType,
+    map_perm: MapPermission,
 }
 
 impl MapArea {
@@ -46,7 +46,7 @@ impl MapArea {
                 self.ppn_map.insert(vpn, ppn_tracker);
             }
         }
-        page_table.map(vpn, ppn, PTEFlags::from_bits_truncate(self.map_perm.bits()));
+        page_table.map(vpn, ppn, self.map_perm.as_pteflags());
     }
 
     pub fn unmap_one(&mut self, vpn: VirtPageNum, page_table: &mut PageTable) {
@@ -59,14 +59,16 @@ impl MapArea {
         page_table.unmap(vpn);
     }
 
-    pub fn change_vpn_range(&mut self, new_end_vpn: VirtPageNum, page_table: &mut PageTable) {
+    pub fn change_vpn_end(&mut self, new_end_vpn: VirtPageNum, page_table: &mut PageTable) {
         match new_end_vpn.cmp(&self.vpn_range.end()) {
             Ordering::Less => {
                 for vpn in SimpleRange::new(new_end_vpn, self.vpn_range.end()) {
                     self.unmap_one(vpn, page_table);
                 }
             }
-            Ordering::Equal => {}
+            Ordering::Equal => {
+                return;
+            }
             Ordering::Greater => {
                 for vpn in SimpleRange::new(self.vpn_range.end(), new_end_vpn) {
                     self.map_one(vpn, page_table);
@@ -76,13 +78,13 @@ impl MapArea {
         self.vpn_range = SimpleRange::new(self.vpn_range.start(), new_end_vpn);
     }
 
-    pub fn map(&mut self, page_table: &mut PageTable) {
+    pub fn map_all(&mut self, page_table: &mut PageTable) {
         for vpn in self.vpn_range {
             self.map_one(vpn, page_table);
         }
     }
 
-    pub fn unmap(&mut self, page_table: &mut PageTable) {
+    pub fn unmap_all(&mut self, page_table: &mut PageTable) {
         for vpn in self.vpn_range {
             self.unmap_one(vpn, page_table);
         }

@@ -77,28 +77,15 @@ impl TaskControlBlock {
         self.memory_set.get_satp()
     }
 
-    #[allow(unused)]
-    pub fn set_break(&mut self, new_brk: usize) -> Option<usize> {
+    pub fn set_break(&mut self, increase: i32) -> Option<usize> {
         let old_brk = self.program_brk;
+        let new_brk = (old_brk as i32 + increase) as usize;
         if new_brk < self.base_size() {
             return None;
         }
 
         self.memory_set
-            .set_break(VirtAddr(self.heap_bottom), VirtAddr(new_brk));
-        self.program_brk = new_brk;
-        Some(old_brk)
-    }
-
-    pub fn add_break(&mut self, size: i32) -> Option<usize> {
-        let old_brk = self.program_brk;
-        let new_brk = (old_brk as i32 + size) as usize;
-        if new_brk < self.base_size() {
-            return None;
-        }
-
-        self.memory_set
-            .set_break(VirtAddr(self.heap_bottom), VirtAddr(new_brk));
+            .change_area_end(VirtAddr(self.heap_bottom), VirtAddr(new_brk));
         self.program_brk = new_brk;
         Some(old_brk)
     }
