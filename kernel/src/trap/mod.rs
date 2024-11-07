@@ -1,20 +1,12 @@
-use crate::{
-    config::{TRAMPOLINE, TRAP_CX_PTR},
-    sbi, syscall, task, timer,
-};
-use core::arch::{asm, global_asm};
-use log::{debug, error};
-use riscv::register::{
-    scause::{self, Exception, Interrupt, Trap},
-    sie, stval, stvec,
-    utvec::TrapMode,
-};
+use crate::{config::TRAMPOLINE, sbi, timer};
+use log::error;
+use riscv::register::{sie, stvec, utvec::TrapMode};
 
 pub use context::*;
+pub use control_flow::*;
 
 mod context;
-
-global_asm!(include_str!("trap.S"));
+mod control_flow;
 
 pub fn init_trap() {
     set_kernel_trap_entry();
@@ -26,56 +18,6 @@ pub fn enable_timer_interrupt() {
     timer::set_next_trigger();
 }
 
-#[no_mangle]
-pub fn trap_handler() -> ! {
-    set_kernel_trap_entry();
-    let cx = task::current_trap_cx();
-    let stval = stval::read();
-    let scause = scause::read();
-    match scause.cause() {
-        Trap::Exception(Exception::UserEnvCall) => {
-            debug!("Ecall from U-mode @ {:#x}", cx.sepc);
-            // move to next instruction
-            cx.sepc += 4;
-            cx.x[10] = syscall::syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]) as usize;
-            trap_return();
-        }
-        Trap::Interrupt(Interrupt::SupervisorTimer) => {
-            timer::set_next_trigger();
-            syscall::sys_yield();
-        }
-        Trap::Exception(Exception::IllegalInstruction) => {
-            error!("Illegal instruction @ {:#x}, badaddr {:#x}", cx.sepc, stval);
-            syscall::sys_exit(1);
-        }
-        Trap::Exception(Exception::StoreFault) | Trap::Exception(Exception::StorePageFault) => {
-            error!("Store fault @ {:#x}, badaddr {:#x}", cx.sepc, stval);
-            syscall::sys_exit(1);
-        }
-        _ => {
-            error!("Unhandled trap {:?} @ {:#x}", scause.cause(), cx.sepc);
-            syscall::sys_exit(1);
-        }
-    }
-}
-
-#[no_mangle]
-pub fn trap_return() -> ! {
-    set_user_trap_entry();
-    let trap_cx_ptr = TRAP_CX_PTR;
-    let user_satp = task::current_user_satp();
-    let restore_trap_va = __restore_trap as usize - __save_trap as usize + TRAMPOLINE;
-    unsafe {
-        asm!(
-            "fence.i",
-            "jr {restore_trap}", restore_trap = in(reg) restore_trap_va,
-            in("a0") trap_cx_ptr,
-            in("a1") user_satp,
-            options(noreturn)
-        )
-    }
-}
-
 fn set_kernel_trap_entry() {
     unsafe {
         stvec::write(kernel_trap_handler as usize, TrapMode::Direct);
@@ -83,6 +25,7 @@ fn set_kernel_trap_entry() {
 }
 
 fn kernel_trap_handler() {
+    error!("A trap occurred in kernel!");
     sbi::sbi_shutdown_failure();
 }
 
@@ -90,10 +33,4 @@ fn set_user_trap_entry() {
     unsafe {
         stvec::write(TRAMPOLINE, TrapMode::Direct);
     }
-}
-
-extern "C" {
-    fn __save_trap();
-    #[allow(improper_ctypes)]
-    fn __restore_trap(trap_cx_ptr: *const TrapContext, user_satp: usize);
 }

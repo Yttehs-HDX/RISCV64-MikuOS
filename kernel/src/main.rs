@@ -1,6 +1,6 @@
 #![no_std]
 #![no_main]
-#![feature(alloc_error_handler)]
+#![feature(alloc_error_handler, naked_functions)]
 
 use core::arch::global_asm;
 
