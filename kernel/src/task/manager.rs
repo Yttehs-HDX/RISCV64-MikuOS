@@ -2,7 +2,7 @@ use super::TaskControlBlock;
 use crate::{
     app::App,
     sync::UPSafeCell,
-    task::{TaskContext, __switch},
+    task::{TaskContext, __restore_task, __save_task},
     trap::TrapContext,
 };
 use alloc::collections::vec_deque::VecDeque;
@@ -51,7 +51,7 @@ pub fn yield_handler() -> ! {
     // run other task
     let tcb = TASK_MANAGER.get_available_task().unwrap();
     TASK_MANAGER.set_current_task(tcb);
-    TASK_MANAGER.save_last_and_resume_current();
+    TASK_MANAGER.resume_current_task();
 }
 
 lazy_static! {
@@ -119,7 +119,10 @@ impl TaskManager {
     fn suspend_current_task(&self) {
         let mut inner = self.inner.exclusive_access();
         assert!(inner.running_task.is_some(), "TaskManager: no running task");
-        let tcb = inner.running_task.take().unwrap();
+        let mut tcb = inner.running_task.take().unwrap();
+        unsafe {
+            __save_task(&mut tcb.task_cx);
+        }
         inner.suspend_tasks.push_back(tcb);
     }
 
@@ -139,29 +142,7 @@ impl TaskManager {
 
         drop(inner);
         unsafe {
-            __switch(&mut TaskContext::empty(), running_task_cx);
-        }
-        unreachable!();
-    }
-
-    fn save_last_and_resume_current(&self) -> ! {
-        let mut inner = self.inner.exclusive_access();
-        assert!(inner.running_task.is_some(), "TaskManager: no running task");
-
-        // get the running task context
-        let running_tcb = inner.running_task.as_ref().unwrap();
-        let running_task_cx = &running_tcb.task_cx as *const TaskContext;
-
-        // get the suspend task context
-        let suspend_tcb = match inner.suspend_tasks.back_mut() {
-            Some(tcb) => tcb,
-            None => inner.running_task.as_mut().unwrap(),
-        };
-        let suspend_task_cx = &mut suspend_tcb.task_cx as *mut TaskContext;
-
-        drop(inner);
-        unsafe {
-            __switch(suspend_task_cx, running_task_cx);
+            __restore_task(running_task_cx);
         }
         unreachable!();
     }
