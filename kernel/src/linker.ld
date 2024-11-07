@@ -11,6 +11,13 @@ SECTIONS {
     stext = .;
     .text : {
         *(.text.entry)
+
+        # trampoline costs a page (4096 bits)
+        . = ALIGN(4K);
+        strampoline = .;
+        *(.text.trampoline)
+        . = ALIGN(4K);
+
         *(.text .text.*)
         *(.stext .stext.*)
     }
@@ -42,11 +49,11 @@ SECTIONS {
     # data end
 
     .bss : {
-        sbss_with_stack = .;
+        sbss = .;
         *(.bss.stack)
 
     # bss start
-        sbss = .;
+        sbss_no_stack = .;
         *(.bss .bss.*)
         *(.sbss .sbss.*)
     }

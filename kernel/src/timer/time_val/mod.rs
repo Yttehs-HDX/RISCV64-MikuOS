@@ -1,28 +1,11 @@
-use core::ops;
-use alloc::string::String;
-use alloc::format;
-use crate::{config::CLOCK_FREQ, sbi};
+pub use unit::*;
+
+use crate::config::CLOCK_FREQ;
+
+mod unit;
 
 const MILLIS_PER_SEC: usize = 1_000;
 const MICRO_PER_SEC: usize = 1_000_000;
-
-const TIGGER_TIME: usize = 10_0000; // 10ms
-
-pub fn get_current_time() -> TimeVal {
-    let time = sbi::sbi_get_time();
-    TimeVal::from_reg(time)
-}
-
-pub fn set_timer(timer: TimeVal) {
-    let timer = timer.get_time(TimeUnit::Tick);
-    sbi::sbi_set_timer(timer);
-}
-
-pub fn set_next_trigger() {
-    let current_time = get_current_time();
-    let next_time = TimeVal::new(0, TIGGER_TIME);
-    set_timer(current_time + next_time);
-}
 
 // region TimeVal begin
 #[repr(C)]
@@ -30,6 +13,18 @@ pub fn set_next_trigger() {
 pub struct TimeVal {
     sec: usize,
     usec: usize,
+}
+
+impl core::fmt::Display for TimeVal {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(
+            f,
+            "{:02}:{:02}.{:06}",
+            self.sec / 60,
+            self.sec % 60,
+            self.usec
+        )
+    }
 }
 
 impl TimeVal {
@@ -53,19 +48,9 @@ impl TimeVal {
             TimeUnit::Tick => self.sec * CLOCK_FREQ + self.usec * CLOCK_FREQ / MICRO_PER_SEC,
         }
     }
-
-    pub fn format(&self) -> String {
-        format!(
-            "{:02}:{:02}:{:02}.{:06}",
-            self.sec / 3600,
-            self.sec / 60 % 60,
-            self.sec % 60,
-            self.usec
-        )
-    }
 }
 
-impl ops::Add<TimeVal> for TimeVal {
+impl core::ops::Add<TimeVal> for TimeVal {
     type Output = TimeVal;
 
     fn add(self, rhs: TimeVal) -> TimeVal {
@@ -79,7 +64,7 @@ impl ops::Add<TimeVal> for TimeVal {
     }
 }
 
-impl ops::Sub<TimeVal> for TimeVal {
+impl core::ops::Sub<TimeVal> for TimeVal {
     type Output = TimeVal;
 
     fn sub(self, rhs: TimeVal) -> TimeVal {
@@ -96,7 +81,7 @@ impl ops::Sub<TimeVal> for TimeVal {
     }
 }
 
-impl ops::Mul<usize> for TimeVal {
+impl core::ops::Mul<usize> for TimeVal {
     type Output = TimeVal;
 
     fn mul(self, rhs: usize) -> TimeVal {
@@ -110,7 +95,7 @@ impl ops::Mul<usize> for TimeVal {
     }
 }
 
-impl ops::Div<usize> for TimeVal {
+impl core::ops::Div<usize> for TimeVal {
     type Output = TimeVal;
 
     fn div(self, rhs: usize) -> TimeVal {
@@ -141,15 +126,3 @@ impl PartialOrd for TimeVal {
     }
 }
 // region TimeVal end
-
-// region TimeUnit begin
-#[allow(unused)]
-pub enum TimeUnit {
-    Hour,
-    Min,
-    Sec,
-    Msec,
-    Usec,
-    Tick,
-}
-// region TimeUnit end

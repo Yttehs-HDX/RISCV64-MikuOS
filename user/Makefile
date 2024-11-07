@@ -12,20 +12,11 @@ TARGET_DIR = target/$(ARCH)/$(BUILD_TYPE)
 
 APPS = $(wildcard $(APP_DIR)/*.rs)
 ELFS = $(patsubst $(APP_DIR)/%.rs, $(TARGET_DIR)/%, $(APPS))
-BINS = $(patsubst $(APP_DIR)/%.rs, $(TARGET_DIR)/%.bin, $(APPS))
 
-OBJCOPY = rust-objcopy
-OBJCOPY_FLAGS = --strip-all -O binary
-
-all: objcopy
+all: build
 
 build:
-	@$(PYTHON) build.py
-
-objcopy: build
-	@$(foreach elf, $(ELFS), \
-		$(OBJCOPY) $(OBJCOPY_FLAGS) $(elf) $(patsubst %, %.bin, $(elf)); \
-	)
+	@$(CARGO) build $(CARGO_FLAGS)
 
 clean:
 	@$(CARGO) clean

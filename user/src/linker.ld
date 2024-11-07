@@ -1,6 +1,6 @@
 OUTPUT_ARCH(riscv)
 ENTRY(_start)
-BASE_ADDR = 0x80400000;
+BASE_ADDR = 0x10000;
 
 SECTIONS {
     # kernel start

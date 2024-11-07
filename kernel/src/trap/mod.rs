@@ -1,55 +1,36 @@
-use core::arch::global_asm;
-use log::{debug, error};
-use riscv::register::{scause::{self, Exception, Interrupt, Trap}, sie, stval, stvec, utvec::TrapMode};
-use crate::{syscall, task, timer};
+use crate::{config::TRAMPOLINE, sbi, timer};
+use log::error;
+use riscv::register::{sie, stvec, utvec::TrapMode};
 
 pub use context::*;
+pub use control_flow::*;
 
 mod context;
-
-global_asm!(include_str!("trap.S"));
+mod control_flow;
 
 pub fn init_trap() {
-    unsafe { stvec::write(__save_trap as usize, TrapMode::Direct) };
+    set_kernel_trap_entry();
 }
 
+#[allow(unused)]
 pub fn enable_timer_interrupt() {
     unsafe { sie::set_stimer() };
     timer::set_next_trigger();
 }
 
-#[no_mangle]
-pub fn trap_handler(cx: &mut TrapContext) -> &TrapContext {
-    let stval = stval::read();
-    let scause = scause::read();
-    match scause.cause() {
-        Trap::Exception(Exception::UserEnvCall) => {
-            debug!("Ecall from U-mode @ {:#x}", cx.sepc);
-            cx.sepc += 4;
-            cx.x[10] = syscall::syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]) as usize;
-            cx
-        }
-        Trap::Interrupt(Interrupt::SupervisorTimer) => {
-            timer::set_next_trigger();
-            task::yield_handler();
-        }
-        Trap::Exception(Exception::IllegalInstruction) => {
-            error!("Illegal instruction @ {:#x}, badaddr {:#x}", cx.sepc, stval);
-            syscall::sys_exit(1);
-        }
-        Trap::Exception(Exception::StoreFault) |
-        Trap::Exception(Exception::StorePageFault) => {
-            error!("Store fault @ {:#x}, badaddr {:#x}", cx.sepc, stval);
-            syscall::sys_exit(1);
-        }
-        _ => {
-            error!("Unhandled trap {:?} @ {:#x}", scause.cause(), cx.sepc);
-            syscall::sys_exit(1);
-        }
+fn set_kernel_trap_entry() {
+    unsafe {
+        stvec::write(kernel_trap_handler as usize, TrapMode::Direct);
     }
 }
 
-extern "C" {
-    pub fn __save_trap();
-    pub fn __restore_trap();
+fn kernel_trap_handler() {
+    error!("A trap occurred in kernel!");
+    sbi::sbi_shutdown_failure();
+}
+
+fn set_user_trap_entry() {
+    unsafe {
+        stvec::write(TRAMPOLINE, TrapMode::Direct);
+    }
 }

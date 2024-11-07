@@ -1,14 +1,18 @@
-use core::arch::asm;
-
 use lazy_static::lazy_static;
-use crate::config::{APP_BASE_ADDR, APP_SIZE_LIMIT};
 
 // Before implementing file system, we use include_bytes! to load the binary of the app
-const APP_NUM: usize = 4;
-const TEST_PRINT: &[u8] = include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/01_test_print.bin");
-const TEST_SRET: &[u8] = include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/02_test_sret.bin");
-const TEST_PAGE_FAULT: &[u8] = include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/03_test_page_fault.bin");
-const TEST_YIELD: &[u8] = include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/04_test_yield.bin");
+const APP_NUM: usize = 5;
+const APP_MAX_SIZE: usize = 0x20000;
+const TEST_PRINT: &[u8] =
+    include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/01_test_print");
+const TEST_SRET: &[u8] =
+    include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/02_test_sret");
+const TEST_PAGE_FAULT: &[u8] =
+    include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/03_test_page_fault");
+const TEST_YIELD: &[u8] =
+    include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/04_test_yield");
+const TEST_SBRK: &[u8] =
+    include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/05_test_sbrk");
 
 pub fn get_app(name: &str) -> Option<&App> {
     APPS.iter().find(|app| app.name() == name)
@@ -20,54 +24,59 @@ lazy_static! {
         App::new(1, "test_sret", TEST_SRET),
         App::new(2, "test_page_fault", TEST_PAGE_FAULT),
         App::new(3, "test_yield", TEST_YIELD),
+        App::new(4, "test_sbrk", TEST_SBRK),
     ];
 }
 
+static mut ALIGNED_SPACES: [AlignedSpace; APP_NUM] = [AlignedSpace {
+    data: [0; APP_MAX_SIZE],
+}; APP_NUM];
+
 // region App begin
 pub struct App {
-    no: usize,
+    id: usize,
     name: &'static str,
-    bin: &'static [u8],
+    space: &'static AlignedSpace,
 }
 
 impl App {
-    pub fn new(no: usize, name: &'static str, bin: &'static [u8]) -> Self {
-        let app = App { no, name, bin };
-        app.load_to_mem();
-        app
+    pub fn new(id: usize, name: &'static str, elf: &'static [u8]) -> Self {
+        unsafe {
+            ALIGNED_SPACES[id].copy_data(elf);
+            Self {
+                id,
+                name,
+                space: &ALIGNED_SPACES[id],
+            }
+        }
     }
 
-    pub fn no(&self) -> usize {
-        self.no
+    pub fn id(&self) -> usize {
+        self.id
     }
-
     pub fn name(&self) -> &'static str {
         self.name
     }
-
-    pub fn bin(&self) -> &'static [u8] {
-        self.bin
-    }
-
-    pub fn len(&self) -> usize {
-        self.bin.len()
-    }
-
-    #[inline(always)]
-    pub fn base_addr(&self) -> usize {
-        APP_BASE_ADDR + self.no() * APP_SIZE_LIMIT
-    }
-
-    fn load_to_mem(&self) {
-        unsafe {
-            let dst = core::slice::from_raw_parts_mut(
-                self.base_addr() as *mut u8,
-                self.len()
-            );
-            dst.copy_from_slice(self.bin());
-            // flush the instruction cache
-            asm!("fence.i");
-        }
+    pub fn elf(&self) -> &'static [u8] {
+        self.space.get_data()
     }
 }
 // region App end
+
+// region AlignSpace begin
+#[repr(align(4096))]
+#[derive(Clone, Copy)]
+struct AlignedSpace {
+    data: [u8; APP_MAX_SIZE],
+}
+
+impl AlignedSpace {
+    pub fn copy_data(&mut self, data: &[u8]) {
+        self.data[..data.len()].copy_from_slice(data);
+    }
+
+    pub fn get_data(&self) -> &[u8] {
+        &self.data
+    }
+}
+// region AlignSpace end

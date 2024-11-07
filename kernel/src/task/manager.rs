@@ -1,46 +1,83 @@
+use super::TaskControlBlock;
+use crate::{
+    app::App,
+    mm::{MapPermission, VirtAddr},
+    sync::UPSafeCell,
+    task::{TaskContext, __restore_task, __save_task},
+    trap::TrapContext,
+};
 use alloc::collections::vec_deque::VecDeque;
 use lazy_static::lazy_static;
-use log::{debug, info};
-use crate::{app::App, sync::UPSafeCell, task::{switch, TaskContext, __switch}};
-use super::TaskControlBlock;
+use log::info;
 
 pub fn add_task(app: &App) {
     TASK_MANAGER.add_task(app);
 }
 
-pub fn exit_handler() -> ! {
-    TASK_MANAGER.info();
-    TASK_MANAGER.exit_current_task();
-    TASK_MANAGER.info();
-    if TASK_MANAGER.get_task_num(TaskStatus::All) == 0 {
-        info!("TaskManager: all tasks are finished");
-        crate::kernel_end();
+pub fn current_user_satp() -> usize {
+    TASK_MANAGER.get_current_user_satp()
+}
+
+pub fn current_trap_cx() -> &'static mut TrapContext {
+    TASK_MANAGER.get_current_trap_cx()
+}
+
+pub fn change_current_brk(increase: i32) -> Option<usize> {
+    TASK_MANAGER.set_current_brk(increase)
+}
+
+#[allow(unused)]
+pub fn insert_area_for_current(start_va: VirtAddr, end_va: VirtAddr, map_perm: MapPermission) {
+    TASK_MANAGER.insert_area_for_current(start_va, end_va, map_perm)
+}
+
+#[allow(unused)]
+pub fn remove_area_for_current(start_va: VirtAddr) {
+    TASK_MANAGER.remove_area_for_current(start_va)
+}
+
+#[allow(unused)]
+pub fn change_area_end_for_current(start_va: VirtAddr, end_va: VirtAddr) {
+    TASK_MANAGER.change_area_end_for_current(start_va, end_va)
+}
+
+pub fn run_tasks() -> ! {
+    match TASK_MANAGER.get_available_task() {
+        Some(tcb) => {
+            TASK_MANAGER.set_current_task(tcb);
+            TASK_MANAGER.resume_current_task();
+        }
+        _ => {
+            info!("TaskManager: no task to run");
+            crate::os_end()
+        }
     }
-    run_task();
+}
+
+pub fn exit_handler() -> ! {
+    TASK_MANAGER.exit_current_task();
+
+    // run other task
+    run_tasks();
 }
 
 pub fn yield_handler() -> ! {
-    TASK_MANAGER.info();
-    run_task();
-}
+    TASK_MANAGER.suspend_current_task();
 
-pub fn run_task() -> ! {
-    TASK_MANAGER.run_task();
-}
-
-pub fn print_task_info() {
-    let num = TASK_MANAGER.get_task_num(TaskStatus::All);
-    info!("TaskManager: task number: {}", num);
+    // run other task
+    let tcb = TASK_MANAGER.get_available_task().unwrap();
+    TASK_MANAGER.set_current_task(tcb);
+    TASK_MANAGER.resume_current_task();
 }
 
 lazy_static! {
     static ref TASK_MANAGER: TaskManager = TaskManager {
-        inner: unsafe { UPSafeCell::new(
-            TaskManagerInner {
-                running_tasks: VecDeque::new(),
-                waiting_tasks: VecDeque::new(),
-            }
-        )}
+        inner: unsafe {
+            UPSafeCell::new(TaskManagerInner {
+                running_task: None,
+                suspend_tasks: VecDeque::new(),
+            })
+        }
     };
 }
 
@@ -53,81 +90,107 @@ impl TaskManager {
     fn add_task(&self, app: &App) {
         let mut inner = self.inner.exclusive_access();
         let tcb = TaskControlBlock::new(app);
-        inner.waiting_tasks.push_back(tcb);
+        inner.suspend_tasks.push_back(tcb);
+    }
+
+    fn get_current_user_satp(&self) -> usize {
+        let inner = self.inner.shared_access();
+        let running_task = inner.running_task.as_ref().unwrap();
+        running_task.get_satp()
+    }
+
+    fn get_current_trap_cx(&self) -> &'static mut TrapContext {
+        let inner = self.inner.shared_access();
+        let running_task = inner.running_task.as_ref().unwrap();
+        running_task.get_trap_cx_mut()
+    }
+
+    fn set_current_brk(&self, increase: i32) -> Option<usize> {
+        let mut inner = self.inner.exclusive_access();
+        let running_task = inner.running_task.as_mut().unwrap();
+        running_task.set_break(increase)
+    }
+
+    fn insert_area_for_current(
+        &self,
+        start_va: VirtAddr,
+        end_va: VirtAddr,
+        map_perm: MapPermission,
+    ) {
+        let mut inner = self.inner.exclusive_access();
+        let running_task = inner.running_task.as_mut().unwrap();
+        running_task.insert_new_area(start_va, end_va, map_perm);
+    }
+
+    fn remove_area_for_current(&self, start_va: VirtAddr) {
+        let mut inner = self.inner.exclusive_access();
+        let running_task = inner.running_task.as_mut().unwrap();
+        running_task.remove_area(start_va);
+    }
+
+    fn change_area_end_for_current(&self, start_va: VirtAddr, end_va: VirtAddr) {
+        let mut inner = self.inner.exclusive_access();
+        let running_task = inner.running_task.as_mut().unwrap();
+        running_task.change_area_end(start_va, end_va);
+    }
+}
+
+impl TaskManager {
+    fn get_available_task(&self) -> Option<TaskControlBlock> {
+        let mut inner = self.inner.exclusive_access();
+        if inner.suspend_tasks.is_empty() {
+            return None;
+        }
+
+        let tcb = inner.suspend_tasks.pop_front().unwrap();
+        Some(tcb)
+    }
+
+    fn set_current_task(&self, tcb: TaskControlBlock) {
+        let mut inner = self.inner.exclusive_access();
+        assert!(
+            inner.running_task.is_none(),
+            "TaskManager: already has running task"
+        );
+        inner.running_task = Some(tcb);
+    }
+
+    fn suspend_current_task(&self) {
+        let mut inner = self.inner.exclusive_access();
+        assert!(inner.running_task.is_some(), "TaskManager: no running task");
+        let mut tcb = inner.running_task.take().unwrap();
+        unsafe {
+            __save_task(tcb.get_task_cx_mut());
+        }
+        inner.suspend_tasks.push_back(tcb);
     }
 
     fn exit_current_task(&self) {
         let mut inner = self.inner.exclusive_access();
-        let tcb = inner.running_tasks.pop_front();
-        if let Some(mut tcb) = tcb {
-            tcb.drop();
-        }
+        assert!(inner.running_task.is_some(), "TaskManager: no running task");
+        inner.running_task = None;
     }
 
-    fn get_task_num(&self, status: TaskStatus) -> usize {
-        let running = self.inner.shared_access().running_tasks.len();
-        let waiting = self.inner.shared_access().waiting_tasks.len();
-        match status {
-            TaskStatus::All => running + waiting,
-            TaskStatus::Running => running,
-            TaskStatus::Suspended => waiting,
-        }
-    }
+    fn resume_current_task(&self) -> ! {
+        let inner = self.inner.shared_access();
+        assert!(inner.running_task.is_some(), "TaskManager: no running task");
 
-    fn info(&self) {
-        let running = self.get_task_num(TaskStatus::Running);
-        let waiting = self.get_task_num(TaskStatus::Suspended);
-        debug!("TaskManager: running: {}, suspended: {}", running, waiting);
-    }
+        // get the task context
+        let running_tcb = inner.running_task.as_ref().unwrap();
+        let running_task_cx = running_tcb.get_task_cx_ref() as *const TaskContext;
 
-    fn _run_first_task(&self) -> ! {
-        let mut inner = self.inner.exclusive_access();
-        let tcb = inner.waiting_tasks.pop_front().unwrap();
-        inner.running_tasks.push_back(tcb);
         drop(inner);
         unsafe {
-            __switch(&mut TaskContext::empty(), &tcb.task_cx);
+            __restore_task(running_task_cx);
         }
-        unreachable!()
-    }
-
-    fn run_task(&self) -> ! {
-        if self.get_task_num(TaskStatus::Running) == 0 {
-            self._run_first_task();
-        }
-        if self.get_task_num(TaskStatus::Running) == 1 {
-            let mut inner = self.inner.exclusive_access();
-            let tcb = inner.running_tasks.pop_front().unwrap();
-            inner.waiting_tasks.push_back(tcb);
-            drop(inner);
-            self._run_first_task();
-        }
-
-        let mut inner = self.inner.exclusive_access();
-        let new_tcb = inner.waiting_tasks.pop_front().unwrap();
-        let mut old_tcb = inner.running_tasks.pop_front().unwrap();
-        inner.running_tasks.push_back(new_tcb);
-        inner.waiting_tasks.push_back(old_tcb);
-        drop(inner);
-        unsafe {
-            switch(&mut old_tcb, &new_tcb);
-        }
-        unreachable!()
+        unreachable!();
     }
 }
 // region TaskManager end
 
 // region TaskManagerInner begin
 struct TaskManagerInner {
-    running_tasks: VecDeque<TaskControlBlock>,
-    waiting_tasks: VecDeque<TaskControlBlock>,
+    running_task: Option<TaskControlBlock>,
+    suspend_tasks: VecDeque<TaskControlBlock>,
 }
 // region TaskManagerInner end
-
-// region TaskStatus begin
-pub enum TaskStatus {
-    All,
-    Running,
-    Suspended,
-}
-// region TaskStatus end
