@@ -1,7 +1,7 @@
 use crate::{
     app::App,
     config::{kernel_stack_top, KERNEL_STACK_SIZE, TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP},
-    mm::{self, MapPermission, MemorySet, PhysPageNum, VirtAddr},
+    mm::{self, MapPermission, MemorySet, MemorySpace, PhysPageNum, VirtAddr},
     task::{PidHandle, TaskContext},
     trap::{self, TrapContext},
 };
@@ -61,7 +61,7 @@ impl TaskControlBlock {
 
         // map Kernel Stack
         let kstack_top = kernel_stack_top(pid.0);
-        mm::get_kernel_space().insert_framed_area(
+        mm::get_kernel_space().inner_mut().insert_framed_area(
             VirtAddr(kstack_top),
             VirtAddr(kstack_top + KERNEL_STACK_SIZE),
             MapPermission::R | MapPermission::W,

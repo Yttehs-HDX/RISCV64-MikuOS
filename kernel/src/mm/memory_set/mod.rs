@@ -14,6 +14,12 @@ use riscv::register::satp;
 
 mod map_area;
 
+pub trait MemorySpace {
+    fn activate(&self);
+    fn get_satp(&self) -> usize;
+    fn translate(&self, vpn: VirtPageNum) -> Option<PageTableEntry>;
+}
+
 // region MemorySet begin
 pub struct MemorySet {
     page_table: PageTable,
@@ -25,6 +31,24 @@ impl Drop for MemorySet {
         for area in self.areas.iter_mut() {
             area.unmap_all(&mut self.page_table);
         }
+    }
+}
+
+impl MemorySpace for MemorySet {
+    fn activate(&self) {
+        let satp = self.get_satp();
+        unsafe {
+            satp::write(satp);
+            asm!("sfence.vma");
+        }
+    }
+
+    fn get_satp(&self) -> usize {
+        self.page_table.as_satp()
+    }
+
+    fn translate(&self, vpn: VirtPageNum) -> Option<PageTableEntry> {
+        self.page_table.translate(vpn)
     }
 }
 
@@ -93,22 +117,6 @@ impl MemorySet {
             warn!("MemorySet: area not found");
             false
         }
-    }
-
-    pub fn activate(&self) {
-        let satp = self.get_satp();
-        unsafe {
-            satp::write(satp);
-            asm!("sfence.vma");
-        }
-    }
-
-    pub fn get_satp(&self) -> usize {
-        self.page_table.as_satp()
-    }
-
-    pub fn translate(&self, vpn: VirtPageNum) -> Option<PageTableEntry> {
-        self.page_table.translate(vpn)
     }
 }
 
