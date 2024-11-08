@@ -13,7 +13,7 @@ pub struct UserSpace {
 
 impl MemorySpace for UserSpace {
     fn activate(&self) {
-        self.inner_mut().activate();
+        panic!("UserSpace: not support in KenrelSpace");
     }
 
     fn get_satp(&self) -> usize {
