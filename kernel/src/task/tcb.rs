@@ -1,6 +1,6 @@
 use crate::{
     app::App,
-    config::{TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP},
+    config::{TRAP_CX_PTR, USER_STACK_SP},
     mm::{self, MapPermission, MemorySpace, PhysPageNum, UserSpace, VirtAddr},
     task::{alloc_pid_handle, KernelStack, PidHandle, TaskContext},
     trap::{self, TrapContext},
@@ -43,35 +43,30 @@ impl TaskControlBlock {
 impl TaskControlBlock {
     pub fn new(app: &App) -> Self {
         let pid = alloc_pid_handle();
+        let kernel_stack = KernelStack::new(&pid);
         let user_space = UserSpace::from_elf(app.elf());
-
-        // get TrapContext ppn
         let trap_cx_ppn = user_space
             .inner_mut()
             .translate(VirtAddr(TRAP_CX_PTR).to_vpn())
             .unwrap()
             .ppn();
-
-        let kernel_stack = KernelStack::new(&pid);
-
-        // init TrapContext
         *trap_cx_ppn.as_mut() = TrapContext::new(
             user_space.get_entry(),
-            USER_STACK_TOP + USER_STACK_SIZE,
+            USER_STACK_SP,
             kernel_stack.get_sp(),
             mm::get_kernel_space().get_satp(),
             trap::trap_handler as usize,
         );
-
         let task_cx = TaskContext::goto_trap_return(kernel_stack.get_sp());
+        let base_size = user_space.get_base_size();
 
         Self {
-            task_cx,
-            kernel_stack,
             pid,
             trap_cx_ppn,
-            base_size: user_space.get_base_size(),
+            task_cx,
+            kernel_stack,
             user_space,
+            base_size,
         }
     }
 

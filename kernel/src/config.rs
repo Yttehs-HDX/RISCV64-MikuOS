@@ -27,6 +27,7 @@ pub const TRAMPOLINE: usize = usize::MAX - SV39_PAGE_SIZE + 1;
 pub const TRAP_CX_PTR: usize = TRAMPOLINE - SV39_PAGE_SIZE;
 // left a guard page for user stack
 pub const USER_STACK_TOP: usize = TRAP_CX_PTR - (USER_STACK_SIZE + SV39_PAGE_SIZE);
+pub const USER_STACK_SP: usize = USER_STACK_TOP + USER_STACK_SIZE;
 pub const fn kernel_stack_top(pid: usize) -> usize {
     // left guard pages between kernel stacks
     let bottom = USER_STACK_TOP - pid * (KERNEL_STACK_SIZE + SV39_PAGE_SIZE);
