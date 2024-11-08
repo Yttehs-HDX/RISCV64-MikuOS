@@ -2,41 +2,25 @@ use crate::{
     app::App,
     config::{TRAP_CX_PTR, USER_STACK_SP},
     mm::{self, MapPermission, MemorySpace, PhysPageNum, UserSpace, VirtAddr},
+    sync::UPSafeCell,
     task::{alloc_pid_handle, KernelStack, PidHandle, TaskContext},
     trap::{self, TrapContext},
 };
+use core::cell::RefMut;
 
 // region ProcessControlBlock begin
 pub struct ProcessControlBlock {
     pid: PidHandle,
-    trap_cx_ppn: PhysPageNum,
-    task_cx: TaskContext,
+    base_size: usize,
     #[allow(unused)]
     kernel_stack: KernelStack,
-    user_space: UserSpace,
-    base_size: usize,
+    inner: UPSafeCell<ProcessControlBlockInner>,
 }
 
 impl ProcessControlBlock {
     #[allow(unused)]
     pub fn get_pid(&self) -> usize {
         self.pid.0
-    }
-
-    pub fn get_trap_cx_mut(&self) -> &'static mut TrapContext {
-        self.trap_cx_ppn.as_mut()
-    }
-
-    pub fn get_task_cx_ref(&self) -> &TaskContext {
-        &self.task_cx
-    }
-
-    pub fn get_task_cx_mut(&mut self) -> &mut TaskContext {
-        &mut self.task_cx
-    }
-
-    pub fn get_satp(&self) -> usize {
-        self.user_space.get_satp()
     }
 }
 
@@ -62,12 +46,20 @@ impl ProcessControlBlock {
 
         Self {
             pid,
-            trap_cx_ppn,
-            task_cx,
             kernel_stack,
-            user_space,
             base_size,
+            inner: unsafe {
+                UPSafeCell::new(ProcessControlBlockInner {
+                    trap_cx_ppn,
+                    task_cx,
+                    user_space,
+                })
+            },
         }
+    }
+
+    pub fn inner_mut(&self) -> RefMut<ProcessControlBlockInner> {
+        self.inner.exclusive_access()
     }
 
     pub fn set_break(&mut self, increase: i32) -> Option<usize> {
@@ -77,7 +69,8 @@ impl ProcessControlBlock {
             return None;
         }
 
-        self.user_space
+        self.inner_mut()
+            .get_user_space_mut()
             .inner_mut()
             .change_area_end(VirtAddr(self.base_size), VirtAddr(new_brk));
         self.base_size = new_brk;
@@ -90,21 +83,50 @@ impl ProcessControlBlock {
         end_va: VirtAddr,
         map_perm: MapPermission,
     ) {
-        self.user_space
+        self.inner_mut()
+            .get_user_space_mut()
             .inner_mut()
             .insert_framed_area(start_va, end_va, map_perm);
     }
 
     pub fn remove_area(&mut self, start_va: VirtAddr) {
-        self.user_space
+        self.inner_mut()
+            .get_user_space_mut()
             .inner_mut()
             .remove_area(start_va.to_vpn_floor());
     }
 
     pub fn change_area_end(&mut self, start_va: VirtAddr, new_end_va: VirtAddr) {
-        self.user_space
+        self.inner_mut()
+            .get_user_space_mut()
             .inner_mut()
             .change_area_end(start_va, new_end_va);
     }
 }
 // region ProcessControlBlock end
+
+// region ProcessControlBlockInner begin
+pub struct ProcessControlBlockInner {
+    trap_cx_ppn: PhysPageNum,
+    task_cx: TaskContext,
+    user_space: UserSpace,
+}
+
+impl ProcessControlBlockInner {
+    pub fn get_trap_cx_mut(&self) -> &'static mut TrapContext {
+        self.trap_cx_ppn.as_mut()
+    }
+
+    pub fn get_task_cx_ref(&self) -> &TaskContext {
+        &self.task_cx
+    }
+
+    pub fn get_task_cx_mut(&mut self) -> &mut TaskContext {
+        &mut self.task_cx
+    }
+
+    pub fn get_user_space_mut(&mut self) -> &mut UserSpace {
+        &mut self.user_space
+    }
+}
+// region ProcessControlBlockInner end

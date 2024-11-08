@@ -1,7 +1,7 @@
 use super::ProcessControlBlock;
 use crate::{
     app::App,
-    mm::{MapPermission, VirtAddr},
+    mm::{MapPermission, MemorySpace, VirtAddr},
     sync::UPSafeCell,
     task::{TaskContext, __restore_task, __save_task},
     trap::TrapContext,
@@ -96,13 +96,15 @@ impl TaskManager {
     fn get_current_user_satp(&self) -> usize {
         let inner = self.inner.shared_access();
         let running_task = inner.running_task.as_ref().unwrap();
-        running_task.get_satp()
+        let satp = running_task.inner_mut().get_user_space_mut().get_satp();
+        satp
     }
 
     fn get_current_trap_cx(&self) -> &'static mut TrapContext {
         let inner = self.inner.shared_access();
         let running_task = inner.running_task.as_ref().unwrap();
-        running_task.get_trap_cx_mut()
+        let trap_cx = running_task.inner_mut().get_trap_cx_mut();
+        trap_cx
     }
 
     fn set_current_brk(&self, increase: i32) -> Option<usize> {
@@ -158,9 +160,9 @@ impl TaskManager {
     fn suspend_current_task(&self) {
         let mut inner = self.inner.exclusive_access();
         assert!(inner.running_task.is_some(), "TaskManager: no running task");
-        let mut tcb = inner.running_task.take().unwrap();
+        let tcb = inner.running_task.take().unwrap();
         unsafe {
-            __save_task(tcb.get_task_cx_mut());
+            __save_task(tcb.inner_mut().get_task_cx_mut());
         }
         inner.suspend_tasks.push_back(tcb);
     }
@@ -177,7 +179,7 @@ impl TaskManager {
 
         // get the task context
         let running_tcb = inner.running_task.as_ref().unwrap();
-        let running_task_cx = running_tcb.get_task_cx_ref() as *const TaskContext;
+        let running_task_cx = running_tcb.inner_mut().get_task_cx_ref() as *const TaskContext;
 
         drop(inner);
         unsafe {
