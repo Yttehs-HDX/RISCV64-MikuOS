@@ -1,5 +1,5 @@
 use crate::{
-    mm::{MemorySet, MemorySpace},
+    mm::{MemorySet, MemorySpace, PageTableEntry, VirtPageNum},
     sync::UPSafeCell,
 };
 use core::cell::RefMut;
@@ -20,7 +20,7 @@ impl MemorySpace for UserSpace {
         self.inner_mut().get_satp()
     }
 
-    fn translate(&self, vpn: super::VirtPageNum) -> Option<super::PageTableEntry> {
+    fn translate(&self, vpn: VirtPageNum) -> Option<PageTableEntry> {
         self.inner_mut().translate(vpn)
     }
 }
