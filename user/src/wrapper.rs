@@ -28,3 +28,33 @@ pub fn write(fd: usize, buf: &[u8]) -> isize {
 pub fn sbrk(inc: i32) -> isize {
     syscall::sys_sbrk(inc)
 }
+
+pub fn fork() -> isize {
+    syscall::sys_fork()
+}
+
+pub fn exec(path: &str, argv: &[&str]) -> isize {
+    syscall::sys_exec(path, argv)
+}
+
+pub fn wait(wstatus: &mut i32) -> isize {
+    loop {
+        match syscall::sys_waitpid(-1, wstatus, 0) {
+            -2 => {
+                yield_();
+            }
+            pid => return pid,
+        }
+    }
+}
+
+pub fn waitpid(pid: usize, wstatus: &mut i32) -> isize {
+    loop {
+        match syscall::sys_waitpid(pid as isize, wstatus, 0) {
+            -2 => {
+                yield_();
+            }
+            pid => return pid,
+        }
+    }
+}

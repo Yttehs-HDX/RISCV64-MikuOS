@@ -1,10 +1,8 @@
 #![no_std]
 #![no_main]
 
-use alloc::string::String;
-use user_lib::{get_char, init_heap, print, println};
+use user_lib::{alloc::string::String, get_char, print, println};
 
-extern crate alloc;
 extern crate user_lib;
 
 const LF: u8 = 0x0au8;
@@ -20,7 +18,6 @@ const AR: u8 = 0x1eu8;
 #[no_mangle]
 fn main() -> i32 {
     println!("[User] user_shell");
-    init_heap();
     let mut input = String::new();
     print_prompt();
     loop {

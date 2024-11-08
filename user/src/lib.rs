@@ -7,6 +7,8 @@ pub use heap_allocator::*;
 pub use timer::*;
 pub use wrapper::*;
 
+pub extern crate alloc;
+
 mod lang_items;
 mod syscall;
 mod wrapper;
@@ -19,6 +21,7 @@ mod timer;
 #[link_section = ".text.entry"]
 extern "C" fn _start() -> isize {
     clear_bss();
+    init_heap();
     exit(main())
 }
 
