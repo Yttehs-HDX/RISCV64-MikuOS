@@ -1,7 +1,7 @@
 use super::ProcessControlBlock;
 use crate::{
     app::App,
-    mm::{MapPermission, MemorySpace, VirtAddr},
+    mm::MemorySpace,
     sync::UPSafeCell,
     task::{TaskContext, __restore_task, __save_task},
     trap::TrapContext,
@@ -24,21 +24,6 @@ pub fn current_trap_cx() -> &'static mut TrapContext {
 
 pub fn change_current_brk(increase: i32) -> Option<usize> {
     TASK_MANAGER.set_current_brk(increase)
-}
-
-#[allow(unused)]
-pub fn insert_area_for_current(start_va: VirtAddr, end_va: VirtAddr, map_perm: MapPermission) {
-    TASK_MANAGER.insert_area_for_current(start_va, end_va, map_perm)
-}
-
-#[allow(unused)]
-pub fn remove_area_for_current(start_va: VirtAddr) {
-    TASK_MANAGER.remove_area_for_current(start_va)
-}
-
-#[allow(unused)]
-pub fn change_area_end_for_current(start_va: VirtAddr, end_va: VirtAddr) {
-    TASK_MANAGER.change_area_end_for_current(start_va, end_va)
 }
 
 pub fn run_tasks() -> ! {
@@ -111,29 +96,6 @@ impl TaskManager {
         let mut inner = self.inner.exclusive_access();
         let running_task = inner.running_task.as_mut().unwrap();
         running_task.set_break(increase)
-    }
-
-    fn insert_area_for_current(
-        &self,
-        start_va: VirtAddr,
-        end_va: VirtAddr,
-        map_perm: MapPermission,
-    ) {
-        let mut inner = self.inner.exclusive_access();
-        let running_task = inner.running_task.as_mut().unwrap();
-        running_task.insert_new_area(start_va, end_va, map_perm);
-    }
-
-    fn remove_area_for_current(&self, start_va: VirtAddr) {
-        let mut inner = self.inner.exclusive_access();
-        let running_task = inner.running_task.as_mut().unwrap();
-        running_task.remove_area(start_va);
-    }
-
-    fn change_area_end_for_current(&self, start_va: VirtAddr, end_va: VirtAddr) {
-        let mut inner = self.inner.exclusive_access();
-        let running_task = inner.running_task.as_mut().unwrap();
-        running_task.change_area_end(start_va, end_va);
     }
 }
 

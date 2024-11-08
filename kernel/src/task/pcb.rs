@@ -1,7 +1,7 @@
 use crate::{
     app::App,
     config::{TRAP_CX_PTR, USER_STACK_SP},
-    mm::{self, MapPermission, MemorySpace, PhysPageNum, UserSpace, VirtAddr},
+    mm::{self, MemorySpace, PhysPageNum, UserSpace, VirtAddr},
     sync::UPSafeCell,
     task::{alloc_pid_handle, KernelStack, PidHandle, TaskContext},
     trap::{self, TrapContext},
@@ -75,32 +75,6 @@ impl ProcessControlBlock {
             .change_area_end(VirtAddr(self.base_size), VirtAddr(new_brk));
         self.base_size = new_brk;
         Some(old_brk)
-    }
-
-    pub fn insert_new_area(
-        &mut self,
-        start_va: VirtAddr,
-        end_va: VirtAddr,
-        map_perm: MapPermission,
-    ) {
-        self.inner_mut()
-            .get_user_space_mut()
-            .inner_mut()
-            .insert_framed_area(start_va, end_va, map_perm);
-    }
-
-    pub fn remove_area(&mut self, start_va: VirtAddr) {
-        self.inner_mut()
-            .get_user_space_mut()
-            .inner_mut()
-            .remove_area(start_va.to_vpn_floor());
-    }
-
-    pub fn change_area_end(&mut self, start_va: VirtAddr, new_end_va: VirtAddr) {
-        self.inner_mut()
-            .get_user_space_mut()
-            .inner_mut()
-            .change_area_end(start_va, new_end_va);
     }
 }
 // region ProcessControlBlock end
