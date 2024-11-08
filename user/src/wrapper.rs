@@ -33,7 +33,11 @@ pub fn fork() -> isize {
     syscall::sys_fork()
 }
 
-pub fn exec(path: &str, argv: &[&str]) -> isize {
+pub fn exec(path: &str) -> isize {
+    syscall::sys_exec(path, &[])
+}
+
+pub fn exec_with_argv(path: &str, argv: &[&str]) -> isize {
     syscall::sys_exec(path, argv)
 }
 
