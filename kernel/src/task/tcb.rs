@@ -2,13 +2,15 @@ use crate::{
     app::App,
     config::{kernel_stack_top, KERNEL_STACK_SIZE, TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP},
     mm::{self, MapArea, MapPermission, MapType, MemorySet, PhysPageNum, VirtAddr},
-    task::TaskContext,
+    task::{PidHandle, TaskContext},
     trap::{self, TrapContext},
 };
 
+use super::alloc_pid_handle;
+
 // region TaskControlBlock begin
 pub struct TaskControlBlock {
-    id: usize,
+    pid: PidHandle,
     trap_cx_ppn: PhysPageNum,
     task_cx: TaskContext,
     memory_set: MemorySet,
@@ -20,8 +22,8 @@ pub struct TaskControlBlock {
 
 impl TaskControlBlock {
     #[allow(unused)]
-    pub fn id(&self) -> usize {
-        self.id
+    pub fn pid(&self) -> usize {
+        self.pid.0
     }
 
     pub fn base_size(&self) -> usize {
@@ -47,6 +49,7 @@ impl TaskControlBlock {
 
 impl TaskControlBlock {
     pub fn new(app: &App) -> Self {
+        let pid = alloc_pid_handle();
         // init MemorySet
         let (memory_set, entry, base_size) = MemorySet::from_elf(app.elf());
 
@@ -57,7 +60,7 @@ impl TaskControlBlock {
             .ppn();
 
         // map Kernel Stack
-        let kstack_top = kernel_stack_top(app.id());
+        let kstack_top = kernel_stack_top(pid.0);
         mm::kernel_insert_area(
             VirtAddr(kstack_top),
             VirtAddr(kstack_top + KERNEL_STACK_SIZE),
@@ -75,7 +78,7 @@ impl TaskControlBlock {
         );
 
         Self {
-            id: app.id(),
+            pid,
             task_cx: TaskContext::goto_trap_return(kstack_top + KERNEL_STACK_SIZE),
             memory_set,
             trap_cx_ppn,
