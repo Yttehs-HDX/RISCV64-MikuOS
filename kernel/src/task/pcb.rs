@@ -17,13 +17,6 @@ pub struct ProcessControlBlock {
 }
 
 impl ProcessControlBlock {
-    #[allow(unused)]
-    pub fn get_pid(&self) -> usize {
-        self.pid.0
-    }
-}
-
-impl ProcessControlBlock {
     pub fn new(app: &App) -> Self {
         let pid = alloc_pid_handle();
         let kernel_stack = KernelStack::new(&pid);
@@ -53,6 +46,11 @@ impl ProcessControlBlock {
                 ))
             },
         }
+    }
+
+    #[allow(unused)]
+    pub fn get_pid(&self) -> usize {
+        self.pid.0
     }
 
     pub fn inner_mut(&self) -> RefMut<ProcessControlBlockInner> {
