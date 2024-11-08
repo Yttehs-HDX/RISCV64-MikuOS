@@ -6,8 +6,8 @@ use crate::{
     trap::{self, TrapContext},
 };
 
-// region TaskControlBlock begin
-pub struct TaskControlBlock {
+// region ProcessControlBlock begin
+pub struct ProcessControlBlock {
     pid: PidHandle,
     trap_cx_ppn: PhysPageNum,
     task_cx: TaskContext,
@@ -17,7 +17,7 @@ pub struct TaskControlBlock {
     base_size: usize,
 }
 
-impl TaskControlBlock {
+impl ProcessControlBlock {
     #[allow(unused)]
     pub fn get_pid(&self) -> usize {
         self.pid.0
@@ -40,7 +40,7 @@ impl TaskControlBlock {
     }
 }
 
-impl TaskControlBlock {
+impl ProcessControlBlock {
     pub fn new(app: &App) -> Self {
         let pid = alloc_pid_handle();
         let kernel_stack = KernelStack::new(&pid);
@@ -107,4 +107,4 @@ impl TaskControlBlock {
             .change_area_end(start_va, new_end_va);
     }
 }
-// region TaskControlBlock end
+// region ProcessControlBlock end

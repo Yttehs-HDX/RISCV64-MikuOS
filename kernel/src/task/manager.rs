@@ -1,4 +1,4 @@
-use super::TaskControlBlock;
+use super::ProcessControlBlock;
 use crate::{
     app::App,
     mm::{MapPermission, VirtAddr},
@@ -89,7 +89,7 @@ struct TaskManager {
 impl TaskManager {
     fn add_task(&self, app: &App) {
         let mut inner = self.inner.exclusive_access();
-        let tcb = TaskControlBlock::new(app);
+        let tcb = ProcessControlBlock::new(app);
         inner.suspend_tasks.push_back(tcb);
     }
 
@@ -136,7 +136,7 @@ impl TaskManager {
 }
 
 impl TaskManager {
-    fn get_available_task(&self) -> Option<TaskControlBlock> {
+    fn get_available_task(&self) -> Option<ProcessControlBlock> {
         let mut inner = self.inner.exclusive_access();
         if inner.suspend_tasks.is_empty() {
             return None;
@@ -146,7 +146,7 @@ impl TaskManager {
         Some(tcb)
     }
 
-    fn set_current_task(&self, tcb: TaskControlBlock) {
+    fn set_current_task(&self, tcb: ProcessControlBlock) {
         let mut inner = self.inner.exclusive_access();
         assert!(
             inner.running_task.is_none(),
@@ -190,7 +190,7 @@ impl TaskManager {
 
 // region TaskManagerInner begin
 struct TaskManagerInner {
-    running_task: Option<TaskControlBlock>,
-    suspend_tasks: VecDeque<TaskControlBlock>,
+    running_task: Option<ProcessControlBlock>,
+    suspend_tasks: VecDeque<ProcessControlBlock>,
 }
 // region TaskManagerInner end
