@@ -11,7 +11,6 @@ use core::cell::RefMut;
 // region ProcessControlBlock begin
 pub struct ProcessControlBlock {
     pid: PidHandle,
-    base_size: usize,
     #[allow(unused)]
     kernel_stack: KernelStack,
     inner: UPSafeCell<ProcessControlBlockInner>,
@@ -42,39 +41,22 @@ impl ProcessControlBlock {
             trap::trap_handler as usize,
         );
         let task_cx = TaskContext::goto_trap_return(kernel_stack.get_sp());
-        let base_size = user_space.get_base_size();
 
         Self {
             pid,
             kernel_stack,
-            base_size,
             inner: unsafe {
-                UPSafeCell::new(ProcessControlBlockInner {
+                UPSafeCell::new(ProcessControlBlockInner::new(
                     trap_cx_ppn,
                     task_cx,
                     user_space,
-                })
+                ))
             },
         }
     }
 
     pub fn inner_mut(&self) -> RefMut<ProcessControlBlockInner> {
         self.inner.exclusive_access()
-    }
-
-    pub fn set_break(&mut self, increase: i32) -> Option<usize> {
-        let old_brk = self.base_size;
-        let new_brk = (old_brk as i32 + increase) as usize;
-        if new_brk < self.base_size {
-            return None;
-        }
-
-        self.inner_mut()
-            .get_user_space_mut()
-            .inner_mut()
-            .change_area_end(VirtAddr(self.base_size), VirtAddr(new_brk));
-        self.base_size = new_brk;
-        Some(old_brk)
     }
 }
 // region ProcessControlBlock end
@@ -84,9 +66,19 @@ pub struct ProcessControlBlockInner {
     trap_cx_ppn: PhysPageNum,
     task_cx: TaskContext,
     user_space: UserSpace,
+    program_brk: usize,
 }
 
 impl ProcessControlBlockInner {
+    fn new(trap_cx_ppn: PhysPageNum, task_cx: TaskContext, user_space: UserSpace) -> Self {
+        let program_brk = user_space.get_base_size();
+        Self {
+            trap_cx_ppn,
+            task_cx,
+            user_space,
+            program_brk,
+        }
+    }
     pub fn get_trap_cx_mut(&self) -> &'static mut TrapContext {
         self.trap_cx_ppn.as_mut()
     }
@@ -99,8 +91,23 @@ impl ProcessControlBlockInner {
         &mut self.task_cx
     }
 
-    pub fn get_user_space_mut(&mut self) -> &mut UserSpace {
-        &mut self.user_space
+    pub fn get_satp(&self) -> usize {
+        self.user_space.get_satp()
+    }
+
+    pub fn set_break(&mut self, increase: i32) -> Option<usize> {
+        let base_size = self.user_space.get_base_size();
+        let old_brk = self.program_brk;
+        let new_brk = (old_brk as i32 + increase) as usize;
+        if new_brk < base_size {
+            return None;
+        }
+
+        self.user_space
+            .inner_mut()
+            .change_area_end(VirtAddr(base_size), VirtAddr(new_brk));
+        self.program_brk = new_brk;
+        Some(old_brk)
     }
 }
 // region ProcessControlBlockInner end

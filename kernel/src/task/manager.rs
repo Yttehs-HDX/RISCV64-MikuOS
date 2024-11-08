@@ -1,7 +1,6 @@
 use super::ProcessControlBlock;
 use crate::{
     app::App,
-    mm::MemorySpace,
     sync::UPSafeCell,
     task::{TaskContext, __restore_task, __save_task},
     trap::TrapContext,
@@ -81,21 +80,22 @@ impl TaskManager {
     fn get_current_user_satp(&self) -> usize {
         let inner = self.inner.shared_access();
         let running_task = inner.running_task.as_ref().unwrap();
-        let satp = running_task.inner_mut().get_user_space_mut().get_satp();
-        satp
+        let res = running_task.inner_mut().get_satp();
+        res
     }
 
     fn get_current_trap_cx(&self) -> &'static mut TrapContext {
         let inner = self.inner.shared_access();
         let running_task = inner.running_task.as_ref().unwrap();
-        let trap_cx = running_task.inner_mut().get_trap_cx_mut();
-        trap_cx
+        let res = running_task.inner_mut().get_trap_cx_mut();
+        res
     }
 
     fn set_current_brk(&self, increase: i32) -> Option<usize> {
         let mut inner = self.inner.exclusive_access();
         let running_task = inner.running_task.as_mut().unwrap();
-        running_task.set_break(increase)
+        let res = running_task.inner_mut().set_break(increase);
+        res
     }
 }
 
