@@ -1,8 +1,8 @@
 use crate::{
     app::App,
-    config::{kernel_stack_top, KERNEL_STACK_SIZE, TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP},
+    config::{TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP},
     mm::{self, MapPermission, MemorySpace, PhysPageNum, UserSpace, VirtAddr},
-    task::{alloc_pid_handle, PidHandle, TaskContext},
+    task::{alloc_pid_handle, KernelStack, PidHandle, TaskContext},
     trap::{self, TrapContext},
 };
 
@@ -11,6 +11,8 @@ pub struct TaskControlBlock {
     pid: PidHandle,
     trap_cx_ppn: PhysPageNum,
     task_cx: TaskContext,
+    #[allow(unused)]
+    kernel_stack: KernelStack,
     user_space: UserSpace,
     base_size: usize,
 }
@@ -50,29 +52,26 @@ impl TaskControlBlock {
             .unwrap()
             .ppn();
 
-        // map Kernel Stack
-        let kstack_top = kernel_stack_top(pid.0);
-        mm::get_kernel_space().inner_mut().insert_framed_area(
-            VirtAddr(kstack_top),
-            VirtAddr(kstack_top + KERNEL_STACK_SIZE),
-            MapPermission::R | MapPermission::W,
-        );
+        let kernel_stack = KernelStack::new(&pid);
 
         // init TrapContext
         *trap_cx_ppn.as_mut() = TrapContext::new(
             user_space.get_entry(),
             USER_STACK_TOP + USER_STACK_SIZE,
-            kstack_top + KERNEL_STACK_SIZE,
+            kernel_stack.get_sp(),
             mm::get_kernel_space().get_satp(),
             trap::trap_handler as usize,
         );
 
+        let task_cx = TaskContext::goto_trap_return(kernel_stack.get_sp());
+
         Self {
+            task_cx,
+            kernel_stack,
             pid,
-            task_cx: TaskContext::goto_trap_return(kstack_top + KERNEL_STACK_SIZE),
+            trap_cx_ppn,
             base_size: user_space.get_base_size(),
             user_space,
-            trap_cx_ppn,
         }
     }
 

@@ -1,10 +1,12 @@
 pub use handle::*;
+pub use kernel_stack::*;
 
 use crate::sync::UPSafeCell;
 use alloc::vec::Vec;
 use lazy_static::lazy_static;
 
 mod handle;
+mod kernel_stack;
 
 pub fn alloc_pid_handle() -> PidHandle {
     PID_ALLOCATOR.alloc()
