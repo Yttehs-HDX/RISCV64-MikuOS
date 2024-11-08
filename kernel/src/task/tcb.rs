@@ -1,7 +1,7 @@
 use crate::{
     app::App,
     config::{kernel_stack_top, KERNEL_STACK_SIZE, TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP},
-    mm::{self, MapArea, MapPermission, MapType, MemorySet, PhysPageNum, VirtAddr},
+    mm::{self, MapPermission, MemorySet, PhysPageNum, VirtAddr},
     task::{PidHandle, TaskContext},
     trap::{self, TrapContext},
 };
@@ -61,10 +61,9 @@ impl TaskControlBlock {
 
         // map Kernel Stack
         let kstack_top = kernel_stack_top(pid.0);
-        mm::kernel_insert_area(
+        mm::get_kernel_space().insert_framed_area(
             VirtAddr(kstack_top),
             VirtAddr(kstack_top + KERNEL_STACK_SIZE),
-            MapType::Framed,
             MapPermission::R | MapPermission::W,
         );
 
@@ -73,7 +72,7 @@ impl TaskControlBlock {
             entry,
             USER_STACK_TOP + USER_STACK_SIZE,
             kstack_top + KERNEL_STACK_SIZE,
-            mm::kernel_satp(),
+            mm::get_kernel_space().get_satp(),
             trap::trap_handler as usize,
         );
 
@@ -107,7 +106,7 @@ impl TaskControlBlock {
         map_perm: MapPermission,
     ) {
         self.memory_set
-            .insert_area(MapArea::new(start_va, end_va, MapType::Framed, map_perm));
+            .insert_framed_area(start_va, end_va, map_perm);
     }
 
     pub fn remove_area(&mut self, start_va: VirtAddr) {

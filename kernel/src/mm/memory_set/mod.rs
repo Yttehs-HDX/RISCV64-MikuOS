@@ -6,39 +6,13 @@ use crate::{
         STRAMPOLINE, SV39_PAGE_SIZE, TRAMPOLINE, TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP,
     },
     mm::{PTEFlags, PageTable, PageTableEntry, PhysAddr, VirtAddr, VirtPageNum},
-    sync::UPSafeCell,
 };
 use alloc::vec::Vec;
 use core::arch::asm;
-use lazy_static::lazy_static;
 use log::{trace, warn};
 use riscv::register::satp;
 
 mod map_area;
-
-pub fn activate_kernel_space() {
-    KERNEL_SPACE.exclusive_access().activate();
-}
-
-pub fn kernel_satp() -> usize {
-    KERNEL_SPACE.exclusive_access().get_satp()
-}
-
-pub fn kernel_insert_area(
-    start_va: VirtAddr,
-    end_va: VirtAddr,
-    map_type: MapType,
-    map_perm: MapPermission,
-) {
-    KERNEL_SPACE
-        .exclusive_access()
-        .insert_area(MapArea::new(start_va, end_va, map_type, map_perm));
-}
-
-lazy_static! {
-    static ref KERNEL_SPACE: UPSafeCell<MemorySet> =
-        unsafe { UPSafeCell::new(MemorySet::new_kernel()) };
-}
 
 // region MemorySet begin
 pub struct MemorySet {
@@ -72,15 +46,25 @@ impl MemorySet {
 }
 
 impl MemorySet {
-    pub fn insert_area(&mut self, mut area: MapArea) {
+    fn insert_area(&mut self, mut area: MapArea) {
         area.map_all(&mut self.page_table);
         self.areas.push(area);
     }
 
-    pub fn insert_area_with_data(&mut self, mut area: MapArea, data: &[u8]) {
+    fn insert_area_with_data(&mut self, mut area: MapArea, data: &[u8]) {
         area.map_all(&mut self.page_table);
         area.insert_raw_data(data, &mut self.page_table);
         self.areas.push(area);
+    }
+
+    pub fn insert_framed_area(
+        &mut self,
+        start_va: VirtAddr,
+        end_va: VirtAddr,
+        map_perm: MapPermission,
+    ) {
+        let area = MapArea::new(start_va, end_va, MapType::Framed, map_perm);
+        self.insert_area(area);
     }
 
     pub fn remove_area(&mut self, start_vpn: VirtPageNum) -> Option<MapArea> {
