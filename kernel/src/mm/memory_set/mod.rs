@@ -197,7 +197,7 @@ impl MemorySet {
 
 // User Space
 impl MemorySet {
-    // return MemorySet for user space, elf entry, program brk
+    // return MemorySet for user space, elf entry, base size
     pub fn from_elf(elf_data: &[u8]) -> (Self, usize, usize) {
         use xmas_elf::{program::Type, ElfFile};
         let mut memory_set = Self::empty();
