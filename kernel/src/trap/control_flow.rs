@@ -119,7 +119,6 @@ pub fn trap_handler() -> ! {
     match scause.cause() {
         Trap::Exception(Exception::UserEnvCall) => {
             trace!("Ecall from U-mode @ {:#x}", sepc);
-            // move to next instruction
             cx.move_to_next_ins();
             let x10 =
                 syscall::syscall(cx.get_x(17), [cx.get_x(10), cx.get_x(11), cx.get_x(12)]) as usize;
@@ -128,11 +127,11 @@ pub fn trap_handler() -> ! {
         }
         Trap::Interrupt(Interrupt::SupervisorTimer) => {
             timer::set_next_trigger();
-            syscall::sys_yield();
+            task::get_processor().schedule();
         }
         Trap::Exception(Exception::IllegalInstruction) => {
             error!("{:?} @ {:#x}, badaddr {:#x}", scause.cause(), sepc, stval);
-            syscall::sys_exit(-3);
+            task::get_processor().exit_current(-3);
         }
         Trap::Exception(Exception::StoreFault)
         | Trap::Exception(Exception::StorePageFault)
@@ -141,7 +140,7 @@ pub fn trap_handler() -> ! {
         | Trap::Exception(Exception::InstructionFault)
         | Trap::Exception(Exception::InstructionPageFault) => {
             error!("{:?} @ {:#x}, badaddr {:#x}", scause.cause(), sepc, stval);
-            syscall::sys_exit(-2);
+            task::get_processor().exit_current(-2);
         }
         _ => {
             panic!(

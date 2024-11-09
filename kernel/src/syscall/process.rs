@@ -6,7 +6,7 @@ pub fn sys_exit(exit_code: i32) -> ! {
         0 => info!("Process exited with code {}", exit_code),
         _ => warn!("Process exited with code {}", exit_code),
     }
-    task::get_processor().exit(exit_code);
+    task::get_processor().exit_current(exit_code);
 }
 
 pub fn sys_yield() -> ! {

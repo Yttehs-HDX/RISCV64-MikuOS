@@ -85,7 +85,7 @@ impl Processor {
         }
     }
 
-    pub fn exit(&self, exit_code: i32) -> ! {
+    pub fn exit_current(&self, exit_code: i32) -> ! {
         let pcb = self.take_current().unwrap();
         pcb.inner_mut().set_exit_code(exit_code);
 
