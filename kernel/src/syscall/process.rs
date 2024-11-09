@@ -17,17 +17,13 @@ pub fn sys_yield() -> ! {
     task::get_processor().schedule();
 }
 
-pub use crate::timer::TimeVal;
-pub fn sys_get_time(ts: usize, _tz: usize) -> isize {
-    let time_val = mm::translate_bype_buffer(
+pub fn sys_get_time(ts_ptr: *const u8, _tz: usize) -> isize {
+    let now = timer::get_current_time();
+    mm::copy_data_to_space(
         task::get_processor().current().inner_mut().get_satp(),
-        ts as *mut u8,
-        core::mem::size_of::<TimeVal>(),
-    )
-    .pop()
-    .unwrap();
-    let time_val_ptr = time_val.as_mut_ptr() as *mut TimeVal;
-    unsafe { *time_val_ptr = timer::get_current_time() };
+        ts_ptr,
+        &now,
+    );
     0
 }
 

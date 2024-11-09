@@ -57,6 +57,19 @@ pub fn translate_bype_buffer(satp: usize, ptr: *const u8, len: usize) -> Vec<&'s
     buffer
 }
 
+pub fn copy_data_to_space<T>(satp: usize, ptr: *const u8, data: &T) {
+    let slice_ptr = data as *const T as *const u8;
+    let size = core::mem::size_of::<T>();
+    let slice = unsafe { core::slice::from_raw_parts(slice_ptr, size) };
+    let buffers = translate_bype_buffer(satp, ptr, size);
+    let mut start = 0;
+    for buffer in buffers {
+        let end = buffer.len().min(size);
+        buffer.copy_from_slice(&slice[start..start + end]);
+        start += end;
+    }
+}
+
 // region PageTable begin
 pub struct PageTable {
     root_ppn: PhysPageNum,
