@@ -5,7 +5,7 @@ use crate::{
     task::{alloc_pid_handle, KernelStack, PidHandle, TaskContext},
     trap::{self, TrapContext},
 };
-use core::cell::RefMut;
+use core::cell::{Ref, RefMut};
 
 // region ProcessControlBlock begin
 pub struct ProcessControlBlock {
@@ -47,13 +47,19 @@ impl ProcessControlBlock {
         }
     }
 
-    #[allow(unused)]
-    pub fn get_pid(&self) -> usize {
-        self.pid.0
+    pub fn inner(&self) -> Ref<ProcessControlBlockInner> {
+        self.inner.shared_access()
     }
 
     pub fn inner_mut(&self) -> RefMut<ProcessControlBlockInner> {
         self.inner.exclusive_access()
+    }
+}
+
+impl ProcessControlBlock {
+    #[allow(unused)]
+    pub fn get_pid(&self) -> usize {
+        self.pid.0
     }
 }
 // region ProcessControlBlock end

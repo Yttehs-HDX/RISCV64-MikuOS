@@ -72,7 +72,7 @@ impl Processor {
                 }
             }
             if let Some(pcb) = get_task_manager().fetch() {
-                let task_cx = pcb.inner_mut().get_task_cx_ref() as *const _;
+                let task_cx = pcb.inner().get_task_cx_ref() as *const _;
                 self.inner_mut().current = Some(pcb);
                 unsafe {
                     __restore_task(task_cx);
