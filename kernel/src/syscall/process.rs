@@ -6,17 +6,25 @@ pub fn sys_exit(exit_code: i32) -> ! {
         0 => info!("Process exited with code {}", exit_code),
         _ => warn!("Process exited with code {}", exit_code),
     }
-    task::exit_handler();
+
+    if task::has_task() {
+        task::get_processor().run_tasks();
+    }
+    crate::os_end();
 }
 
 pub fn sys_yield() -> ! {
-    task::yield_handler();
+    task::get_processor().schedule();
 }
 
 pub use crate::timer::TimeVal;
 pub fn sys_get_time(ts: usize, _tz: usize) -> isize {
     let time_val = mm::translate_bype_buffer(
-        task::current_user_satp(),
+        task::get_processor()
+            .current()
+            .unwrap()
+            .inner_mut()
+            .get_satp(),
         ts as *mut u8,
         core::mem::size_of::<TimeVal>(),
     )
@@ -28,7 +36,11 @@ pub fn sys_get_time(ts: usize, _tz: usize) -> isize {
 }
 
 pub fn sys_sbrk(increase: i32) -> isize {
-    let old_brk = task::change_current_brk(increase);
+    let old_brk = task::get_processor()
+        .current()
+        .unwrap()
+        .inner_mut()
+        .set_break(increase);
     match old_brk {
         Some(brk) => brk as isize,
         None => -1,
