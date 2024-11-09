@@ -84,6 +84,30 @@ impl Processor {
             }
         }
     }
+
+    pub fn exit(&self, exit_code: i32) -> ! {
+        let pcb = self.take_current().unwrap();
+        pcb.inner_mut().set_exit_code(exit_code);
+
+        // move children to initproc
+        {
+            for child in pcb.inner_mut().get_children_ref().iter() {
+                child
+                    .inner_mut()
+                    .set_parent(Arc::downgrade(&get_initproc()));
+                get_initproc()
+                    .inner_mut()
+                    .get_children_mut()
+                    .push(child.clone());
+            }
+        }
+        pcb.inner_mut().get_children_mut().clear();
+
+        // drop pcb manually to release resources
+        drop(pcb);
+
+        self.run_tasks();
+    }
 }
 // region Processor end
 

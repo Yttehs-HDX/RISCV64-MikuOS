@@ -131,16 +131,25 @@ pub fn trap_handler() -> ! {
             syscall::sys_yield();
         }
         Trap::Exception(Exception::IllegalInstruction) => {
-            error!("Illegal instruction @ {:#x}, badaddr {:#x}", sepc, stval);
-            syscall::sys_exit(1);
+            error!("{:?} @ {:#x}, badaddr {:#x}", scause.cause(), sepc, stval);
+            syscall::sys_exit(-3);
         }
-        Trap::Exception(Exception::StoreFault) | Trap::Exception(Exception::StorePageFault) => {
-            error!("Store fault @ {:#x}, badaddr {:#x}", sepc, stval);
-            syscall::sys_exit(1);
+        Trap::Exception(Exception::StoreFault)
+        | Trap::Exception(Exception::StorePageFault)
+        | Trap::Exception(Exception::LoadFault)
+        | Trap::Exception(Exception::LoadPageFault)
+        | Trap::Exception(Exception::InstructionFault)
+        | Trap::Exception(Exception::InstructionPageFault) => {
+            error!("{:?} @ {:#x}, badaddr {:#x}", scause.cause(), sepc, stval);
+            syscall::sys_exit(-2);
         }
         _ => {
-            error!("Unhandled trap {:?} @ {:#x}", scause.cause(), sepc);
-            syscall::sys_exit(1);
+            panic!(
+                "Unhandled trap {:?} @ {:#x}, badaddr {:#x}",
+                scause.cause(),
+                sepc,
+                stval
+            );
         }
     }
 }

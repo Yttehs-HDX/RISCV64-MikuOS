@@ -147,14 +147,8 @@ impl ProcessControlBlockInner {
         }
     }
 
-    fn set_parent(&mut self, parent: Weak<ProcessControlBlock>) {
+    pub fn set_parent(&mut self, parent: Weak<ProcessControlBlock>) {
         self.parent = Some(parent);
-    }
-}
-
-impl ProcessControlBlockInner {
-    pub fn get_trap_cx_mut(&self) -> &'static mut TrapContext {
-        self.trap_cx_ppn.as_mut()
     }
 
     pub fn get_task_cx_ref(&self) -> &TaskContext {
@@ -163,6 +157,24 @@ impl ProcessControlBlockInner {
 
     pub fn get_task_cx_mut(&mut self) -> &mut TaskContext {
         &mut self.task_cx
+    }
+
+    pub fn get_children_ref(&self) -> &Vec<Arc<ProcessControlBlock>> {
+        &self.children
+    }
+
+    pub fn get_children_mut(&mut self) -> &mut Vec<Arc<ProcessControlBlock>> {
+        &mut self.children
+    }
+
+    pub fn set_exit_code(&mut self, exit_code: i32) {
+        self.exit_code = exit_code;
+    }
+}
+
+impl ProcessControlBlockInner {
+    pub fn get_trap_cx_mut(&self) -> &'static mut TrapContext {
+        self.trap_cx_ppn.as_mut()
     }
 
     pub fn get_satp(&self) -> usize {

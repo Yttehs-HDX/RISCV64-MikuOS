@@ -7,6 +7,10 @@ pub(in crate::task) fn add_initproc() {
     get_task_manager().add(INITPROC.clone());
 }
 
+pub(in crate::task) fn get_initproc() -> &'static Arc<ProcessControlBlock> {
+    &INITPROC
+}
+
 lazy_static! {
     static ref INITPROC: Arc<ProcessControlBlock> = Arc::new(ProcessControlBlock::new(
         app::get_app("initproc").unwrap().elf()
