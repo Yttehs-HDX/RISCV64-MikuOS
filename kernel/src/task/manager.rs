@@ -1,9 +1,9 @@
-use core::cell::RefMut;
+use crate::task::ProcessControlBlock;
 use crate::{app::App, sync::UPSafeCell, trap::TrapContext};
 use alloc::{collections::vec_deque::VecDeque, sync::Arc};
+use core::cell::RefMut;
 use lazy_static::lazy_static;
 use log::info;
-use crate::task::ProcessControlBlock;
 
 pub fn add_task(app: &App) {
     TASK_MANAGER.add_task(app);
