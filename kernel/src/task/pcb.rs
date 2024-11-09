@@ -51,6 +51,40 @@ impl ProcessControlBlock {
         }
     }
 
+    pub fn fork(self: &Arc<Self>) -> Arc<Self> {
+        let pid = alloc_pid_handle();
+        let kernel_stack = KernelStack::new(&pid);
+        let kernel_sp = kernel_stack.get_sp();
+        let user_space = UserSpace::from_existed(&self.inner().user_space);
+        let trap_cx_ppn = user_space
+            .inner_mut()
+            .translate(VirtAddr(TRAP_CX_PTR).to_vpn())
+            .unwrap()
+            .ppn();
+        let task_cx = TaskContext::goto_trap_return(kernel_sp);
+
+        let pcb = Arc::new(Self {
+            pid,
+            kernel_stack,
+            inner: unsafe {
+                UPSafeCell::new(ProcessControlBlockInner::new(
+                    trap_cx_ppn,
+                    task_cx,
+                    user_space,
+                ))
+            },
+        });
+        pcb.inner_mut().get_trap_cx_mut().kernel_sp = kernel_sp;
+
+        // Set parent
+        pcb.inner_mut().set_parent(Arc::downgrade(self));
+
+        // Add to parent's children
+        self.inner_mut().children.push(pcb.clone());
+
+        pcb
+    }
+
     pub fn inner(&self) -> Ref<ProcessControlBlockInner> {
         self.inner.shared_access()
     }
@@ -77,6 +111,7 @@ pub struct ProcessControlBlockInner {
 
     parent: Option<Weak<ProcessControlBlock>>,
     children: Vec<Arc<ProcessControlBlock>>,
+    exit_code: i32,
 }
 
 impl ProcessControlBlockInner {
@@ -89,8 +124,16 @@ impl ProcessControlBlockInner {
             program_brk,
             parent: None,
             children: Vec::new(),
+            exit_code: 0,
         }
     }
+
+    fn set_parent(&mut self, parent: Weak<ProcessControlBlock>) {
+        self.parent = Some(parent);
+    }
+}
+
+impl ProcessControlBlockInner {
     pub fn get_trap_cx_mut(&self) -> &'static mut TrapContext {
         self.trap_cx_ppn.as_mut()
     }

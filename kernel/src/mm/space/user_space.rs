@@ -37,8 +37,8 @@ impl UserSpace {
 
     pub fn from_existed(user_space: &Self) -> Self {
         Self {
-            entry: 0,
-            base_size: 0,
+            entry: user_space.get_entry(),
+            base_size: user_space.get_base_size(),
             inner: unsafe { UPSafeCell::new(UserSpaceInner::from_another(&user_space.inner())) },
         }
     }
