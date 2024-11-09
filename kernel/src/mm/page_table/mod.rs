@@ -1,6 +1,8 @@
 pub use entry::*;
 
-use super::{alloc_ppn_tracker, PhysPageNum, PpnTracker, VirtAddr, VirtPageNum, SV39_PPN_BITS};
+use crate::mm::{
+    alloc_ppn_tracker, PhysAddr, PhysPageNum, PpnTracker, VirtAddr, VirtPageNum, SV39_PPN_BITS,
+};
 use alloc::vec;
 use alloc::vec::Vec;
 use simple_range::StepByOne;
@@ -10,11 +12,7 @@ mod entry;
 pub fn translate_ptr(satp: usize, ptr: *const u8) -> Option<*mut u8> {
     let page_table = PageTable::from_satp(satp);
     let va = VirtAddr(ptr as usize);
-    let offset = va.page_offset();
-    page_table.translate(va.to_vpn_floor()).map(|pte| {
-        let pa = pte.ppn().to_pa();
-        (pa.0 + offset) as *mut u8
-    })
+    page_table.translate_va(va).map(|pa| pa.0 as *mut u8)
 }
 
 pub fn translate_bype_buffer(satp: usize, ptr: *const u8, len: usize) -> Vec<&'static mut [u8]> {
@@ -133,6 +131,14 @@ impl PageTable {
 
     pub fn translate(&self, vpn: VirtPageNum) -> Option<PageTableEntry> {
         self.get_pte(vpn).map(|pte| *pte)
+    }
+
+    pub fn translate_va(&self, va: VirtAddr) -> Option<PhysAddr> {
+        let offset = va.page_offset();
+        self.translate(va.to_vpn_floor()).map(|pte| {
+            let pa = pte.ppn().to_pa();
+            PhysAddr(pa.0 + offset)
+        })
     }
 }
 // region PageTable end
