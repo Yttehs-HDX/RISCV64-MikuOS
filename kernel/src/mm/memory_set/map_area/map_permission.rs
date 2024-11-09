@@ -3,6 +3,7 @@ use bitflags::bitflags;
 
 // region MapPermission begin
 bitflags! {
+    #[derive(Clone, Copy)]
     pub struct MapPermission: u8 {
         const R = 1 << 1;
         const W = 1 << 2;

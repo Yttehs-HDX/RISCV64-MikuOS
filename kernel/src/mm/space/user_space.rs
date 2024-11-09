@@ -2,7 +2,7 @@ use crate::{
     mm::{MemorySet, MemorySpace, PageTableEntry, VirtPageNum},
     sync::UPSafeCell,
 };
-use core::cell::RefMut;
+use core::cell::{Ref, RefMut};
 
 // region UserSpace begin
 pub struct UserSpace {
@@ -35,16 +35,30 @@ impl UserSpace {
         }
     }
 
+    pub fn from_existed(user_space: &Self) -> Self {
+        Self {
+            entry: 0,
+            base_size: 0,
+            inner: unsafe { UPSafeCell::new(UserSpaceInner::from_another(&user_space.inner())) },
+        }
+    }
+
+    pub fn inner(&self) -> Ref<UserSpaceInner> {
+        self.inner.shared_access()
+    }
+
+    pub fn inner_mut(&self) -> RefMut<UserSpaceInner> {
+        self.inner.exclusive_access()
+    }
+}
+
+impl UserSpace {
     pub fn get_entry(&self) -> usize {
         self.entry
     }
 
     pub fn get_base_size(&self) -> usize {
         self.base_size
-    }
-
-    pub fn inner_mut(&self) -> RefMut<UserSpaceInner> {
-        self.inner.exclusive_access()
     }
 }
 // region UserSpace end

@@ -289,5 +289,28 @@ impl MemorySet {
             program_brk_va.0,
         )
     }
+
+    pub fn from_another(another: &Self) -> Self {
+        let mut memory_set = Self::empty();
+
+        // map trampoline
+        memory_set.map_trampoline();
+
+        // copy areas
+        for area in another.areas.iter() {
+            let new_area = MapArea::from_another(area);
+            memory_set.insert_area(new_area);
+
+            // gen page table entry
+            for vpn in area.vpn_range {
+                let src_ppn = another.page_table.translate(vpn).unwrap().ppn();
+                let dst_ppn = memory_set.page_table.translate(vpn).unwrap().ppn();
+                dst_ppn
+                    .as_bytes_array()
+                    .copy_from_slice(src_ppn.as_bytes_array());
+            }
+        }
+        memory_set
+    }
 }
 // region MemorySet end

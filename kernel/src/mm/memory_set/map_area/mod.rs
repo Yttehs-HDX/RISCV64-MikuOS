@@ -36,6 +36,17 @@ impl MapArea {
         }
     }
 
+    pub fn from_another(another: &Self) -> Self {
+        Self {
+            vpn_range: another.vpn_range.clone(),
+            ppn_map: BTreeMap::new(),
+            map_type: another.map_type,
+            map_perm: another.map_perm,
+        }
+    }
+}
+
+impl MapArea {
     pub fn map_one(&mut self, vpn: VirtPageNum, page_table: &mut PageTable) {
         let ppn: PhysPageNum;
         match self.map_type {
