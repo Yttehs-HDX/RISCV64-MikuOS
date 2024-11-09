@@ -21,7 +21,6 @@ mod timer;
 #[link_section = ".text.entry"]
 extern "C" fn _start() -> isize {
     clear_bss();
-    init_heap();
     exit(main())
 }
 
