@@ -11,8 +11,7 @@ pub fn sys_read(fd: usize, buffer: *const u8, len: usize) -> isize {
             let ptr = mm::translate_ptr(
                 task::get_processor().current().inner_mut().get_satp(),
                 buffer,
-            )
-            .unwrap();
+            );
             unsafe {
                 *ptr = c as u8;
             }

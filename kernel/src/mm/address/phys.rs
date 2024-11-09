@@ -40,6 +40,10 @@ impl PhysAddr {
     pub fn to_ppn_ceil(self) -> PhysPageNum {
         PhysPageNum((self.0 + SV39_PAGE_SIZE - 1) >> SV39_OFFSET_BITS)
     }
+
+    pub fn as_mut<T>(&self) -> &'static mut T {
+        unsafe { (self.0 as *mut T).as_mut().unwrap() }
+    }
 }
 // region PhysAddr end
 
