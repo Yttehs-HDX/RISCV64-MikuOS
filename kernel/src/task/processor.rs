@@ -40,8 +40,8 @@ impl Processor {
         self.inner_mut().current.take()
     }
 
-    pub fn current(&self) -> Option<Arc<ProcessControlBlock>> {
-        self.inner().current.as_ref().map(Arc::clone)
+    pub fn current(&self) -> Arc<ProcessControlBlock> {
+        self.inner().current.as_ref().map(Arc::clone).unwrap()
     }
 
     pub fn run_tasks(&self) -> ! {

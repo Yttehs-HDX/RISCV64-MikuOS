@@ -11,7 +11,6 @@ pub fn sys_read(fd: usize, buffer: *const u8, len: usize) -> isize {
             let ptr = mm::translate_ptr(
                 task::get_processor()
                     .current()
-                    .unwrap()
                     .inner_mut()
                     .get_satp(),
                 buffer,
@@ -35,7 +34,6 @@ pub fn sys_write(fd: usize, buffer: *const u8, len: usize) -> isize {
             let slices = mm::translate_bype_buffer(
                 task::get_processor()
                     .current()
-                    .unwrap()
                     .inner_mut()
                     .get_satp(),
                 buffer,

@@ -22,7 +22,6 @@ pub fn sys_get_time(ts: usize, _tz: usize) -> isize {
     let time_val = mm::translate_bype_buffer(
         task::get_processor()
             .current()
-            .unwrap()
             .inner_mut()
             .get_satp(),
         ts as *mut u8,
@@ -38,7 +37,6 @@ pub fn sys_get_time(ts: usize, _tz: usize) -> isize {
 pub fn sys_sbrk(increase: i32) -> isize {
     let old_brk = task::get_processor()
         .current()
-        .unwrap()
         .inner_mut()
         .set_break(increase);
     match old_brk {
