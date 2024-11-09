@@ -146,10 +146,7 @@ pub fn trap_handler() -> ! {
 pub fn trap_return() -> ! {
     set_user_trap_entry();
     let trap_cx_ptr = TRAP_CX_PTR;
-    let user_satp = task::get_processor()
-        .current()
-        .inner_mut()
-        .get_satp();
+    let user_satp = task::get_processor().current().inner_mut().get_satp();
     let restore_snap_va = __restore_snap as usize - __snap_trap as usize + TRAMPOLINE;
     unsafe {
         asm!(

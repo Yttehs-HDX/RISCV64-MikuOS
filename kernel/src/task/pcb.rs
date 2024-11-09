@@ -5,6 +5,10 @@ use crate::{
     task::{alloc_pid_handle, KernelStack, PidHandle, TaskContext},
     trap::{self, TrapContext},
 };
+use alloc::{
+    sync::{Arc, Weak},
+    vec::Vec,
+};
 use core::cell::{Ref, RefMut};
 
 // region ProcessControlBlock begin
@@ -70,6 +74,9 @@ pub struct ProcessControlBlockInner {
     task_cx: TaskContext,
     user_space: UserSpace,
     program_brk: usize,
+
+    parent: Option<Weak<ProcessControlBlock>>,
+    children: Vec<Arc<ProcessControlBlock>>,
 }
 
 impl ProcessControlBlockInner {
@@ -80,6 +87,8 @@ impl ProcessControlBlockInner {
             task_cx,
             user_space,
             program_brk,
+            parent: None,
+            children: Vec::new(),
         }
     }
     pub fn get_trap_cx_mut(&self) -> &'static mut TrapContext {

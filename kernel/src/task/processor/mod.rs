@@ -1,3 +1,5 @@
+pub use initproc::*;
+
 use crate::{
     sync::UPSafeCell,
     task::{__restore_task, __save_task, get_task_manager, ProcessControlBlock},
@@ -5,6 +7,8 @@ use crate::{
 use alloc::sync::Arc;
 use core::cell::{Ref, RefMut};
 use lazy_static::lazy_static;
+
+mod initproc;
 
 pub fn get_processor() -> &'static Processor {
     &PROCESSOR

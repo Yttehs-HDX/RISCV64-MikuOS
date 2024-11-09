@@ -20,10 +20,7 @@ pub fn sys_yield() -> ! {
 pub use crate::timer::TimeVal;
 pub fn sys_get_time(ts: usize, _tz: usize) -> isize {
     let time_val = mm::translate_bype_buffer(
-        task::get_processor()
-            .current()
-            .inner_mut()
-            .get_satp(),
+        task::get_processor().current().inner_mut().get_satp(),
         ts as *mut u8,
         core::mem::size_of::<TimeVal>(),
     )

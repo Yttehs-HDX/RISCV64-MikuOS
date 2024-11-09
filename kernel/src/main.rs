@@ -39,7 +39,6 @@ fn rust_main() -> ! {
 fn os_start() {
     println!("[Kernel] current time: {}", timer::get_current_time());
     task::add_task(app::get_app("test_print").unwrap().elf());
-    task::add_task(app::get_app("test_print").unwrap().elf());
     task::add_task(app::get_app("test_sret").unwrap().elf());
     task::add_task(app::get_app("test_page_fault").unwrap().elf());
     task::add_task(app::get_app("test_yield").unwrap().elf());
