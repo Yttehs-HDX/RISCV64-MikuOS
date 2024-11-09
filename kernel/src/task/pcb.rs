@@ -74,7 +74,7 @@ impl ProcessControlBlock {
                 ))
             },
         });
-        pcb.inner_mut().get_trap_cx_mut().kernel_sp = kernel_sp;
+        pcb.inner_mut().get_trap_cx_mut().set_kernel_sp(kernel_sp);
 
         // Set parent
         pcb.inner_mut().set_parent(Arc::downgrade(self));

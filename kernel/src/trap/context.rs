@@ -4,14 +4,14 @@ use riscv::register::sstatus::{self, Sstatus};
 #[repr(C)]
 pub struct TrapContext {
     // registers
-    pub x: [usize; 32],   // +0 ~ + 31
-    pub sstatus: Sstatus, // + 32
-    pub sepc: usize,      // +33
+    x: [usize; 32],   // +0 ~ + 31
+    sstatus: Sstatus, // + 32
+    sepc: usize,      // +33
 
     // variables
-    pub kernel_satp: usize,  // +34
-    pub kernel_sp: usize,    // +35
-    pub trap_handler: usize, // +36
+    kernel_satp: usize,  // +34
+    kernel_sp: usize,    // +35
+    trap_handler: usize, // +36
 }
 
 impl TrapContext {
@@ -38,12 +38,28 @@ impl TrapContext {
 }
 
 impl TrapContext {
-    fn set_sp(&mut self, sp: usize) {
+    pub fn get_x(&self, no: usize) -> usize {
+        self.x[no]
+    }
+
+    pub fn get_sepc(&self) -> usize {
+        self.sepc
+    }
+
+    pub fn set_sp(&mut self, sp: usize) {
         self.x[2] = sp;
     }
 
     pub fn set_a0(&mut self, a0: usize) {
         self.x[10] = a0;
+    }
+
+    pub fn move_to_next_ins(&mut self) {
+        self.sepc += 4;
+    }
+
+    pub fn set_kernel_sp(&mut self, sp: usize) {
+        self.kernel_sp = sp;
     }
 }
 // region TrapContext end

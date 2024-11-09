@@ -115,12 +115,15 @@ pub fn trap_handler() -> ! {
         .get_trap_cx_mut();
     let stval = stval::read();
     let scause = scause::read();
+    let sepc = cx.get_sepc();
     match scause.cause() {
         Trap::Exception(Exception::UserEnvCall) => {
-            trace!("Ecall from U-mode @ {:#x}", cx.sepc);
+            trace!("Ecall from U-mode @ {:#x}", sepc);
             // move to next instruction
-            cx.sepc += 4;
-            cx.x[10] = syscall::syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]) as usize;
+            cx.move_to_next_ins();
+            let x10 =
+                syscall::syscall(cx.get_x(17), [cx.get_x(10), cx.get_x(11), cx.get_x(12)]) as usize;
+            cx.set_a0(x10);
             trap_return();
         }
         Trap::Interrupt(Interrupt::SupervisorTimer) => {
@@ -128,15 +131,15 @@ pub fn trap_handler() -> ! {
             syscall::sys_yield();
         }
         Trap::Exception(Exception::IllegalInstruction) => {
-            error!("Illegal instruction @ {:#x}, badaddr {:#x}", cx.sepc, stval);
+            error!("Illegal instruction @ {:#x}, badaddr {:#x}", sepc, stval);
             syscall::sys_exit(1);
         }
         Trap::Exception(Exception::StoreFault) | Trap::Exception(Exception::StorePageFault) => {
-            error!("Store fault @ {:#x}, badaddr {:#x}", cx.sepc, stval);
+            error!("Store fault @ {:#x}, badaddr {:#x}", sepc, stval);
             syscall::sys_exit(1);
         }
         _ => {
-            error!("Unhandled trap {:?} @ {:#x}", scause.cause(), cx.sepc);
+            error!("Unhandled trap {:?} @ {:#x}", scause.cause(), sepc);
             syscall::sys_exit(1);
         }
     }
