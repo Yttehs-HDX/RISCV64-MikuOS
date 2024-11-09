@@ -35,9 +35,15 @@ impl TrapContext {
         cx.set_sp(user_sp);
         cx
     }
+}
 
+impl TrapContext {
     fn set_sp(&mut self, sp: usize) {
         self.x[2] = sp;
+    }
+
+    pub fn set_a0(&mut self, a0: usize) {
+        self.x[10] = a0;
     }
 }
 // region TrapContext end

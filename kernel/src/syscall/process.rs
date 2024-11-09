@@ -41,3 +41,14 @@ pub fn sys_sbrk(increase: i32) -> isize {
         None => -1,
     }
 }
+
+pub fn sys_fork() -> isize {
+    let current_task = task::get_processor().current();
+    let new_task = current_task.fork();
+    let new_pid = new_task.get_pid();
+    let trap_cx = new_task.inner().get_trap_cx_mut();
+    trap_cx.set_a0(0);
+    task::add_task(new_task);
+
+    new_pid as isize
+}

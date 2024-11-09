@@ -10,6 +10,7 @@ const SYSCALL_EXIT: usize = 93;
 const SYSCALL_YIELD: usize = 124;
 const SYSCALL_GET_TIME: usize = 169;
 const SYSCALL_SBRK: usize = 214;
+const SYSCALL_FORK: usize = 220;
 
 pub fn syscall(id: usize, args: [usize; 3]) -> isize {
     match id {
@@ -19,6 +20,7 @@ pub fn syscall(id: usize, args: [usize; 3]) -> isize {
         SYSCALL_YIELD => sys_yield(),
         SYSCALL_GET_TIME => sys_get_time(args[0], args[1]),
         SYSCALL_SBRK => sys_sbrk(args[0] as i32),
+        SYSCALL_FORK => sys_fork(),
         _ => panic!("Unsupported syscall id: {}", id),
     }
 }

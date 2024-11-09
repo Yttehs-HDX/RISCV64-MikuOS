@@ -95,7 +95,6 @@ impl ProcessControlBlock {
 }
 
 impl ProcessControlBlock {
-    #[allow(unused)]
     pub fn get_pid(&self) -> usize {
         self.pid.0
     }

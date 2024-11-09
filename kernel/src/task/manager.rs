@@ -4,8 +4,8 @@ use alloc::{collections::vec_deque::VecDeque, sync::Arc};
 use core::cell::{Ref, RefMut};
 use lazy_static::lazy_static;
 
-pub fn add_task(elf_data: &[u8]) {
-    get_task_manager().add(Arc::new(ProcessControlBlock::new(elf_data)));
+pub fn add_task(pcb: Arc<ProcessControlBlock>) {
+    get_task_manager().add(pcb);
 }
 
 pub fn has_task() -> bool {
