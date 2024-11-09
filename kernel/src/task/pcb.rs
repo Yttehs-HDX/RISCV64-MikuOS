@@ -1,5 +1,4 @@
 use crate::{
-    app::App,
     config::{TRAP_CX_PTR, USER_STACK_SP},
     mm::{self, MemorySpace, PhysPageNum, UserSpace, VirtAddr},
     sync::UPSafeCell,
@@ -17,10 +16,10 @@ pub struct ProcessControlBlock {
 }
 
 impl ProcessControlBlock {
-    pub fn new(app: &App) -> Self {
+    pub fn new(elf_data: &[u8]) -> Self {
         let pid = alloc_pid_handle();
         let kernel_stack = KernelStack::new(&pid);
-        let user_space = UserSpace::from_elf(app.elf());
+        let user_space = UserSpace::from_elf(elf_data);
         let trap_cx_ppn = user_space
             .inner_mut()
             .translate(VirtAddr(TRAP_CX_PTR).to_vpn())
