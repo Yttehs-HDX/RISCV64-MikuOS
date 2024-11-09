@@ -1,4 +1,4 @@
-use crate::{mm, task, timer};
+use crate::{app, mm, task, timer};
 use log::{info, warn};
 
 pub fn sys_exit(exit_code: i32) -> ! {
@@ -51,4 +51,15 @@ pub fn sys_fork() -> isize {
     task::add_task(new_task);
 
     new_pid as isize
+}
+
+pub fn sys_exec(path: *const u8, _argv: *const u8) -> isize {
+    let path = mm::translate_str(task::get_processor().current().inner().get_satp(), path);
+    if let Some(app) = app::get_app(&path) {
+        let current_task = task::get_processor().current();
+        current_task.exec(app.elf());
+        0
+    } else {
+        -1
+    }
 }
