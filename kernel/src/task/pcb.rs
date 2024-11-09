@@ -98,6 +98,26 @@ impl ProcessControlBlock {
     pub fn get_pid(&self) -> usize {
         self.pid.0
     }
+
+    pub fn exec(&self, elf_data: &[u8]) {
+        let user_space = UserSpace::from_elf(elf_data);
+        let trap_cx_ppn = user_space
+            .inner_mut()
+            .translate(VirtAddr(TRAP_CX_PTR).to_vpn())
+            .unwrap()
+            .ppn();
+        *trap_cx_ppn.as_mut() = TrapContext::new(
+            user_space.get_entry(),
+            USER_STACK_SP,
+            self.kernel_stack.get_sp(),
+            mm::get_kernel_space().get_satp(),
+            trap::trap_handler as usize,
+        );
+
+        // update user space and trap context
+        self.inner_mut().user_space = user_space;
+        self.inner_mut().trap_cx_ppn = trap_cx_ppn;
+    }
 }
 // region ProcessControlBlock end
 
