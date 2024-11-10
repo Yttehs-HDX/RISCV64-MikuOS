@@ -10,7 +10,7 @@ use simple_range::StepByOne;
 
 mod entry;
 
-pub fn translate_ptr(satp: usize, ptr: *const u8) -> *mut u8 {
+pub fn translate_ptr<T>(satp: usize, ptr: *const T) -> &'static mut T {
     let page_table = PageTable::from_satp(satp);
     let va = VirtAddr(ptr as usize);
     page_table.translate_va(va).unwrap().as_mut()
@@ -20,7 +20,7 @@ pub fn translate_str(satp: usize, ptr: *const u8) -> String {
     let mut va = ptr as usize;
     let mut string = String::new();
     loop {
-        let ch: u8 = unsafe { *translate_ptr(satp, va as *const u8) };
+        let ch: u8 = *translate_ptr(satp, va as *const u8);
         if ch == 0 {
             break;
         }
