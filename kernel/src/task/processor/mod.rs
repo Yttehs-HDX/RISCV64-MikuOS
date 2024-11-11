@@ -87,8 +87,8 @@ impl Processor {
 
     pub fn exit_current(&self, exit_code: i32) -> ! {
         let pcb = self.take_current().unwrap();
-        pcb.inner_mut().set_exit_code(exit_code);
-        pcb.inner_mut().drop_user_space();
+        pcb.set_exit_code(exit_code);
+        pcb.drop_user_space();
 
         // if initproc exits
         if pcb.get_pid() == 1 {
@@ -98,7 +98,7 @@ impl Processor {
         // move children to initproc
         {
             for child in pcb.inner_mut().get_children_ref().iter() {
-                child.inner_mut().set_parent(Arc::downgrade(get_initproc()));
+                child.set_parent(Arc::downgrade(get_initproc()));
                 get_initproc()
                     .inner_mut()
                     .get_children_mut()

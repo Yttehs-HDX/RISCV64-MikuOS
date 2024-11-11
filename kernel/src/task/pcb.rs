@@ -74,10 +74,10 @@ impl ProcessControlBlock {
                 ))
             },
         });
-        pcb.inner_mut().get_trap_cx_mut().set_kernel_sp(kernel_sp);
+        pcb.get_trap_cx_mut().set_kernel_sp(kernel_sp);
 
         // Set parent
-        pcb.inner_mut().set_parent(Arc::downgrade(self));
+        pcb.set_parent(Arc::downgrade(self));
 
         // Add to parent's children
         self.inner_mut().children.push(pcb.clone());
@@ -120,6 +120,52 @@ impl ProcessControlBlock {
         self.inner_mut().trap_cx_ppn = trap_cx_ppn;
     }
 }
+
+impl ProcessControlBlock {
+    pub fn set_parent(&self, parent: Weak<ProcessControlBlock>) {
+        self.inner_mut().parent = Some(parent);
+    }
+
+    pub fn set_exit_code(&self, exit_code: i32) {
+        self.inner_mut().exit_code = exit_code;
+    }
+
+    pub fn get_exit_code(&self) -> i32 {
+        self.inner().exit_code
+    }
+
+    pub fn drop_user_space(&self) {
+        self.inner_mut().user_space = None;
+    }
+
+    pub fn is_zombie(&self) -> bool {
+        self.inner().user_space.is_none()
+    }
+
+    pub fn get_satp(&self) -> usize {
+        self.inner().get_user_space().get_satp()
+    }
+
+    pub fn get_trap_cx_mut(&self) -> &'static mut TrapContext {
+        self.inner().trap_cx_ppn.as_mut()
+    }
+
+    pub fn set_break(&self, increase: i32) -> Option<usize> {
+        let base_size = self.inner().get_user_space().get_base_size();
+        let old_brk = self.inner().program_brk;
+        let new_brk = (old_brk as i32 + increase) as usize;
+        if new_brk < base_size {
+            return None;
+        }
+
+        self.inner()
+            .get_user_space()
+            .inner_mut()
+            .change_area_end(VirtAddr(base_size), VirtAddr(new_brk));
+        self.inner_mut().program_brk = new_brk;
+        Some(old_brk)
+    }
+}
 // region ProcessControlBlock end
 
 // region ProcessControlBlockInner begin
@@ -148,8 +194,8 @@ impl ProcessControlBlockInner {
         }
     }
 
-    pub fn set_parent(&mut self, parent: Weak<ProcessControlBlock>) {
-        self.parent = Some(parent);
+    fn get_user_space(&self) -> &UserSpace {
+        self.user_space.as_ref().unwrap()
     }
 
     pub fn get_task_cx_ref(&self) -> &TaskContext {
@@ -166,51 +212,6 @@ impl ProcessControlBlockInner {
 
     pub fn get_children_mut(&mut self) -> &mut Vec<Arc<ProcessControlBlock>> {
         &mut self.children
-    }
-
-    pub fn set_exit_code(&mut self, exit_code: i32) {
-        self.exit_code = exit_code;
-    }
-
-    pub fn get_exit_code(&self) -> i32 {
-        self.exit_code
-    }
-}
-
-impl ProcessControlBlockInner {
-    fn get_user_space(&self) -> &UserSpace {
-        self.user_space.as_ref().unwrap()
-    }
-
-    pub fn drop_user_space(&mut self) {
-        self.user_space = None;
-    }
-
-    pub fn is_zombie(&self) -> bool {
-        self.user_space.is_none()
-    }
-
-    pub fn get_trap_cx_mut(&self) -> &'static mut TrapContext {
-        self.trap_cx_ppn.as_mut()
-    }
-
-    pub fn get_satp(&self) -> usize {
-        self.get_user_space().get_satp()
-    }
-
-    pub fn set_break(&mut self, increase: i32) -> Option<usize> {
-        let base_size = self.user_space.as_ref().unwrap().get_base_size();
-        let old_brk = self.program_brk;
-        let new_brk = (old_brk as i32 + increase) as usize;
-        if new_brk < base_size {
-            return None;
-        }
-
-        self.get_user_space()
-            .inner_mut()
-            .change_area_end(VirtAddr(base_size), VirtAddr(new_brk));
-        self.program_brk = new_brk;
-        Some(old_brk)
     }
 }
 // region ProcessControlBlockInner end
