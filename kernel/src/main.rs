@@ -4,9 +4,6 @@
 
 use core::arch::global_asm;
 
-use alloc::sync::Arc;
-use task::ProcessControlBlock;
-
 extern crate alloc;
 
 global_asm!(include_str!("entry.S"));
@@ -34,6 +31,7 @@ fn rust_main() -> ! {
     mm::init();
     trap::init_trap();
     // trap::enable_timer_interrupt();
+    task::init();
     println!("[Kernel] initialized");
     os_start();
     sbi::sbi_shutdown_success();
@@ -62,9 +60,9 @@ fn os_start() {
     // task::add_task(Arc::new(ProcessControlBlock::new(
     //     app::get_app("user_shell").unwrap().elf(),
     // )));
-    task::add_task(Arc::new(ProcessControlBlock::new(
-        app::get_app("initproc").unwrap().elf(),
-    )));
+    // task::add_task(Arc::new(ProcessControlBlock::new(
+    //     app::get_app("initproc").unwrap().elf(),
+    // )));
     task::get_processor().run_tasks();
 }
 

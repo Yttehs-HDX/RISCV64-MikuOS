@@ -9,3 +9,7 @@ mod manager;
 mod pcb;
 mod pid;
 mod processor;
+
+pub fn init() {
+    add_initproc();
+}

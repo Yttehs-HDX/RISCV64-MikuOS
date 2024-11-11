@@ -1,8 +1,7 @@
-pub use initproc::*;
+pub(in crate::task) use initproc::*;
 
 use crate::{
-    sync::UPSafeCell,
-    task::{__restore_task, __save_task, get_task_manager, ProcessControlBlock},
+    sync::UPSafeCell, task::{__restore_task, __save_task, get_task_manager, ProcessControlBlock}
 };
 use alloc::sync::Arc;
 use core::cell::{Ref, RefMut};
@@ -89,6 +88,11 @@ impl Processor {
         let pcb = self.take_current().unwrap();
         pcb.inner_mut().set_exit_code(exit_code);
         pcb.inner_mut().drop_user_space();
+
+        // if initproc exits
+        if pcb.get_pid() == 1 {
+            crate::os_end();
+        }
 
         // move children to initproc
         {
