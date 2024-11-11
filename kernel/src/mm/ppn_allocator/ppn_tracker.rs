@@ -1,5 +1,4 @@
-use super::dealloc_ppn;
-use crate::mm::PhysPageNum;
+use crate::mm::{dealloc_ppn, PhysPageNum};
 
 // region PpnTracker begin
 pub struct PpnTracker {

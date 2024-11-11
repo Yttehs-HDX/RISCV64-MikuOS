@@ -1,5 +1,7 @@
-use crate::task::get_task_manager;
-use crate::{app, task::ProcessControlBlock};
+use crate::{
+    app,
+    task::{get_task_manager, ProcessControlBlock},
+};
 use alloc::sync::Arc;
 use lazy_static::lazy_static;
 

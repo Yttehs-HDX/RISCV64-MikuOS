@@ -1,4 +1,4 @@
-use super::sbi_call;
+use crate::sbi::sbi_call;
 use riscv::register::time;
 
 const SBI_SET_TIMER: usize = 0;

@@ -1,5 +1,5 @@
-use super::sbi_call;
 use crate::board::{self, QEMUExit};
+use crate::sbi::sbi_call;
 
 const SBI_SHUTDOWN: usize = 8;
 

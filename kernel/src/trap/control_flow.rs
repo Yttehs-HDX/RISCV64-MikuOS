@@ -131,7 +131,13 @@ pub fn trap_handler() -> ! {
             task::get_processor().schedule();
         }
         Trap::Exception(Exception::IllegalInstruction) => {
-            error!("{:?} @ {:#x}, badaddr {:#x}, pid = {}", scause.cause(), sepc, stval, pid);
+            error!(
+                "{:?} @ {:#x}, badaddr {:#x}, pid = {}",
+                scause.cause(),
+                sepc,
+                stval,
+                pid
+            );
             task::get_processor().exit_current(-3);
         }
         Trap::Exception(Exception::StoreFault)
@@ -140,7 +146,13 @@ pub fn trap_handler() -> ! {
         | Trap::Exception(Exception::LoadPageFault)
         | Trap::Exception(Exception::InstructionFault)
         | Trap::Exception(Exception::InstructionPageFault) => {
-            error!("{:?} @ {:#x}, badaddr {:#x}, pid = {}", scause.cause(), sepc, stval, pid);
+            error!(
+                "{:?} @ {:#x}, badaddr {:#x}, pid = {}",
+                scause.cause(),
+                sepc,
+                stval,
+                pid
+            );
             task::get_processor().exit_current(-2);
         }
         _ => {

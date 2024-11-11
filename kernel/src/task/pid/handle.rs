@@ -1,4 +1,4 @@
-use super::dealloc_pid;
+use crate::task::dealloc_pid;
 
 // region PidHandle begin
 pub struct PidHandle(pub usize);

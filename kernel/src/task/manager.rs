@@ -1,7 +1,6 @@
-use crate::sync::UPSafeCell;
-use crate::task::ProcessControlBlock;
+use crate::{sync::UPSafeCell, task::ProcessControlBlock};
 use alloc::{collections::vec_deque::VecDeque, sync::Arc};
-use core::cell::{Ref, RefMut};
+use core::cell::RefMut;
 use lazy_static::lazy_static;
 
 pub fn add_task(pcb: Arc<ProcessControlBlock>) {
@@ -30,10 +29,6 @@ impl TaskManager {
                 })
             },
         }
-    }
-
-    fn inner(&self) -> Ref<TaskManagerInner> {
-        self.inner.shared_access()
     }
 
     fn inner_mut(&self) -> RefMut<TaskManagerInner> {

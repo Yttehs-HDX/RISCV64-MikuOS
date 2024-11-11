@@ -1,7 +1,7 @@
-use super::PidHandle;
 use crate::{
     config::{kernel_stack_top, KERNEL_STACK_SIZE},
     mm::{self, MapPermission, VirtAddr},
+    task::PidHandle,
 };
 
 // region KernelSpace begin

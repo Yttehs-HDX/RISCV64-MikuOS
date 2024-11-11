@@ -38,7 +38,7 @@ impl MapArea {
 
     pub fn from_another(another: &Self) -> Self {
         Self {
-            vpn_range: another.vpn_range.clone(),
+            vpn_range: another.vpn_range,
             ppn_map: BTreeMap::new(),
             map_type: another.map_type,
             map_perm: another.map_perm,

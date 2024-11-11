@@ -17,7 +17,10 @@ fn main() -> i32 {
                 yield_();
                 continue;
             }
-            println!("[user_shell] Process {} exited with code {}", pid, exit_code);
+            println!(
+                "[user_shell] Process {} exited with code {}",
+                pid, exit_code
+            );
         }
     }
     0

@@ -55,7 +55,7 @@ impl ProcessControlBlock {
         let pid = alloc_pid_handle();
         let kernel_stack = KernelStack::new(&pid);
         let kernel_sp = kernel_stack.get_sp();
-        let user_space = UserSpace::from_existed(&self.inner().get_user_space());
+        let user_space = UserSpace::from_existed(self.inner().get_user_space());
         let trap_cx_ppn = user_space
             .inner_mut()
             .translate(VirtAddr(TRAP_CX_PTR).to_vpn())

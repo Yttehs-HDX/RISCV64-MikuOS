@@ -12,9 +12,7 @@ pub fn sys_read(fd: usize, buffer: *const u8, len: usize) -> isize {
                 task::get_processor().current().inner_mut().get_satp(),
                 buffer,
             );
-            unsafe {
-                *ptr = c as u8;
-            }
+            *ptr = c as u8;
             1
         }
         _ => {

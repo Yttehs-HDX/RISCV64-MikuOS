@@ -1,7 +1,8 @@
 pub(in crate::task) use initproc::*;
 
 use crate::{
-    sync::UPSafeCell, task::{__restore_task, __save_task, get_task_manager, ProcessControlBlock}
+    sync::UPSafeCell,
+    task::{__restore_task, __save_task, get_task_manager, ProcessControlBlock},
 };
 use alloc::sync::Arc;
 use core::cell::{Ref, RefMut};
@@ -97,9 +98,7 @@ impl Processor {
         // move children to initproc
         {
             for child in pcb.inner_mut().get_children_ref().iter() {
-                child
-                    .inner_mut()
-                    .set_parent(Arc::downgrade(&get_initproc()));
+                child.inner_mut().set_parent(Arc::downgrade(get_initproc()));
                 get_initproc()
                     .inner_mut()
                     .get_children_mut()
