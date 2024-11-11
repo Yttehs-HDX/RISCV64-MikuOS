@@ -8,10 +8,6 @@ pub fn add_task(pcb: Arc<ProcessControlBlock>) {
     get_task_manager().add(pcb);
 }
 
-pub fn has_task() -> bool {
-    !get_task_manager().is_empty()
-}
-
 pub(in crate::task) fn get_task_manager() -> &'static TaskManager {
     &TASK_MANAGER
 }
@@ -52,10 +48,6 @@ impl TaskManager {
 
     pub fn fetch(&self) -> Option<Arc<ProcessControlBlock>> {
         self.inner_mut().ready_queue.pop_front()
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.inner().ready_queue.is_empty()
     }
 }
 // region TaskManager end

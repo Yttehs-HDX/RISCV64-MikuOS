@@ -88,6 +88,7 @@ impl Processor {
     pub fn exit_current(&self, exit_code: i32) -> ! {
         let pcb = self.take_current().unwrap();
         pcb.inner_mut().set_exit_code(exit_code);
+        pcb.inner_mut().drop_user_space();
 
         // move children to initproc
         {

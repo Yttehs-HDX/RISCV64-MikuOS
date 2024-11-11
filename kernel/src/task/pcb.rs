@@ -55,7 +55,7 @@ impl ProcessControlBlock {
         let pid = alloc_pid_handle();
         let kernel_stack = KernelStack::new(&pid);
         let kernel_sp = kernel_stack.get_sp();
-        let user_space = UserSpace::from_existed(&self.inner().user_space);
+        let user_space = UserSpace::from_existed(&self.inner().get_user_space());
         let trap_cx_ppn = user_space
             .inner_mut()
             .translate(VirtAddr(TRAP_CX_PTR).to_vpn())
@@ -115,7 +115,7 @@ impl ProcessControlBlock {
         );
 
         // update user space and trap context
-        self.inner_mut().user_space = user_space;
+        self.inner_mut().user_space = Some(user_space);
         self.inner_mut().trap_cx_ppn = trap_cx_ppn;
     }
 }
@@ -125,7 +125,7 @@ impl ProcessControlBlock {
 pub struct ProcessControlBlockInner {
     trap_cx_ppn: PhysPageNum,
     task_cx: TaskContext,
-    user_space: UserSpace,
+    user_space: Option<UserSpace>,
     program_brk: usize,
 
     parent: Option<Weak<ProcessControlBlock>>,
@@ -139,7 +139,7 @@ impl ProcessControlBlockInner {
         Self {
             trap_cx_ppn,
             task_cx,
-            user_space,
+            user_space: Some(user_space),
             program_brk,
             parent: None,
             children: Vec::new(),
@@ -170,26 +170,42 @@ impl ProcessControlBlockInner {
     pub fn set_exit_code(&mut self, exit_code: i32) {
         self.exit_code = exit_code;
     }
+
+    pub fn get_exit_code(&self) -> i32 {
+        self.exit_code
+    }
 }
 
 impl ProcessControlBlockInner {
+    fn get_user_space(&self) -> &UserSpace {
+        self.user_space.as_ref().unwrap()
+    }
+
+    pub fn drop_user_space(&mut self) {
+        self.user_space = None;
+    }
+
+    pub fn is_zombie(&self) -> bool {
+        self.user_space.is_none()
+    }
+
     pub fn get_trap_cx_mut(&self) -> &'static mut TrapContext {
         self.trap_cx_ppn.as_mut()
     }
 
     pub fn get_satp(&self) -> usize {
-        self.user_space.get_satp()
+        self.get_user_space().get_satp()
     }
 
     pub fn set_break(&mut self, increase: i32) -> Option<usize> {
-        let base_size = self.user_space.get_base_size();
+        let base_size = self.user_space.as_ref().unwrap().get_base_size();
         let old_brk = self.program_brk;
         let new_brk = (old_brk as i32 + increase) as usize;
         if new_brk < base_size {
             return None;
         }
 
-        self.user_space
+        self.get_user_space()
             .inner_mut()
             .change_area_end(VirtAddr(base_size), VirtAddr(new_brk));
         self.program_brk = new_brk;
