@@ -52,56 +52,30 @@ pub fn sys_exec(path: *const u8, _argv: *const u8) -> isize {
 pub fn sys_waitpid(pid: isize, exit_code_ptr: *const i32, _option: usize) -> isize {
     let satp = task::get_processor().current().get_satp();
     let exit_code_ptr = mm::translate_ptr(satp, exit_code_ptr);
-    match pid {
-        -1 => {
-            let mut ret = -2;
-            let mut index = -1;
-            for (i, child) in task::get_processor()
-                .current()
-                .inner()
-                .get_children_ref()
-                .iter()
-                .enumerate()
-            {
-                if child.is_zombie() {
-                    index = i as isize;
-                    *exit_code_ptr = child.get_exit_code();
-                    ret = -1;
-                }
-            }
-            if index != -1 {
-                task::get_processor()
-                    .current()
-                    .inner_mut()
-                    .get_children_mut()
-                    .remove(index as usize);
-            }
-            ret
-        }
-        _ => {
-            let mut ret = -2;
-            let mut index = -1;
-            for (i, child) in task::get_processor()
-                .current()
-                .inner()
-                .get_children_ref()
-                .iter()
-                .enumerate()
-            {
-                if child.get_pid() == pid as usize && child.is_zombie() {
-                    index = i as isize;
-                    *exit_code_ptr = child.get_exit_code();
-                    ret = -1;
-                }
-            }
-            if index != -1 {
-                task::get_processor()
-                    .current()
-                    .inner_mut()
-                    .get_children_mut()
-                    .remove(index as usize);
-            }
-            ret
-        }
+
+    let current_task = task::get_processor().current();
+    let mut task_inner = current_task.inner_mut();
+    let children = task_inner.get_children_mut();
+
+    // pid not found
+    if !children
+        .iter()
+        .any(|child| child.get_pid() == pid as usize || pid == -1)
+    {
+        return -1;
+    }
+
+    if let Some(child) = children
+        .iter()
+        .find(|child| (child.get_pid() == pid as usize || pid == -1) && child.is_zombie())
+    {
+        // child is zombie
+        let exit_code = child.get_exit_code();
+        *exit_code_ptr = exit_code;
+        children.retain(|c| c.get_pid() != pid as usize);
+        pid
+    } else {
+        // child is not zombie
+        -2
     }
 }
