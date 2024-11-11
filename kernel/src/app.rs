@@ -11,6 +11,14 @@ pub fn get_app(name: &str) -> Option<&App> {
 lazy_static! {
     static ref APPS: [App; APP_NUM] = [
         App::new(
+            "initproc",
+            include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/initproc"),
+        ),
+        App::new(
+            "user_shell",
+            include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/user_shell"),
+        ),
+        App::new(
             "test_print",
             include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/01_test_print"),
         ),
@@ -35,14 +43,6 @@ lazy_static! {
         App::new(
             "test_read",
             include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/06_test_read"),
-        ),
-        App::new(
-            "user_shell",
-            include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/user_shell"),
-        ),
-        App::new(
-            "initproc",
-            include_bytes!("../../user/target/riscv64gc-unknown-none-elf/release/initproc"),
         ),
     ];
 }
