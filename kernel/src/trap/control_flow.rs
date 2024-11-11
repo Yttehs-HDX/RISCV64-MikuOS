@@ -116,9 +116,10 @@ pub fn trap_handler() -> ! {
     let stval = stval::read();
     let scause = scause::read();
     let sepc = cx.get_sepc();
+    let pid = task::get_processor().current().get_pid();
     match scause.cause() {
         Trap::Exception(Exception::UserEnvCall) => {
-            trace!("Ecall from U-mode @ {:#x}", sepc);
+            trace!("Ecall from U-mode @ {:#x}, pid = {}", sepc, pid);
             cx.move_to_next_ins();
             let x10 =
                 syscall::syscall(cx.get_x(17), [cx.get_x(10), cx.get_x(11), cx.get_x(12)]) as usize;
@@ -130,7 +131,7 @@ pub fn trap_handler() -> ! {
             task::get_processor().schedule();
         }
         Trap::Exception(Exception::IllegalInstruction) => {
-            error!("{:?} @ {:#x}, badaddr {:#x}", scause.cause(), sepc, stval);
+            error!("{:?} @ {:#x}, badaddr {:#x}, pid = {}", scause.cause(), sepc, stval, pid);
             task::get_processor().exit_current(-3);
         }
         Trap::Exception(Exception::StoreFault)
@@ -139,15 +140,16 @@ pub fn trap_handler() -> ! {
         | Trap::Exception(Exception::LoadPageFault)
         | Trap::Exception(Exception::InstructionFault)
         | Trap::Exception(Exception::InstructionPageFault) => {
-            error!("{:?} @ {:#x}, badaddr {:#x}", scause.cause(), sepc, stval);
+            error!("{:?} @ {:#x}, badaddr {:#x}, pid = {}", scause.cause(), sepc, stval, pid);
             task::get_processor().exit_current(-2);
         }
         _ => {
             panic!(
-                "Unhandled trap {:?} @ {:#x}, badaddr {:#x}",
+                "Unhandled trap {:?} @ {:#x}, badaddr {:#x}, pid = {}",
                 scause.cause(),
                 sepc,
-                stval
+                stval,
+                pid
             );
         }
     }
