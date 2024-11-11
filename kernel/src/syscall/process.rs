@@ -55,3 +55,60 @@ pub fn sys_exec(path: *const u8, _argv: *const u8) -> isize {
         -1
     }
 }
+
+pub fn sys_waitpid(pid: isize, exit_code_ptr: *const i32, _option: usize) -> isize {
+    let satp = task::get_processor().current().inner().get_satp();
+    let exit_code_ptr = mm::translate_ptr(satp, exit_code_ptr);
+    match pid {
+        -1 => {
+            let mut ret = -2;
+            let mut index = -1;
+            for (i, child) in task::get_processor()
+                .current()
+                .inner()
+                .get_children_ref()
+                .iter()
+                .enumerate()
+            {
+                if child.inner().is_zombie() {
+                    index = i as isize;
+                    *exit_code_ptr = child.inner().get_exit_code();
+                    ret = -1;
+                }
+            }
+            if index != -1 {
+                task::get_processor()
+                    .current()
+                    .inner_mut()
+                    .get_children_mut()
+                    .remove(index as usize);
+            }
+            ret
+        }
+        _ => {
+            let mut ret = -2;
+            let mut index = -1;
+            for (i, child) in task::get_processor()
+                .current()
+                .inner()
+                .get_children_ref()
+                .iter()
+                .enumerate()
+            {
+                if child.get_pid() == pid as usize && child.inner().is_zombie() {
+                    index = i as isize;
+                    *exit_code_ptr = child.inner().get_exit_code();
+                    ret = -1;
+                }
+            }
+            if index != -1 {
+                task::get_processor()
+                    .current()
+                    .inner_mut()
+                    .get_children_mut()
+                    .remove(index as usize);
+            }
+            ret
+        }
+    }
+}

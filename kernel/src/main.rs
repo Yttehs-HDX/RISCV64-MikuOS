@@ -41,26 +41,29 @@ fn rust_main() -> ! {
 
 fn os_start() {
     println!("[Kernel] current time: {}", timer::get_current_time());
+    // task::add_task(Arc::new(ProcessControlBlock::new(
+    //     app::get_app("test_print").unwrap().elf(),
+    // )));
+    // task::add_task(Arc::new(ProcessControlBlock::new(
+    //     app::get_app("test_sret").unwrap().elf(),
+    // )));
+    // task::add_task(Arc::new(ProcessControlBlock::new(
+    //     app::get_app("test_page_fault").unwrap().elf(),
+    // )));
+    // task::add_task(Arc::new(ProcessControlBlock::new(
+    //     app::get_app("test_yield").unwrap().elf(),
+    // )));
+    // task::add_task(Arc::new(ProcessControlBlock::new(
+    //     app::get_app("test_sbrk").unwrap().elf(),
+    // )));
+    // task::add_task(Arc::new(ProcessControlBlock::new(
+    //     app::get_app("test_read").unwrap().elf(),
+    // )));
+    // task::add_task(Arc::new(ProcessControlBlock::new(
+    //     app::get_app("user_shell").unwrap().elf(),
+    // )));
     task::add_task(Arc::new(ProcessControlBlock::new(
-        app::get_app("test_print").unwrap().elf(),
-    )));
-    task::add_task(Arc::new(ProcessControlBlock::new(
-        app::get_app("test_sret").unwrap().elf(),
-    )));
-    task::add_task(Arc::new(ProcessControlBlock::new(
-        app::get_app("test_page_fault").unwrap().elf(),
-    )));
-    task::add_task(Arc::new(ProcessControlBlock::new(
-        app::get_app("test_yield").unwrap().elf(),
-    )));
-    task::add_task(Arc::new(ProcessControlBlock::new(
-        app::get_app("test_sbrk").unwrap().elf(),
-    )));
-    task::add_task(Arc::new(ProcessControlBlock::new(
-        app::get_app("test_read").unwrap().elf(),
-    )));
-    task::add_task(Arc::new(ProcessControlBlock::new(
-        app::get_app("user_shell").unwrap().elf(),
+        app::get_app("initproc").unwrap().elf(),
     )));
     task::get_processor().run_tasks();
 }
