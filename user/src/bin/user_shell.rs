@@ -7,7 +7,7 @@ use user_lib::{
 
 extern crate user_lib;
 
-const SHELL_NAME: &str = "user_shell";
+const SHELL_NAME: &str = "Miku Shell";
 const COMMAND_NOT_FOUND: i32 = 127;
 
 const LF: u8 = 0x0au8;
