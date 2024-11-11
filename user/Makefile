@@ -1,7 +1,6 @@
-.PHONY : all
+.PHONY : all build clean clippy fmt
 
 CARGO = cargo
-PYTHON = python3
 BUILD_TYPE = release
 CARGO_FLAGS = --$(BUILD_TYPE)
 
@@ -20,6 +19,12 @@ build:
 
 clean:
 	@$(CARGO) clean
+
+clippy:
+	@$(CARGO) clippy
+
+fmt:
+	@$(CARGO) fmt
 
 %:
 	@$(CARGO) $@ $(CARGO_FLAGS)
