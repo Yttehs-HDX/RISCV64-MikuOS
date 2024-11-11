@@ -114,7 +114,8 @@ impl ProcessControlBlock {
             trap::trap_handler as usize,
         );
 
-        // update user space and trap context
+        // update program brk, user space and trap context
+        self.inner_mut().program_brk = user_space.get_base_size();
         self.inner_mut().user_space = Some(user_space);
         self.inner_mut().trap_cx_ppn = trap_cx_ppn;
     }
