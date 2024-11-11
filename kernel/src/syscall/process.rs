@@ -1,11 +1,6 @@
 use crate::{app, mm, task, timer};
-use log::{info, warn};
 
 pub fn sys_exit(exit_code: i32) -> ! {
-    match exit_code {
-        0 => info!("Process exited with code {}", exit_code),
-        _ => warn!("Process exited with code {}", exit_code),
-    }
     task::get_processor().exit_current(exit_code);
 }
 

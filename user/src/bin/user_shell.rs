@@ -1,11 +1,14 @@
 #![no_std]
 #![no_main]
 
-use user_lib::{alloc::string::String, exec, fork, get_char, init_heap, print, println, waitpid};
+use user_lib::{
+    alloc::string::String, exec, exit, fork, get_char, init_heap, print, println, waitpid,
+};
 
 extern crate user_lib;
 
 const SHELL_NAME: &str = "user_shell";
+const COMMAND_NOT_FOUND: i32 = 127;
 
 const LF: u8 = 0x0au8;
 const CR: u8 = 0x0du8;
@@ -41,15 +44,18 @@ fn main() -> i32 {
                             let pid = fork();
                             if pid == 0 {
                                 if exec(path) == -1 {
-                                    println!("{}: program '{}' not found", SHELL_NAME, path);
+                                    println!("{}: {}: command not found", SHELL_NAME, path);
+                                    exit(COMMAND_NOT_FOUND);
                                 }
                             } else {
                                 let mut exit_code = 0;
                                 let zombie_pid = waitpid(pid as usize, &mut exit_code);
-                                println!(
-                                    "{}: program '{}' (PID={}) exited with code {}",
-                                    SHELL_NAME, path, zombie_pid, exit_code
-                                );
+                                if exit_code != COMMAND_NOT_FOUND {
+                                    println!(
+                                        "{}: program '{}' (PID={}) exited with code {}",
+                                        SHELL_NAME, path, zombie_pid, exit_code
+                                    );
+                                }
                             }
                         }
                     }
