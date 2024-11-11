@@ -1,9 +1,11 @@
 #![no_std]
 #![no_main]
 
-use user_lib::{alloc::string::String, get_char, init_heap, print, println};
+use user_lib::{alloc::string::String, exec, fork, get_char, init_heap, print, println, waitpid};
 
 extern crate user_lib;
+
+const SHELL_NAME: &str = "user_shell";
 
 const LF: u8 = 0x0au8;
 const CR: u8 = 0x0du8;
@@ -17,7 +19,7 @@ const AR: u8 = 0x1eu8;
 
 #[no_mangle]
 fn main() -> i32 {
-    println!("[User] user_shell");
+    println!("[User] {}", SHELL_NAME);
     init_heap();
     let mut input = String::new();
     print_prompt();
@@ -32,7 +34,24 @@ fn main() -> i32 {
                             print!("\x1b[H\x1b[2J");
                         }
                         "exit" => break,
-                        _ => println!("Unknown command: {}", input),
+                        _ => {
+                            // mark input as path
+                            input.push('\0');
+                            let path = input.as_str();
+                            let pid = fork();
+                            if pid == 0 {
+                                if exec(path) == -1 {
+                                    println!("{}: program '{}' not found", SHELL_NAME, path);
+                                }
+                            } else {
+                                let mut exit_code = 0;
+                                let zombie_pid = waitpid(pid as usize, &mut exit_code);
+                                println!(
+                                    "{}: program '{}' (PID={}) exited with code {}",
+                                    SHELL_NAME, path, zombie_pid, exit_code
+                                );
+                            }
+                        }
                     }
                 }
                 print_prompt();
@@ -59,5 +78,5 @@ fn main() -> i32 {
 }
 
 fn print_prompt() {
-    print!("user_shell $ ");
+    print!("{} $ ", SHELL_NAME);
 }
