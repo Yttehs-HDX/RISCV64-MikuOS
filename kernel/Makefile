@@ -5,7 +5,6 @@ BUILD_TYPE := release
 BIOS := rustsbi.bin
 KERNEL := kernel
 TARGET := target/$(ARCH)/$(BUILD_TYPE)/$(KERNEL)
-ADDR := 0x80200000
 
 CARGO := cargo
 CARGO_FLAGS := --$(BUILD_TYPE)
@@ -13,7 +12,7 @@ CARGO_FLAGS := --$(BUILD_TYPE)
 QEMU := qemu-system-riscv64
 QEMU_FLAGS := -machine virt \
 	-bios ../bootloader/$(BIOS) \
-	-device loader,file=$(TARGET),addr=$(ADDR) \
+	-kernel $(TARGET) \
 	-nographic
 
 GDB := riscv64-elf-gdb

@@ -23,21 +23,21 @@ pub const SV39_PPN_BITS: usize = 44;
 pub struct PhysAddr(pub usize);
 
 impl PhysAddr {
-    pub fn page_offset(&self) -> usize {
+    pub const fn page_offset(&self) -> usize {
         self.0 & (SV39_PAGE_SIZE - 1)
     }
-    pub fn aligned(&self) -> bool {
+    pub const fn aligned(&self) -> bool {
         self.page_offset() == 0
     }
 
-    pub fn to_ppn(self) -> PhysPageNum {
+    pub const fn to_ppn(self) -> PhysPageNum {
         assert!(self.aligned());
         PhysPageNum(self.0 >> SV39_OFFSET_BITS)
     }
-    pub fn to_ppn_floor(self) -> PhysPageNum {
+    pub const fn to_ppn_floor(self) -> PhysPageNum {
         PhysPageNum(self.0 >> SV39_OFFSET_BITS)
     }
-    pub fn to_ppn_ceil(self) -> PhysPageNum {
+    pub const fn to_ppn_ceil(self) -> PhysPageNum {
         PhysPageNum((self.0 + SV39_PAGE_SIZE - 1) >> SV39_OFFSET_BITS)
     }
 

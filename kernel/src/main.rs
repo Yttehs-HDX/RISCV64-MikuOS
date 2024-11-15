@@ -2,11 +2,7 @@
 #![no_main]
 #![feature(alloc_error_handler, naked_functions)]
 
-use core::arch::global_asm;
-
 extern crate alloc;
-
-global_asm!(include_str!("entry.S"));
 
 mod app;
 mod lang_items;
@@ -23,15 +19,23 @@ mod task;
 mod timer;
 mod trap;
 mod util;
+mod entry;
 
 #[no_mangle]
 fn rust_main() -> ! {
+    println!("Hello, world!");
     clear_bss();
+
+    extern "C" {
+        fn ekernel();
+    }
+    println!("ekernel: {:#x}", ekernel as usize);
+
     util::logger_init();
-    mm::init();
-    trap::init_trap();
-    // trap::enable_timer_interrupt();
-    task::init();
+    // mm::init();
+    // trap::init_trap();
+    // // trap::enable_timer_interrupt();
+    // task::init();
     println!("[Kernel] initialized");
     os_start();
     sbi::sbi_shutdown_success();

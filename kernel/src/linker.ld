@@ -1,69 +1,61 @@
 OUTPUT_ARCH(riscv)
 ENTRY(_start)
-BASE_ADDR = 0x80200000;
+
+SBI_ENTRY_POINT = 0x80200000;
+BASE_ADDR = 0xffffffffc0200000; /* 0xffffffffc0000000 + 2000000 */
 
 SECTIONS {
-    # kernel start
     . = BASE_ADDR;
+
+    /* kernel start */
     skernel = .;
 
-    # text start
+    /* text start */
     stext = .;
-    .text : {
+    .text : AT(SBI_ENTRY_POINT) {
         *(.text.entry)
-
-        # trampoline costs a page (4096 bits)
-        . = ALIGN(4K);
-        strampoline = .;
-        *(.text.trampoline)
-        . = ALIGN(4K);
-
         *(.text .text.*)
         *(.stext .stext.*)
     }
-
     . = ALIGN(4K);
     etext = .;
-    # text end
+    /* text end */
 
-    # rodata start
+    /* rodata start */
     srodata = .;
     .rodata : {
         *(.rodata .rodata.*)
         *(.srodata .srodata.*)
     }
-
     . = ALIGN(4K);
     erodata = .;
-    # rodata end
+    /* rodata end */
 
-    # data start
+    /* data start */
     sdata = .;
     .data : {
+        *(.data.root_page)
         *(.data .data.*)
         *(.sdata .sdata.*)
     }
-
     . = ALIGN(4K);
     edata = .;
-    # data end
+    /* data end */
 
+    /* bss start */
+    sbss = .;
     .bss : {
-        sbss = .;
-        *(.bss.stack)
-
-    # bss start
+        *(.bss.boot_stack)
         sbss_no_stack = .;
         *(.bss .bss.*)
         *(.sbss .sbss.*)
     }
-
     . = ALIGN(4K);
     ebss = .;
-    # bss end
+    /* bss end */
 
     ekernel = .;
-    # kernel end
+    /* kernel end */
 
     /DISCARD/ : {
         *(.eh_frame)

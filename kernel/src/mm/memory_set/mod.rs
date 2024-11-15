@@ -3,7 +3,7 @@ pub use map_area::*;
 use crate::{
     config::{
         EBSS, EDATA, ERODATA, ETEXT, MMIO, PA_END, PA_START, SBSS, SDATA, SRODATA, STEXT,
-        STRAMPOLINE, SV39_PAGE_SIZE, TRAMPOLINE, TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP,
+        SV39_PAGE_SIZE, TRAMPOLINE, TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP,
     },
     mm::{PTEFlags, PageTable, PageTableEntry, PhysAddr, VirtAddr, VirtPageNum},
 };
@@ -58,14 +58,6 @@ impl MemorySet {
             page_table: PageTable::new(),
             areas: Vec::new(),
         }
-    }
-
-    fn map_trampoline(&mut self) {
-        self.page_table.map(
-            VirtAddr(TRAMPOLINE).to_vpn(),
-            PhysAddr(*STRAMPOLINE).to_ppn(),
-            PTEFlags::R | PTEFlags::X,
-        );
     }
 }
 
@@ -124,15 +116,6 @@ impl MemorySet {
 impl MemorySet {
     pub fn new_kernel() -> Self {
         let mut memory_set = Self::empty();
-
-        trace!(
-            "MemorySet: map trampoline [{:#x}, {:#x}] -> [{:#x}, {:#x})",
-            TRAMPOLINE,
-            TRAMPOLINE - 1 + SV39_PAGE_SIZE,
-            *STRAMPOLINE,
-            *STRAMPOLINE + SV39_PAGE_SIZE
-        );
-        memory_set.map_trampoline();
 
         // map sections
         trace!("MemorySet: map .text      [{:#x}, {:#x})", *STEXT, *ETEXT);
@@ -201,16 +184,6 @@ impl MemorySet {
     pub fn from_elf(elf_data: &[u8]) -> (Self, usize, usize) {
         use xmas_elf::{program::Type, ElfFile};
         let mut memory_set = Self::empty();
-
-        // map trampoline
-        trace!(
-            "MemorySet: map trampoline [{:#x}, {:#x}] -> [{:#x}, {:#x})",
-            TRAMPOLINE,
-            TRAMPOLINE - 1 + SV39_PAGE_SIZE,
-            *STRAMPOLINE,
-            *STRAMPOLINE + SV39_PAGE_SIZE
-        );
-        memory_set.map_trampoline();
 
         // handle elf
         let elf = ElfFile::new(elf_data).unwrap();
@@ -292,9 +265,6 @@ impl MemorySet {
 
     pub fn from_another(another: &Self) -> Self {
         let mut memory_set = Self::empty();
-
-        // map trampoline
-        memory_set.map_trampoline();
 
         // copy areas
         for area in another.areas.iter() {

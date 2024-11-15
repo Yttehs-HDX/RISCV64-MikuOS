@@ -25,11 +25,11 @@ pub struct PageTableEntry {
 }
 
 impl PageTableEntry {
-    pub fn empty() -> Self {
+    pub const fn empty() -> Self {
         Self { bits: 0 }
     }
 
-    pub fn new(ppn: PhysPageNum, flags: PTEFlags) -> Self {
+    pub const fn new(ppn: PhysPageNum, flags: PTEFlags) -> Self {
         Self {
             bits: ppn.0 << 10 | flags.bits() as usize,
         }

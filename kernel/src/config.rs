@@ -38,7 +38,6 @@ pub const fn kernel_stack_top(pid: usize) -> usize {
 lazy_static! {
     pub static ref SKERNEL: usize = skernel as usize;
     pub static ref STEXT: usize = stext as usize;
-    pub static ref STRAMPOLINE: usize = strampoline as usize;
     pub static ref ETEXT: usize = etext as usize;
     pub static ref SRODATA: usize = srodata as usize;
     pub static ref ERODATA: usize = erodata as usize;
@@ -53,7 +52,6 @@ lazy_static! {
 extern "C" {
     fn skernel();
     fn stext();
-    fn strampoline();
     fn etext();
     fn srodata();
     fn erodata();

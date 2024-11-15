@@ -2,6 +2,7 @@ use bitflags::bitflags;
 
 // region PTEFlags begin
 bitflags! {
+    #[derive(Clone, Copy)]
     pub struct PTEFlags: u8 {
         const V = 1 << 0;
         const R = 1 << 1;
