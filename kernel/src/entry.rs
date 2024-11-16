@@ -1,9 +1,9 @@
 use core::arch::asm;
-use crate::mm::{PTEFlags, PageTableEntry, PhysAddr};
+use crate::{config::{EBSS, SBSS_NO_STACK}, mm::{PTEFlags, PageTableEntry, PhysAddr}};
 
-const SBI_ADDR: usize = 0x80000000;
-const BASE_ADDR: usize = 0xffffffffc0000000;
-const OFFSET: usize = BASE_ADDR - SBI_ADDR;
+const LOW_ADDR: usize = 0x80000000;
+const HIGH_ADDR: usize = 0xffffffffc0000000;
+const KERNEL_ADDR_OFFSET: usize = HIGH_ADDR - LOW_ADDR;
 
 #[naked]
 #[no_mangle]
@@ -22,26 +22,36 @@ unsafe extern "C" fn _start() -> ! {
         "csrw satp, t1",
         "sfence.vma",
         // call rust_main
-        "la t1, rust_main",
+        "la t1, {rust_main}",
         "add t1, t1, t0",
         "jr t1",
-        offset = const OFFSET,
+        offset = const KERNEL_ADDR_OFFSET,
         boot_stack = sym BOOT_STACK,
         root_page = sym ROOT_PAGE,
+        rust_main = sym rust_main,
         options(noreturn)
     )
 }
 
-#[no_mangle]
+fn rust_main() {
+    clear_bss();
+    crate::main();
+}
+
+fn clear_bss() {
+    (*SBSS_NO_STACK..*EBSS).for_each(|addr| unsafe {
+        (addr as *mut u8).write_volatile(0);
+    });
+}
+
 #[link_section = ".bss.boot_stack"]
 static BOOT_STACK: [u8; 4096] = [0; 4096];
 
-#[no_mangle]
 #[link_section = ".data.root_page"]
 static ROOT_PAGE: [PageTableEntry; 512] = {
     let flags = PTEFlags::from_bits_truncate(0xcf);
     let mut page = [PageTableEntry::empty(); 512];
-    page[2] = PageTableEntry::new(PhysAddr(SBI_ADDR).to_ppn(), flags);
-    page[511] = PageTableEntry::new(PhysAddr(SBI_ADDR).to_ppn(), flags);
+    page[2] = PageTableEntry::new(PhysAddr(LOW_ADDR).to_ppn(), flags);
+    page[511] = PageTableEntry::new(PhysAddr(LOW_ADDR).to_ppn(), flags);
     page
 };

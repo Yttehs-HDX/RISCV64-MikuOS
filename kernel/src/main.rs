@@ -21,10 +21,8 @@ mod trap;
 mod util;
 mod entry;
 
-#[no_mangle]
-fn rust_main() -> ! {
+pub fn main() -> ! {
     println!("Hello, world!");
-    clear_bss();
 
     extern "C" {
         fn ekernel();
@@ -74,10 +72,4 @@ fn os_end() -> ! {
     println!("[Kernel] current time: {}", timer::get_current_time());
     println!("[Kernel] os end");
     sbi::sbi_shutdown_success();
-}
-
-fn clear_bss() {
-    (*config::SBSS_NO_STACK..*config::EBSS).for_each(|addr| unsafe {
-        (addr as *mut u8).write_volatile(0);
-    });
 }
