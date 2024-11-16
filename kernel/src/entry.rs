@@ -11,19 +11,19 @@ const KERNEL_ADDR_OFFSET: usize = HIGH_ADDR - LOW_ADDR;
 unsafe extern "C" fn _start() -> ! {
     asm!(
         // set sp
-        "la sp, {boot_stack}",
-        "li t0, {offset}",
-        "add sp, sp, t0",
+        "la sp, {boot_stack}", // sp = &BOOT_STACK, low address
+        "li t0, {offset}", // t0 = KERNEL_ADDR_OFFSET
+        "add sp, sp, t0", // sp += t0, just find the space before mapping
         // construct satp
         "la t1, {root_page}",
-        "srli t1, t1, 12",
-        "li t2, 8 << 60",
-        "or t1, t1, t2",
+        "srli t1, t1, 12", // t1 <<= 12, get ppn
+        "li t2, 8 << 60", // t2 = 8 << 60
+        "or t1, t1, t2", // t1 |= t2
         "csrw satp, t1",
         "sfence.vma",
         // call rust_main
-        "la t1, {rust_main}",
-        "add t1, t1, t0",
+        "la t1, {rust_main}", // low address
+        "add t1, t1, t0", // high address
         "jr t1",
         offset = const KERNEL_ADDR_OFFSET,
         boot_stack = sym BOOT_STACK,
