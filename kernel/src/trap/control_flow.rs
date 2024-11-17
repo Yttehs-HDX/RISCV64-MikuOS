@@ -18,7 +18,7 @@
  */
 
 use crate::{
-    config::{TRAMPOLINE, TRAP_CX_PTR},
+    config::TRAP_CX_PTR,
     syscall, task, timer,
     trap::{set_kernel_trap_entry, set_user_trap_entry},
 };
@@ -31,8 +31,7 @@ use riscv::register::{
 
 #[naked]
 #[no_mangle]
-#[link_section = ".text.trampoline"]
-unsafe extern "C" fn __snap_trap() -> ! {
+pub(in crate::trap) unsafe extern "C" fn __snap_trap() -> ! {
     asm!(
         // S mode
         // satp -> UserSpace
@@ -169,11 +168,11 @@ pub fn trap_return() -> ! {
     set_user_trap_entry();
     let trap_cx_ptr = TRAP_CX_PTR;
     let user_satp = task::get_processor().current().get_satp();
-    let restore_snap_va = __restore_snap as usize - __snap_trap as usize + TRAMPOLINE;
     unsafe {
         asm!(
             "fence.i",
-            "jr {restore_snap}", restore_snap = in(reg) restore_snap_va,
+            "jr {restore_snap}",
+            restore_snap = in(reg) __restore_snap as usize,
             in("a0") trap_cx_ptr,
             in("a1") user_satp,
             options(noreturn)
@@ -183,7 +182,6 @@ pub fn trap_return() -> ! {
 
 #[naked]
 #[no_mangle]
-#[link_section = ".text.trampoline"]
 unsafe extern "C" fn __restore_snap() -> ! {
     // a0: trap_cx: *const TrapContext
     // a1: user_satp: usize

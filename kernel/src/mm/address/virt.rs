@@ -9,7 +9,7 @@
  * | <---- VirtAddr -----------------> | 39 bits
  */
 
-use crate::config::{SV39_OFFSET_BITS, SV39_PAGE_SIZE};
+use crate::config::{SV39_PAGE_OFFSET, SV39_PAGE_SIZE};
 use simple_range::StepByOne;
 
 pub const SV39_VPN_BITS: usize = 27;
@@ -30,13 +30,13 @@ impl VirtAddr {
 
     pub fn to_vpn(self) -> VirtPageNum {
         assert!(self.aligned());
-        VirtPageNum(self.0 >> SV39_OFFSET_BITS)
+        VirtPageNum(self.0 >> SV39_PAGE_OFFSET)
     }
     pub fn to_vpn_floor(self) -> VirtPageNum {
-        VirtPageNum(self.0 >> SV39_OFFSET_BITS)
+        VirtPageNum(self.0 >> SV39_PAGE_OFFSET)
     }
     pub fn to_vpn_ceil(self) -> VirtPageNum {
-        VirtPageNum((self.0 + SV39_PAGE_SIZE - 1) >> SV39_OFFSET_BITS)
+        VirtPageNum((self.0 + SV39_PAGE_SIZE - 1) >> SV39_PAGE_OFFSET)
     }
 }
 // region VirtAddr end
@@ -53,7 +53,7 @@ impl StepByOne for VirtPageNum {
 
 impl VirtPageNum {
     pub fn to_va(self) -> VirtAddr {
-        VirtAddr(self.0 << SV39_OFFSET_BITS)
+        VirtAddr(self.0 << SV39_PAGE_OFFSET)
     }
 
     pub fn indexes(&self) -> [usize; SV39_VPN_NUM] {

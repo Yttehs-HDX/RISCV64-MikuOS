@@ -12,7 +12,7 @@
 use simple_range::StepByOne;
 
 use crate::{
-    config::{SV39_OFFSET_BITS, SV39_PAGE_SIZE},
+    config::{SV39_PAGE_OFFSET, SV39_PAGE_SIZE},
     mm::{PageTableEntry, SV39_PTE_BITS},
 };
 
@@ -32,13 +32,13 @@ impl PhysAddr {
 
     pub const fn to_ppn(self) -> PhysPageNum {
         assert!(self.aligned());
-        PhysPageNum(self.0 >> SV39_OFFSET_BITS)
+        PhysPageNum(self.0 >> SV39_PAGE_OFFSET)
     }
     pub const fn to_ppn_floor(self) -> PhysPageNum {
-        PhysPageNum(self.0 >> SV39_OFFSET_BITS)
+        PhysPageNum(self.0 >> SV39_PAGE_OFFSET)
     }
     pub const fn to_ppn_ceil(self) -> PhysPageNum {
-        PhysPageNum((self.0 + SV39_PAGE_SIZE - 1) >> SV39_OFFSET_BITS)
+        PhysPageNum((self.0 + SV39_PAGE_SIZE - 1) >> SV39_PAGE_OFFSET)
     }
 
     pub fn as_mut<T>(&self) -> &'static mut T {
@@ -59,7 +59,7 @@ impl StepByOne for PhysPageNum {
 
 impl PhysPageNum {
     pub fn to_pa(self) -> PhysAddr {
-        PhysAddr(self.0 << SV39_OFFSET_BITS)
+        PhysAddr(self.0 << SV39_PAGE_OFFSET)
     }
 
     pub fn as_bytes_array(&self) -> &'static mut [u8] {

@@ -2,7 +2,7 @@ pub use map_permission::*;
 pub use map_type::*;
 
 use crate::{
-    config::{KERNEL_ADDR_OFFSET, SV39_OFFSET_BITS, SV39_PAGE_SIZE},
+    config::{KERNEL_ADDR_OFFSET, SV39_PAGE_OFFSET, SV39_PAGE_SIZE},
     mm::{alloc_ppn_tracker, PageTable, PhysPageNum, PpnTracker, VirtAddr, VirtPageNum},
 };
 use alloc::collections::btree_map::BTreeMap;
@@ -51,7 +51,7 @@ impl MapArea {
         let ppn: PhysPageNum;
         match self.map_type {
             MapType::Identity => ppn = PhysPageNum(vpn.0),
-            MapType::Direct => ppn = PhysPageNum(vpn.0 - (KERNEL_ADDR_OFFSET >> SV39_OFFSET_BITS)),
+            MapType::Direct => ppn = PhysPageNum(vpn.0 - (KERNEL_ADDR_OFFSET >> SV39_PAGE_OFFSET)),
             MapType::Framed => {
                 let ppn_tracker = alloc_ppn_tracker().unwrap();
                 ppn = ppn_tracker.ppn;

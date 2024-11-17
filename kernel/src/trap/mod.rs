@@ -1,4 +1,4 @@
-use crate::{config::TRAMPOLINE, sbi, timer};
+use crate::{sbi, timer};
 use log::error;
 use riscv::register::{sie, stvec, utvec::TrapMode};
 
@@ -31,6 +31,6 @@ fn kernel_trap_handler() {
 
 fn set_user_trap_entry() {
     unsafe {
-        stvec::write(TRAMPOLINE, TrapMode::Direct);
+        stvec::write(__snap_trap as usize, TrapMode::Direct);
     }
 }

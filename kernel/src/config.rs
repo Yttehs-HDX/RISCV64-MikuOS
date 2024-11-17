@@ -12,10 +12,10 @@ pub const KERNEL_HEAP_SIZE: usize = 0x200000; // 2 MB
 
 // memory mapping
 pub use crate::entry::KERNEL_ADDR_OFFSET;
-pub const SV39_PAGE_SIZE: usize = 1 << 12; // 4 KB
-pub const SV39_OFFSET_BITS: usize = 12;
+pub const SV39_PAGE_OFFSET: usize = 12;
+pub const SV39_PAGE_SIZE: usize = 1 << SV39_PAGE_OFFSET; // 4 KB
 
-// physical address
+// kernel space
 pub use crate::board::MEMORY_END;
 pub use crate::board::MMIO;
 lazy_static! {
@@ -23,9 +23,8 @@ lazy_static! {
 }
 pub const PA_END: usize = MEMORY_END + KERNEL_ADDR_OFFSET;
 
-// virtual address
-pub const TRAMPOLINE: usize = usize::MAX - SV39_PAGE_SIZE + 1;
-pub const TRAP_CX_PTR: usize = TRAMPOLINE - SV39_PAGE_SIZE;
+// user space
+pub const TRAP_CX_PTR: usize = 0xffff_ffff_c020_0000 - SV39_PAGE_SIZE + 1;
 // left a guard page for user stack
 pub const USER_STACK_TOP: usize = TRAP_CX_PTR - (USER_STACK_SIZE + SV39_PAGE_SIZE);
 pub const USER_STACK_SP: usize = USER_STACK_TOP + USER_STACK_SIZE;
