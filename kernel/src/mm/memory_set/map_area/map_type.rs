@@ -3,5 +3,6 @@
 pub enum MapType {
     Identity,
     Framed,
+    Direct,
 }
 // region MapType end

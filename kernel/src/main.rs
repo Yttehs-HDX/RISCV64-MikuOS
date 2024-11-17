@@ -12,6 +12,7 @@ mod console;
 #[path = "boards/qemu/mod.rs"]
 mod board;
 mod config;
+mod entry;
 mod mm;
 mod sync;
 mod syscall;
@@ -19,7 +20,6 @@ mod task;
 mod timer;
 mod trap;
 mod util;
-mod entry;
 
 pub fn main() -> ! {
     println!("Hello, world!");
@@ -30,7 +30,7 @@ pub fn main() -> ! {
     println!("ekernel: {:#x}", ekernel as usize);
 
     util::logger_init();
-    // mm::init();
+    mm::init();
     // trap::init_trap();
     // // trap::enable_timer_interrupt();
     // task::init();

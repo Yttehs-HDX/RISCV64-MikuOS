@@ -1,7 +1,7 @@
 pub use ppn_tracker::*;
 
 use crate::{
-    config::{PA_END, PA_START},
+    config::{KERNEL_ADDR_OFFSET, PA_END, PA_START},
     mm::{PhysAddr, PhysPageNum},
     sync::UPSafeCell,
 };
@@ -21,8 +21,10 @@ pub fn dealloc_ppn(ppn: PhysPageNum) {
 }
 
 lazy_static! {
-    static ref PPN_ALLOCATOR: PpnAllocator =
-        PpnAllocator::new(PhysAddr(*PA_START), PhysAddr(PA_END));
+    static ref PPN_ALLOCATOR: PpnAllocator = PpnAllocator::new(
+        PhysAddr(*PA_START - KERNEL_ADDR_OFFSET),
+        PhysAddr(PA_END - KERNEL_ADDR_OFFSET)
+    );
 }
 
 // region PpnAllocator begin

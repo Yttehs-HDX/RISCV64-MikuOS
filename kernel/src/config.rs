@@ -11,6 +11,7 @@ pub const KERNEL_STACK_SIZE: usize = SV39_PAGE_SIZE;
 pub const KERNEL_HEAP_SIZE: usize = 0x200000; // 2 MB
 
 // memory mapping
+pub use crate::entry::KERNEL_ADDR_OFFSET;
 pub const SV39_PAGE_SIZE: usize = 1 << 12; // 4 KB
 pub const SV39_OFFSET_BITS: usize = 12;
 
@@ -20,7 +21,7 @@ pub use crate::board::MMIO;
 lazy_static! {
     pub static ref PA_START: usize = *EKERNEL;
 }
-pub const PA_END: usize = MEMORY_END;
+pub const PA_END: usize = MEMORY_END + KERNEL_ADDR_OFFSET;
 
 // virtual address
 pub const TRAMPOLINE: usize = usize::MAX - SV39_PAGE_SIZE + 1;

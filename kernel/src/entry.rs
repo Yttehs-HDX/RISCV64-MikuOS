@@ -1,9 +1,12 @@
+use crate::{
+    config::{EBSS, SBSS_NO_STACK},
+    mm::{PTEFlags, PageTableEntry, PhysAddr},
+};
 use core::arch::asm;
-use crate::{config::{EBSS, SBSS_NO_STACK}, mm::{PTEFlags, PageTableEntry, PhysAddr}};
 
 const LOW_ADDR: usize = 0x80000000;
 const HIGH_ADDR: usize = 0xffffffffc0000000;
-const KERNEL_ADDR_OFFSET: usize = HIGH_ADDR - LOW_ADDR;
+pub const KERNEL_ADDR_OFFSET: usize = HIGH_ADDR - LOW_ADDR;
 
 #[naked]
 #[no_mangle]

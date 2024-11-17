@@ -3,9 +3,9 @@ pub use map_area::*;
 use crate::{
     config::{
         EBSS, EDATA, ERODATA, ETEXT, MMIO, PA_END, PA_START, SBSS, SDATA, SRODATA, STEXT,
-        SV39_PAGE_SIZE, TRAMPOLINE, TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP,
+        SV39_PAGE_SIZE, TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP,
     },
-    mm::{PTEFlags, PageTable, PageTableEntry, PhysAddr, VirtAddr, VirtPageNum},
+    mm::{PageTable, PageTableEntry, VirtAddr, VirtPageNum},
 };
 use alloc::vec::Vec;
 use core::arch::asm;
@@ -122,7 +122,7 @@ impl MemorySet {
         memory_set.insert_area(MapArea::new(
             VirtAddr(*STEXT),
             VirtAddr(*ETEXT),
-            MapType::Identity,
+            MapType::Direct,
             MapPermission::R | MapPermission::X,
         ));
         trace!(
@@ -133,21 +133,21 @@ impl MemorySet {
         memory_set.insert_area(MapArea::new(
             VirtAddr(*SRODATA),
             VirtAddr(*ERODATA),
-            MapType::Identity,
+            MapType::Direct,
             MapPermission::R,
         ));
         trace!("MemorySet: map .data      [{:#x}, {:#x})", *SDATA, *EDATA);
         memory_set.insert_area(MapArea::new(
             VirtAddr(*SDATA),
             VirtAddr(*EDATA),
-            MapType::Identity,
+            MapType::Direct,
             MapPermission::R | MapPermission::W,
         ));
         trace!("MemorySet: map .bss       [{:#x}, {:#x})", *SBSS, *EBSS);
         memory_set.insert_area(MapArea::new(
             VirtAddr(*SBSS),
             VirtAddr(*EBSS),
-            MapType::Identity,
+            MapType::Direct,
             MapPermission::R | MapPermission::W,
         ));
 
@@ -160,7 +160,7 @@ impl MemorySet {
         memory_set.insert_area(MapArea::new(
             VirtAddr(*PA_START),
             VirtAddr(PA_END),
-            MapType::Identity,
+            MapType::Direct,
             MapPermission::R | MapPermission::W,
         ));
 
