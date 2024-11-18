@@ -5,6 +5,7 @@ use crate::{
         EBSS, EDATA, ERODATA, ETEXT, MMIO, PA_END, PA_START, SBSS, SDATA, SRODATA, STEXT,
         SV39_PAGE_SIZE, TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP,
     },
+    entry::KERNEL_ADDR_OFFSET,
     mm::{PageTable, PageTableEntry, VirtAddr, VirtPageNum},
 };
 use alloc::vec::Vec;
@@ -114,53 +115,60 @@ impl MemorySet {
 
 // Kernel Space
 impl MemorySet {
-    pub fn new_kernel() -> Self {
-        let mut memory_set = Self::empty();
-
-        // map sections
-        trace!("MemorySet: map .text      [{:#x}, {:#x})", *STEXT, *ETEXT);
-        memory_set.insert_area(MapArea::new(
+    fn map_kernel_sections(&mut self) {
+        // map .text
+        self.insert_area(MapArea::new(
             VirtAddr(*STEXT),
             VirtAddr(*ETEXT),
             MapType::Direct,
             MapPermission::R | MapPermission::X,
         ));
-        trace!(
-            "MemorySet: map .rodata    [{:#x}, {:#x})",
-            *SRODATA,
-            *ERODATA
-        );
-        memory_set.insert_area(MapArea::new(
+
+        // map .rodata
+        self.insert_area(MapArea::new(
             VirtAddr(*SRODATA),
             VirtAddr(*ERODATA),
             MapType::Direct,
             MapPermission::R,
         ));
-        trace!("MemorySet: map .data      [{:#x}, {:#x})", *SDATA, *EDATA);
-        memory_set.insert_area(MapArea::new(
+
+        // map .data
+        self.insert_area(MapArea::new(
             VirtAddr(*SDATA),
             VirtAddr(*EDATA),
             MapType::Direct,
             MapPermission::R | MapPermission::W,
         ));
-        trace!("MemorySet: map .bss       [{:#x}, {:#x})", *SBSS, *EBSS);
-        memory_set.insert_area(MapArea::new(
+
+        // map .bss
+        self.insert_area(MapArea::new(
             VirtAddr(*SBSS),
             VirtAddr(*EBSS),
             MapType::Direct,
             MapPermission::R | MapPermission::W,
         ));
+    }
+
+    pub fn new_kernel() -> Self {
+        let mut memory_set = Self::empty();
+
+        // map sections
+        trace!("MemorySet: .text   [{:#x}, {:#x})", *STEXT, *ETEXT);
+        trace!("MemorySet: .rodata [{:#x}, {:#x})", *SRODATA, *ERODATA);
+        trace!("MemorySet: .data   [{:#x}, {:#x})", *SDATA, *EDATA);
+        trace!("MemorySet: .bss    [{:#x}, {:#x})", *SBSS, *EBSS);
+        memory_set.map_kernel_sections();
 
         // map ppn range
         trace!(
             "MemorySet: map phys space [{:#x}, {:#x})",
-            *PA_START,
-            PA_END
+            *PA_START - KERNEL_ADDR_OFFSET,
+            PA_END - KERNEL_ADDR_OFFSET
         );
         memory_set.insert_area(MapArea::new(
-            VirtAddr(*PA_START),
-            VirtAddr(PA_END),
-            MapType::Direct,
+            VirtAddr(*PA_START - KERNEL_ADDR_OFFSET),
+            VirtAddr(PA_END - KERNEL_ADDR_OFFSET),
+            MapType::Identity,
             MapPermission::R | MapPermission::W,
         ));
 
@@ -184,6 +192,9 @@ impl MemorySet {
     pub fn from_elf(elf_data: &[u8]) -> (Self, usize, usize) {
         use xmas_elf::{program::Type, ElfFile};
         let mut memory_set = Self::empty();
+
+        // map kernel sections
+        memory_set.map_kernel_sections();
 
         // handle elf
         let elf = ElfFile::new(elf_data).unwrap();

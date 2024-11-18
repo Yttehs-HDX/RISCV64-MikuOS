@@ -115,7 +115,12 @@ pub fn trap_handler() -> ! {
     let pid = task::get_processor().current().get_pid();
     match scause.cause() {
         Trap::Exception(Exception::UserEnvCall) => {
-            trace!("Ecall from U-mode @ {:#x}, pid = {}", sepc, pid);
+            trace!(
+                "Ecall {} from U-mode @ {:#x}, pid = {}",
+                cx.get_x(17),
+                sepc,
+                pid
+            );
             cx.move_to_next_ins();
             let x10 =
                 syscall::syscall(cx.get_x(17), [cx.get_x(10), cx.get_x(11), cx.get_x(12)]) as usize;

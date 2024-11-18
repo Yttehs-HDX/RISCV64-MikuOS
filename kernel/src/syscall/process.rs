@@ -1,4 +1,7 @@
-use crate::{app, mm, task, timer};
+use crate::{
+    app, task,
+    timer::{self, TimeVal},
+};
 
 pub fn sys_exit(exit_code: i32) -> ! {
     task::get_processor().exit_current(exit_code);
@@ -8,9 +11,12 @@ pub fn sys_yield() -> ! {
     task::get_processor().schedule();
 }
 
-pub fn sys_get_time(ts_ptr: *const u8, _tz: usize) -> isize {
+pub fn sys_get_time(ts_ptr: *mut u8, _tz: usize) -> isize {
+    let ts_ptr = ts_ptr as *mut TimeVal;
     let now = timer::get_current_time();
-    mm::copy_data_to_space(task::get_processor().current().get_satp(), ts_ptr, &now);
+    unsafe {
+        *ts_ptr = now;
+    }
     0
 }
 
@@ -34,8 +40,13 @@ pub fn sys_fork() -> isize {
 }
 
 pub fn sys_exec(path: *const u8, _argv: *const u8) -> isize {
-    let path = mm::translate_str(task::get_processor().current().get_satp(), path);
-    if let Some(app) = app::get_app(&path) {
+    let mut len = 0;
+    while unsafe { *path.add(len) } != 0 {
+        len += 1;
+    }
+    let str = unsafe { core::str::from_utf8_unchecked(core::slice::from_raw_parts(path, len)) };
+
+    if let Some(app) = app::get_app(str) {
         let current_task = task::get_processor().current();
         current_task.exec(app.elf());
         0
@@ -44,10 +55,7 @@ pub fn sys_exec(path: *const u8, _argv: *const u8) -> isize {
     }
 }
 
-pub fn sys_waitpid(pid: isize, exit_code_ptr: *const i32, _option: usize) -> isize {
-    let satp = task::get_processor().current().get_satp();
-    let exit_code_ptr = mm::translate_ptr(satp, exit_code_ptr);
-
+pub fn sys_waitpid(pid: isize, exit_code_ptr: *mut i32, _option: usize) -> isize {
     let current_task = task::get_processor().current();
     let mut task_inner = current_task.inner_mut();
     let children = task_inner.get_children_mut();
@@ -66,7 +74,7 @@ pub fn sys_waitpid(pid: isize, exit_code_ptr: *const i32, _option: usize) -> isi
     {
         // child is zombie
         let exit_code = child.get_exit_code();
-        *exit_code_ptr = exit_code;
+        unsafe { *exit_code_ptr = exit_code };
         children.retain(|c| c.get_pid() != pid as usize);
         pid
     } else {

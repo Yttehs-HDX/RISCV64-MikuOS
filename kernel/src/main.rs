@@ -23,17 +23,13 @@ mod util;
 
 pub fn main() -> ! {
     println!("Hello, world!");
-
-    extern "C" {
-        fn ekernel();
-    }
-    println!("ekernel: {:#x}", ekernel as usize);
+    assert_eq!(*config::SKERNEL, 0xffff_ffff_c020_0000);
 
     util::logger_init();
     mm::init();
-    // trap::init_trap();
-    // // trap::enable_timer_interrupt();
-    // task::init();
+    trap::init_trap();
+    // trap::enable_timer_interrupt();
+    task::init();
     println!("[Kernel] initialized");
     os_start();
     sbi::sbi_shutdown_success();

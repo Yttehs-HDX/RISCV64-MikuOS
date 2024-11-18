@@ -14,7 +14,7 @@ impl Drop for PpnTracker {
 impl PpnTracker {
     pub fn new(ppn: PhysPageNum) -> Self {
         // clear the page
-        ppn.as_bytes_array().fill(0);
+        // ppn.as_bytes_array().fill(0);
         Self { ppn }
     }
 }

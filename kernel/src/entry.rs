@@ -17,6 +17,10 @@ unsafe extern "C" fn _start() -> ! {
         "la sp, {boot_stack}", // sp = &BOOT_STACK, low address
         "li t0, {offset}", // t0 = KERNEL_ADDR_OFFSET
         "add sp, sp, t0", // sp += t0, just find the space before mapping
+
+        // get rust_main before enable paging
+        "la t3, {rust_main}", // low address
+
         // construct satp
         "la t1, {root_page}",
         "srli t1, t1, 12", // t1 <<= 12, get ppn
@@ -24,10 +28,10 @@ unsafe extern "C" fn _start() -> ! {
         "or t1, t1, t2", // t1 |= t2
         "csrw satp, t1",
         "sfence.vma",
+
         // call rust_main
-        "la t1, {rust_main}", // low address
-        "add t1, t1, t0", // high address
-        "jr t1",
+        "add t3, t3, t0", // high address
+        "jr t3",
         offset = const KERNEL_ADDR_OFFSET,
         boot_stack = sym BOOT_STACK,
         root_page = sym ROOT_PAGE,

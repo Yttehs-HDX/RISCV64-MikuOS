@@ -5,33 +5,33 @@ pub use crate::board::CLOCK_FREQ;
 
 // task
 pub const USER_STACK_SIZE: usize = 0x200000; // 2 MB
+pub const KERNEL_STACK_NUM: usize = 16;
 pub const KERNEL_STACK_SIZE: usize = SV39_PAGE_SIZE;
 
 // heap
 pub const KERNEL_HEAP_SIZE: usize = 0x200000; // 2 MB
 
 // memory mapping
+pub use crate::board::MMIO;
 pub use crate::entry::KERNEL_ADDR_OFFSET;
 pub const SV39_PAGE_OFFSET: usize = 12;
 pub const SV39_PAGE_SIZE: usize = 1 << SV39_PAGE_OFFSET; // 4 KB
 
-// kernel space
-pub use crate::board::MEMORY_END;
-pub use crate::board::MMIO;
-lazy_static! {
-    pub static ref PA_START: usize = *EKERNEL;
-}
-pub const PA_END: usize = MEMORY_END + KERNEL_ADDR_OFFSET;
-
-// user space
-pub const TRAP_CX_PTR: usize = 0xffff_ffff_c020_0000 - SV39_PAGE_SIZE + 1;
+const MEMORY_END: usize = crate::board::MEMORY_END + KERNEL_ADDR_OFFSET; // 0xffff_ffff_c800_0000
+                                                                         // user space
+pub const TRAP_CX_PTR: usize = MEMORY_END - SV39_PAGE_SIZE;
 // left a guard page for user stack
 pub const USER_STACK_TOP: usize = TRAP_CX_PTR - (USER_STACK_SIZE + SV39_PAGE_SIZE);
 pub const USER_STACK_SP: usize = USER_STACK_TOP + USER_STACK_SIZE;
+// kernel space
 pub const fn kernel_stack_top(pid: usize) -> usize {
     // left guard pages between kernel stacks
     let bottom = USER_STACK_TOP - pid * (KERNEL_STACK_SIZE + SV39_PAGE_SIZE);
     bottom - KERNEL_STACK_SIZE
+}
+pub const PA_END: usize = kernel_stack_top(KERNEL_STACK_NUM);
+lazy_static! {
+    pub static ref PA_START: usize = *EKERNEL;
 }
 
 // sections boundary

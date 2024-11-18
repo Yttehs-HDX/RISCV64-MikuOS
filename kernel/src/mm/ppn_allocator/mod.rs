@@ -1,7 +1,8 @@
 pub use ppn_tracker::*;
 
 use crate::{
-    config::{KERNEL_ADDR_OFFSET, PA_END, PA_START},
+    config::{PA_END, PA_START},
+    entry::KERNEL_ADDR_OFFSET,
     mm::{PhysAddr, PhysPageNum},
     sync::UPSafeCell,
 };

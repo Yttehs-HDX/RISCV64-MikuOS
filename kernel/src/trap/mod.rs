@@ -1,5 +1,4 @@
-use crate::{sbi, timer};
-use log::error;
+use crate::timer;
 use riscv::register::{sie, stvec, utvec::TrapMode};
 
 pub use context::*;
@@ -25,8 +24,7 @@ fn set_kernel_trap_entry() {
 }
 
 fn kernel_trap_handler() {
-    error!("A trap occurred in kernel!");
-    sbi::sbi_shutdown_failure();
+    panic!("A trap occurred in kernel!");
 }
 
 fn set_user_trap_entry() {
