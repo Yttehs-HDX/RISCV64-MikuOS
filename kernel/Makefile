@@ -18,8 +18,7 @@ QEMU_FLAGS := -machine virt \
 GDB := riscv64-elf-gdb
 GDB_FLAGS := -ex "file $(TARGET)" \
 	-ex "target remote :1234" \
-	-ex "set arch riscv:rv64" \
-	-ex "layout src" \
+	-ex "set arch riscv:rv64"
 
 all: run
 
