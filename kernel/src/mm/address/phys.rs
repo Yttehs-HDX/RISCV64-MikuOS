@@ -12,7 +12,7 @@
 use simple_range::StepByOne;
 
 use crate::{
-    config::{SV39_PAGE_OFFSET, SV39_PAGE_SIZE},
+    config::{PA_END, PA_START, SV39_PAGE_OFFSET, SV39_PAGE_SIZE},
     mm::{PageTableEntry, SV39_PTE_BITS},
 };
 
@@ -59,11 +59,19 @@ impl PhysPageNum {
     }
 
     pub fn as_bytes_array(&self) -> &'static mut [u8] {
+        assert!(
+            *PA_START <= self.to_pa().0 && self.to_pa().0 < PA_END,
+            "PhysPageNum: pa out of bound"
+        );
         let pa = self.to_pa();
         unsafe { core::slice::from_raw_parts_mut(pa.0 as *mut u8, SV39_PAGE_SIZE) }
     }
 
     pub fn as_pte_array(&self) -> &'static mut [PageTableEntry] {
+        assert!(
+            *PA_START <= self.to_pa().0 && self.to_pa().0 < PA_END,
+            "PhysPageNum: pa out of bound"
+        );
         let pa = self.to_pa();
         unsafe {
             core::slice::from_raw_parts_mut(
@@ -74,6 +82,10 @@ impl PhysPageNum {
     }
 
     pub fn as_mut<T>(&self) -> &'static mut T {
+        assert!(
+            *PA_START <= self.to_pa().0 && self.to_pa().0 < PA_END,
+            "PhysPageNum: pa out of bound"
+        );
         let pa = self.to_pa();
         unsafe { (pa.0 as *mut T).as_mut().unwrap() }
     }

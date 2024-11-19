@@ -76,7 +76,10 @@ impl PageTable {
             "PageTable: VPN {:#x} already mapped",
             vpn.0
         );
-        assert!(ppn.0 < crate::board::MEMORY_END, "PageTable: ppn must be low");
+        assert!(
+            ppn.0 < crate::board::MEMORY_END,
+            "PageTable: ppn must be low"
+        );
         *pte = PageTableEntry::new(ppn, flags | PTEFlags::V);
     }
 

@@ -1,6 +1,6 @@
 use crate::{
     config::{TRAP_CX_PTR, USER_STACK_SP},
-    mm::{self, MemorySpace, PhysPageNum, UserSpace, VirtAddr},
+    mm::{self, MemorySpace, PhysPageNum, PpnOffset, UserSpace, VirtAddr},
     sync::UPSafeCell,
     task::{alloc_pid_handle, KernelStack, PidHandle, TaskContext},
     trap::{self, TrapContext},
@@ -29,7 +29,7 @@ impl ProcessControlBlock {
             .translate(VirtAddr(TRAP_CX_PTR).to_vpn())
             .unwrap()
             .ppn();
-        *trap_cx_ppn.as_mut() = TrapContext::new(
+        *trap_cx_ppn.low_to_high().as_mut() = TrapContext::new(
             user_space.get_entry(),
             USER_STACK_SP,
             kernel_stack.get_sp(),
