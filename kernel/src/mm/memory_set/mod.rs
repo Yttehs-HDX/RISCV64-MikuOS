@@ -114,8 +114,9 @@ impl MemorySet {
 
 // Kernel Space
 impl MemorySet {
-    fn map_kernel_sections(&mut self) {
+    fn map_kernel_space(&mut self) {
         // map .text
+        trace!("MemorySet: .text   [{:#x}, {:#x})", *STEXT, *ETEXT);
         self.insert_area(MapArea::new(
             VirtAddr(*STEXT),
             VirtAddr(*ETEXT),
@@ -124,6 +125,7 @@ impl MemorySet {
         ));
 
         // map .rodata
+        trace!("MemorySet: .rodata [{:#x}, {:#x})", *SRODATA, *ERODATA);
         self.insert_area(MapArea::new(
             VirtAddr(*SRODATA),
             VirtAddr(*ERODATA),
@@ -132,6 +134,7 @@ impl MemorySet {
         ));
 
         // map .data
+        trace!("MemorySet: .data   [{:#x}, {:#x})", *SDATA, *EDATA);
         self.insert_area(MapArea::new(
             VirtAddr(*SDATA),
             VirtAddr(*EDATA),
@@ -140,27 +143,17 @@ impl MemorySet {
         ));
 
         // map .bss
+        trace!("MemorySet: .bss    [{:#x}, {:#x})", *SBSS, *EBSS);
         self.insert_area(MapArea::new(
             VirtAddr(*SBSS),
             VirtAddr(*EBSS),
             MapType::Direct,
             MapPermission::R | MapPermission::W,
         ));
-    }
-
-    pub fn new_kernel() -> Self {
-        let mut memory_set = Self::empty();
-
-        // map sections
-        trace!("MemorySet: .text   [{:#x}, {:#x})", *STEXT, *ETEXT);
-        trace!("MemorySet: .rodata [{:#x}, {:#x})", *SRODATA, *ERODATA);
-        trace!("MemorySet: .data   [{:#x}, {:#x})", *SDATA, *EDATA);
-        trace!("MemorySet: .bss    [{:#x}, {:#x})", *SBSS, *EBSS);
-        memory_set.map_kernel_sections();
 
         // map ppn range
         trace!("MemorySet: ppn [{:#x}, {:#x})", *PA_START, PA_END);
-        memory_set.insert_area(MapArea::new(
+        self.insert_area(MapArea::new(
             VirtAddr(*PA_START),
             VirtAddr(PA_END),
             MapType::Direct,
@@ -169,14 +162,19 @@ impl MemorySet {
 
         // map MMIO
         for &pair in MMIO {
-            memory_set.insert_area(MapArea::new(
+            trace!("MemorySet: MMIO [{:#x}, {:#x})", pair.0, pair.0 + pair.1);
+            self.insert_area(MapArea::new(
                 VirtAddr(pair.0),
                 VirtAddr(pair.0 + pair.1),
                 MapType::Identity,
                 MapPermission::R | MapPermission::W,
             ));
         }
+    }
 
+    pub fn new_kernel() -> Self {
+        let mut memory_set = Self::empty();
+        memory_set.map_kernel_space();
         memory_set
     }
 }
@@ -188,8 +186,8 @@ impl MemorySet {
         use xmas_elf::{program::Type, ElfFile};
         let mut memory_set = Self::empty();
 
-        // map kernel sections
-        memory_set.map_kernel_sections();
+        // map kernel space
+        memory_set.map_kernel_space();
 
         // handle elf
         let elf = ElfFile::new(elf_data).unwrap();

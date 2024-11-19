@@ -91,8 +91,8 @@ pub(in crate::trap) unsafe extern "C" fn __snap_trap() -> ! {
         // read trap_handler address
         "ld t3, 36*8(sp)",
         // switch to KernelSpace
-        "csrw satp, t1",
-        "sfence.vma",
+        // "csrw satp, t1",
+        // "sfence.vma",
         // satp -> KernelSpace
 
         // switch to KernelStack
