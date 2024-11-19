@@ -5,7 +5,6 @@ use crate::{
         EBSS, EDATA, ERODATA, ETEXT, MMIO, PA_END, PA_START, SBSS, SDATA, SRODATA, STEXT,
         SV39_PAGE_SIZE, TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP,
     },
-    entry::KERNEL_ADDR_OFFSET,
     mm::{PageTable, PageTableEntry, VirtAddr, VirtPageNum},
 };
 use alloc::vec::Vec;
@@ -160,15 +159,11 @@ impl MemorySet {
         memory_set.map_kernel_sections();
 
         // map ppn range
-        trace!(
-            "MemorySet: map phys space [{:#x}, {:#x})",
-            *PA_START - KERNEL_ADDR_OFFSET,
-            PA_END - KERNEL_ADDR_OFFSET
-        );
+        trace!("MemorySet: ppn [{:#x}, {:#x})", *PA_START, PA_END);
         memory_set.insert_area(MapArea::new(
-            VirtAddr(*PA_START - KERNEL_ADDR_OFFSET),
-            VirtAddr(PA_END - KERNEL_ADDR_OFFSET),
-            MapType::Identity,
+            VirtAddr(*PA_START),
+            VirtAddr(PA_END),
+            MapType::Direct,
             MapPermission::R | MapPermission::W,
         ));
 
