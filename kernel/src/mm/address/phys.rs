@@ -58,10 +58,15 @@ impl PhysPageNum {
         PhysAddr(self.0 << SV39_PAGE_OFFSET)
     }
 
+    fn modifiable(&self) -> bool {
+        *PA_START <= self.to_pa().0 && self.to_pa().0 < PA_END
+    }
+
     pub fn as_bytes_array(&self) -> &'static mut [u8] {
         assert!(
-            *PA_START <= self.to_pa().0 && self.to_pa().0 < PA_END,
-            "PhysPageNum: pa out of bound"
+            self.modifiable(),
+            "PhysPageNum: ppn {:#x} out of bound",
+            self.0
         );
         let pa = self.to_pa();
         unsafe { core::slice::from_raw_parts_mut(pa.0 as *mut u8, SV39_PAGE_SIZE) }
@@ -69,8 +74,9 @@ impl PhysPageNum {
 
     pub fn as_pte_array(&self) -> &'static mut [PageTableEntry] {
         assert!(
-            *PA_START <= self.to_pa().0 && self.to_pa().0 < PA_END,
-            "PhysPageNum: pa out of bound"
+            self.modifiable(),
+            "PhysPageNum: ppn {:#x} out of bound",
+            self.0
         );
         let pa = self.to_pa();
         unsafe {
@@ -83,8 +89,9 @@ impl PhysPageNum {
 
     pub fn as_mut<T>(&self) -> &'static mut T {
         assert!(
-            *PA_START <= self.to_pa().0 && self.to_pa().0 < PA_END,
-            "PhysPageNum: pa out of bound"
+            self.modifiable(),
+            "PhysPageNum: ppn {:#x} out of bound",
+            self.0
         );
         let pa = self.to_pa();
         unsafe { (pa.0 as *mut T).as_mut().unwrap() }

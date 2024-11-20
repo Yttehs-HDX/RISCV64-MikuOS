@@ -52,10 +52,10 @@ impl PageTable {
 
     fn get_pte(&self, vpn: VirtPageNum) -> Option<&mut PageTableEntry> {
         let indexes = vpn.indexes();
-        let mut ppn = self.root_ppn;
+        let mut current_high_ppn = self.root_ppn;
 
         for (i, &idx) in indexes.iter().enumerate() {
-            let pte = &mut ppn.as_pte_array()[idx];
+            let pte = &mut current_high_ppn.as_pte_array()[idx];
             if i == indexes.len() - 1 {
                 // last level
                 return Some(pte);
@@ -63,7 +63,7 @@ impl PageTable {
             if !pte.is_valid() {
                 return None;
             }
-            ppn = pte.ppn().low_to_high();
+            current_high_ppn = pte.ppn().low_to_high();
         }
 
         None

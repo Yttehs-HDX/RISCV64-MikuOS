@@ -2,8 +2,8 @@ pub use map_area::*;
 
 use crate::{
     config::{
-        EBSS, EDATA, ERODATA, ETEXT, MMIO, PA_END, PA_START, SBSS, SDATA, SRODATA, STEXT,
-        SV39_PAGE_SIZE, TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP,
+        kernel_stack_top, EBSS, EDATA, ERODATA, ETEXT, KERNEL_STACK_SIZE, MMIO, PA_END, PA_START,
+        SBSS, SDATA, SRODATA, STEXT, SV39_PAGE_SIZE, TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP,
     },
     mm::{PageTable, PageTableEntry, VirtAddr, VirtPageNum},
 };
@@ -11,6 +11,8 @@ use alloc::vec::Vec;
 use core::arch::asm;
 use log::{trace, warn};
 use riscv::register::satp;
+
+use super::PpnOffset;
 
 mod map_area;
 
@@ -160,6 +162,21 @@ impl MemorySet {
             MapPermission::R | MapPermission::W,
         ));
 
+        // map kernel stack
+        let kstack_start = kernel_stack_top(0);
+        let kstack_end = kstack_start + KERNEL_STACK_SIZE;
+        trace!(
+            "MemorySet: kernel stack [{:#x}, {:#x})",
+            kstack_start,
+            kstack_end
+        );
+        self.insert_area(MapArea::new(
+            VirtAddr(kstack_start),
+            VirtAddr(kstack_end),
+            MapType::Direct,
+            MapPermission::R | MapPermission::W,
+        ));
+
         // map MMIO
         for &pair in MMIO {
             trace!("MemorySet: MMIO [{:#x}, {:#x})", pair.0, pair.0 + pair.1);
@@ -276,12 +293,24 @@ impl MemorySet {
             memory_set.insert_area(new_area);
 
             // gen page table entry
-            for vpn in area.vpn_range {
-                let src_ppn = another.page_table.translate(vpn).unwrap().ppn();
-                let dst_ppn = memory_set.page_table.translate(vpn).unwrap().ppn();
-                dst_ppn
-                    .as_bytes_array()
-                    .copy_from_slice(src_ppn.as_bytes_array());
+            if area.map_type == MapType::Framed {
+                for vpn in area.vpn_range {
+                    let src_ppn = another
+                        .page_table
+                        .translate(vpn)
+                        .unwrap()
+                        .ppn()
+                        .low_to_high();
+                    let dst_ppn = memory_set
+                        .page_table
+                        .translate(vpn)
+                        .unwrap()
+                        .ppn()
+                        .low_to_high();
+                    dst_ppn
+                        .as_bytes_array()
+                        .copy_from_slice(src_ppn.as_bytes_array());
+                }
             }
         }
         memory_set

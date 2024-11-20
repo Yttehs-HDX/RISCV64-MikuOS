@@ -23,15 +23,15 @@ impl KernelStack {
     pub fn new(pid_handle: &PidHandle) -> Self {
         let pid = pid_handle.0;
 
-        let kstack_top = kernel_stack_top(pid);
-        let kstacp_bottom = kstack_top + KERNEL_STACK_SIZE;
+        // let kstack_top = kernel_stack_top(pid);
+        // let kstacp_bottom = kstack_top + KERNEL_STACK_SIZE;
 
-        // allocate kernel stack
-        mm::get_kernel_space().inner_mut().insert_framed_area(
-            VirtAddr(kstack_top),
-            VirtAddr(kstacp_bottom),
-            MapPermission::R | MapPermission::W,
-        );
+        // // allocate kernel stack
+        // mm::get_kernel_space().inner_mut().insert_framed_area(
+        //     VirtAddr(kstack_top),
+        //     VirtAddr(kstacp_bottom),
+        //     MapPermission::R | MapPermission::W,
+        // );
 
         Self { pid }
     }

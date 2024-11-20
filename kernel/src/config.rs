@@ -26,7 +26,7 @@ pub const USER_STACK_SP: usize = USER_STACK_TOP + USER_STACK_SIZE;
 // kernel space
 pub const fn kernel_stack_top(pid: usize) -> usize {
     // left guard pages between kernel stacks
-    let bottom = USER_STACK_TOP - pid * (KERNEL_STACK_SIZE + SV39_PAGE_SIZE);
+    let bottom = USER_STACK_TOP - 0 * (KERNEL_STACK_SIZE + SV39_PAGE_SIZE);
     bottom - KERNEL_STACK_SIZE
 }
 pub const PA_END: usize = kernel_stack_top(KERNEL_STACK_NUM);

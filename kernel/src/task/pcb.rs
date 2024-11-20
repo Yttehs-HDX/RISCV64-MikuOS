@@ -61,7 +61,8 @@ impl ProcessControlBlock {
             .inner_mut()
             .translate(VirtAddr(TRAP_CX_PTR).to_vpn())
             .unwrap()
-            .ppn();
+            .ppn()
+            .low_to_high();
         let task_cx = TaskContext::goto_trap_return(kernel_sp);
 
         let pcb = Arc::new(Self {

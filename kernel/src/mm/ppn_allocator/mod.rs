@@ -24,7 +24,7 @@ pub fn dealloc_ppn(ppn: PhysPageNum) {
 
 lazy_static! {
     static ref PPN_ALLOCATOR: PpnAllocator =
-        PpnAllocator::new(PhysAddr(*PA_START), PhysAddr(PA_END),);
+        PpnAllocator::new(PhysAddr(*PA_START), PhysAddr(PA_END));
 }
 
 // region PpnAllocator begin
