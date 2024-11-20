@@ -107,7 +107,8 @@ impl ProcessControlBlock {
             .inner_mut()
             .translate(VirtAddr(TRAP_CX_PTR).to_vpn())
             .unwrap()
-            .ppn();
+            .ppn()
+            .low_to_high();
         *trap_cx_ppn.as_mut() = TrapContext::new(
             user_space.get_entry(),
             USER_STACK_SP,
