@@ -2,8 +2,8 @@ pub use map_area::*;
 
 use crate::{
     config::{
-        kernel_stack_top, EBSS, EDATA, ERODATA, ETEXT, KERNEL_STACK_SIZE, MMIO, PA_END, PA_START,
-        SBSS, SDATA, SRODATA, STEXT, SV39_PAGE_SIZE, TRAP_CX_PTR, USER_STACK_SIZE, USER_STACK_TOP,
+        EBSS, EDATA, ERODATA, ETEXT, KERNEL_STACK_SP, KERNEL_STACK_TOP, MMIO, PA_END, PA_START,
+        SBSS, SDATA, SRODATA, STEXT, SV39_PAGE_SIZE, TRAP_CX_PTR, USER_STACK_SP, USER_STACK_TOP,
     },
     mm::{PageTable, PageTableEntry, VirtAddr, VirtPageNum},
 };
@@ -77,30 +77,6 @@ impl MemorySet {
         self.areas.push(area);
     }
 
-    pub fn insert_framed_area(
-        &mut self,
-        start_va: VirtAddr,
-        end_va: VirtAddr,
-        map_perm: MapPermission,
-    ) {
-        let area = MapArea::new(start_va, end_va, MapType::Framed, map_perm);
-        self.insert_area(area);
-    }
-
-    pub fn remove_area(&mut self, start_vpn: VirtPageNum) -> Option<MapArea> {
-        if let Some(index) = self
-            .areas
-            .iter()
-            .position(|area| area.vpn_range.start() == start_vpn)
-        {
-            let mut area = self.areas.remove(index);
-            area.unmap_all(&mut self.page_table);
-            Some(area)
-        } else {
-            None
-        }
-    }
-
     pub fn change_area_end(&mut self, start_va: VirtAddr, new_end_va: VirtAddr) -> bool {
         if let Some(area) = self
             .areas
@@ -165,16 +141,14 @@ impl MemorySet {
         ));
 
         // map kernel stack
-        let kstack_start = kernel_stack_top(0);
-        let kstack_end = kstack_start + KERNEL_STACK_SIZE;
         trace!(
             "MemorySet: kernel stack [{:#x}, {:#x})",
-            kstack_start,
-            kstack_end
+            KERNEL_STACK_TOP,
+            KERNEL_STACK_SP
         );
         self.insert_area(MapArea::new(
-            VirtAddr(kstack_start),
-            VirtAddr(kstack_end),
+            VirtAddr(KERNEL_STACK_TOP),
+            VirtAddr(KERNEL_STACK_SP),
             MapType::Direct,
             MapPermission::R | MapPermission::W,
         ));
@@ -257,11 +231,11 @@ impl MemorySet {
         trace!(
             "MemorySet: map User Stack [{:#x}, {:#x})",
             USER_STACK_TOP,
-            USER_STACK_TOP + USER_STACK_SIZE
+            USER_STACK_SP
         );
         memory_set.insert_area(MapArea::new(
             VirtAddr(USER_STACK_TOP),
-            VirtAddr(USER_STACK_TOP + USER_STACK_SIZE),
+            VirtAddr(USER_STACK_SP),
             MapType::Framed,
             MapPermission::U | MapPermission::R | MapPermission::W,
         ));

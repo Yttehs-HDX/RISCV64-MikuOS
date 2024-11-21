@@ -5,7 +5,6 @@ pub use crate::board::CLOCK_FREQ;
 
 // task
 pub const USER_STACK_SIZE: usize = 0x200000; // 2 MB
-pub const KERNEL_STACK_NUM: usize = 16;
 pub const KERNEL_STACK_SIZE: usize = SV39_PAGE_SIZE;
 
 // heap
@@ -24,12 +23,10 @@ pub const TRAP_CX_PTR: usize = MEMORY_END - SV39_PAGE_SIZE;
 pub const USER_STACK_TOP: usize = TRAP_CX_PTR - (USER_STACK_SIZE + SV39_PAGE_SIZE);
 pub const USER_STACK_SP: usize = USER_STACK_TOP + USER_STACK_SIZE;
 // kernel space
-pub const fn kernel_stack_top(pid: usize) -> usize {
-    // left guard pages between kernel stacks
-    let bottom = USER_STACK_TOP - 0 * (KERNEL_STACK_SIZE + SV39_PAGE_SIZE);
-    bottom - KERNEL_STACK_SIZE
-}
-pub const PA_END: usize = kernel_stack_top(KERNEL_STACK_NUM);
+// left a guard page for kernel stack
+pub const KERNEL_STACK_TOP: usize = USER_STACK_TOP - (KERNEL_STACK_SIZE + SV39_PAGE_SIZE);
+pub const KERNEL_STACK_SP: usize = KERNEL_STACK_TOP + KERNEL_STACK_SIZE;
+pub const PA_END: usize = KERNEL_STACK_TOP;
 lazy_static! {
     pub static ref PA_START: usize = *EKERNEL;
 }

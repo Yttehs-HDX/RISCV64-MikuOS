@@ -22,7 +22,7 @@ mod trap;
 mod util;
 
 pub fn main() -> ! {
-    println!("Hello, world!");
+    println!("[Kernel] Hello, world!");
     assert_eq!(*config::SKERNEL, 0xffff_ffff_c020_0000);
 
     util::logger_init();

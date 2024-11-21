@@ -1,8 +1,8 @@
 use crate::{
-    config::{TRAP_CX_PTR, USER_STACK_SP},
+    config::{KERNEL_STACK_SP, TRAP_CX_PTR, USER_STACK_SP},
     mm::{MemorySpace, PhysPageNum, PpnOffset, UserSpace, VirtAddr},
     sync::UPSafeCell,
-    task::{alloc_pid_handle, KernelStack, PidHandle, TaskContext},
+    task::{alloc_pid_handle, PidHandle, TaskContext},
     trap::{self, TrapContext},
 };
 use alloc::{
@@ -15,14 +15,12 @@ use core::cell::{Ref, RefMut};
 pub struct ProcessControlBlock {
     pid: PidHandle,
     #[allow(unused)]
-    kernel_stack: KernelStack,
     inner: UPSafeCell<ProcessControlBlockInner>,
 }
 
 impl ProcessControlBlock {
     pub fn new(elf_data: &[u8]) -> Self {
         let pid = alloc_pid_handle();
-        let kernel_stack = KernelStack::new(&pid);
         let user_space = UserSpace::from_elf(elf_data);
         let trap_cx_ppn = user_space
             .inner_mut()
@@ -33,14 +31,13 @@ impl ProcessControlBlock {
         *trap_cx_ppn.as_mut() = TrapContext::new(
             user_space.get_entry(),
             USER_STACK_SP,
-            kernel_stack.get_sp(),
+            KERNEL_STACK_SP,
             trap::trap_handler as usize,
         );
-        let task_cx = TaskContext::goto_trap_return(kernel_stack.get_sp());
+        let task_cx = TaskContext::goto_trap_return(KERNEL_STACK_SP);
 
         Self {
             pid,
-            kernel_stack,
             inner: unsafe {
                 UPSafeCell::new(ProcessControlBlockInner::new(
                     trap_cx_ppn,
@@ -53,8 +50,6 @@ impl ProcessControlBlock {
 
     pub fn fork(self: &Arc<Self>) -> Arc<Self> {
         let pid = alloc_pid_handle();
-        let kernel_stack = KernelStack::new(&pid);
-        let kernel_sp = kernel_stack.get_sp();
         let user_space = UserSpace::from_existed(self.inner().get_user_space());
         let trap_cx_ppn = user_space
             .inner_mut()
@@ -62,11 +57,10 @@ impl ProcessControlBlock {
             .unwrap()
             .ppn()
             .low_to_high();
-        let task_cx = TaskContext::goto_trap_return(kernel_sp);
+        let task_cx = TaskContext::goto_trap_return(KERNEL_STACK_SP);
 
         let pcb = Arc::new(Self {
             pid,
-            kernel_stack,
             inner: unsafe {
                 UPSafeCell::new(ProcessControlBlockInner::new(
                     trap_cx_ppn,
@@ -75,7 +69,7 @@ impl ProcessControlBlock {
                 ))
             },
         });
-        pcb.get_trap_cx_mut().set_kernel_sp(kernel_sp);
+        pcb.get_trap_cx_mut().set_kernel_sp(KERNEL_STACK_SP);
 
         // Set parent
         pcb.set_parent(Arc::downgrade(self));
@@ -111,7 +105,7 @@ impl ProcessControlBlock {
         *trap_cx_ppn.as_mut() = TrapContext::new(
             user_space.get_entry(),
             USER_STACK_SP,
-            self.kernel_stack.get_sp(),
+            KERNEL_STACK_SP,
             trap::trap_handler as usize,
         );
 
