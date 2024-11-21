@@ -166,6 +166,9 @@ pub fn trap_handler() -> ! {
 
 #[no_mangle]
 pub fn trap_return() -> ! {
+    unsafe {
+        sstatus::clear_sum();
+    }
     set_user_trap_entry();
     let trap_cx_ptr = TRAP_CX_PTR;
     let user_satp = task::get_processor().current().get_satp();
