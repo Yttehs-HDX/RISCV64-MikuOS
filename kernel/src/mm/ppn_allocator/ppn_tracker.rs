@@ -2,7 +2,7 @@ use crate::mm::{dealloc_ppn, PhysPageNum};
 
 // region PpnTracker begin
 pub struct PpnTracker {
-    pub ppn: PhysPageNum,
+    ppn: PhysPageNum,
 }
 
 impl Drop for PpnTracker {
@@ -16,6 +16,10 @@ impl PpnTracker {
         // clear the page
         ppn.as_bytes_array().fill(0);
         Self { ppn }
+    }
+
+    pub fn ppn(&self) -> PhysPageNum {
+        self.ppn
     }
 }
 // region PpnTracker end

@@ -16,7 +16,7 @@ impl PageTable {
     pub fn new() -> Self {
         let root_ppn_tracker = alloc_ppn_tracker().unwrap();
         Self {
-            root_ppn: root_ppn_tracker.ppn,
+            root_ppn: root_ppn_tracker.ppn(),
             ppn_tracker_list: vec![root_ppn_tracker],
         }
     }
@@ -41,7 +41,7 @@ impl PageTable {
             }
             if !pte.is_valid() {
                 let ppn_tracker = alloc_ppn_tracker().unwrap();
-                *pte = PageTableEntry::new(ppn_tracker.ppn.high_to_low(), PTEFlags::V);
+                *pte = PageTableEntry::new(ppn_tracker.ppn().high_to_low(), PTEFlags::V);
                 self.ppn_tracker_list.push(ppn_tracker);
             }
             current_high_ppn = pte.ppn().low_to_high();

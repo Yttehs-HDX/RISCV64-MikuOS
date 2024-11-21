@@ -54,7 +54,7 @@ impl MapArea {
             MapType::Direct => ppn = PhysPageNum(vpn.0).high_to_low(),
             MapType::Framed => {
                 let ppn_tracker = alloc_ppn_tracker().unwrap();
-                ppn = ppn_tracker.ppn.high_to_low();
+                ppn = ppn_tracker.ppn().high_to_low();
                 self.ppn_map.insert(vpn, ppn_tracker);
             }
         }
