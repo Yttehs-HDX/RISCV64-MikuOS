@@ -54,7 +54,7 @@ impl StepByOne for PhysPageNum {
 }
 
 impl PhysPageNum {
-    pub fn to_pa(self) -> PhysAddr {
+    pub const fn to_pa(self) -> PhysAddr {
         PhysAddr(self.0 << SV39_PAGE_OFFSET)
     }
 

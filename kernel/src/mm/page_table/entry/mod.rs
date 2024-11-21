@@ -35,15 +35,15 @@ impl PageTableEntry {
         }
     }
 
-    pub fn ppn(&self) -> PhysPageNum {
+    pub const fn ppn(&self) -> PhysPageNum {
         PhysPageNum(self.bits >> 10 & ((1 << SV39_PPN_BITS) - 1))
     }
 
-    pub fn flags(&self) -> PTEFlags {
+    pub const fn flags(&self) -> PTEFlags {
         PTEFlags::from_bits_truncate(self.bits as u8)
     }
 
-    pub fn is_valid(&self) -> bool {
+    pub const fn is_valid(&self) -> bool {
         self.flags().contains(PTEFlags::V)
     }
 }

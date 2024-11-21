@@ -21,21 +21,21 @@ const SV39_VPN_PER_BITS: usize = SV39_VPN_BITS / SV39_VPN_NUM;
 pub struct VirtAddr(pub usize);
 
 impl VirtAddr {
-    pub fn page_offset(&self) -> usize {
+    pub const fn page_offset(&self) -> usize {
         self.0 & (SV39_PAGE_SIZE - 1)
     }
-    pub fn aligned(&self) -> bool {
+    pub const fn aligned(&self) -> bool {
         self.page_offset() == 0
     }
 
-    pub fn to_vpn(self) -> VirtPageNum {
+    pub const fn to_vpn(self) -> VirtPageNum {
         assert!(self.aligned());
         VirtPageNum(self.0 >> SV39_PAGE_OFFSET)
     }
-    pub fn to_vpn_floor(self) -> VirtPageNum {
+    pub const fn to_vpn_floor(self) -> VirtPageNum {
         VirtPageNum(self.0 >> SV39_PAGE_OFFSET)
     }
-    pub fn to_vpn_ceil(self) -> VirtPageNum {
+    pub const fn to_vpn_ceil(self) -> VirtPageNum {
         VirtPageNum((self.0 + SV39_PAGE_SIZE - 1) >> SV39_PAGE_OFFSET)
     }
 }
@@ -52,7 +52,7 @@ impl StepByOne for VirtPageNum {
 }
 
 impl VirtPageNum {
-    pub fn to_va(self) -> VirtAddr {
+    pub const fn to_va(self) -> VirtAddr {
         VirtAddr(self.0 << SV39_PAGE_OFFSET)
     }
 
