@@ -34,7 +34,6 @@ impl ProcessControlBlock {
             user_space.get_entry(),
             USER_STACK_SP,
             kernel_stack.get_sp(),
-            mm::get_kernel_space().get_satp(),
             trap::trap_handler as usize,
         );
         let task_cx = TaskContext::goto_trap_return(kernel_stack.get_sp());
@@ -113,7 +112,6 @@ impl ProcessControlBlock {
             user_space.get_entry(),
             USER_STACK_SP,
             self.kernel_stack.get_sp(),
-            mm::get_kernel_space().get_satp(),
             trap::trap_handler as usize,
         );
 

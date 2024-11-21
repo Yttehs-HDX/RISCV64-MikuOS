@@ -84,16 +84,10 @@ pub(in crate::trap) unsafe extern "C" fn __snap_trap() -> ! {
         "sd t0, 2*8(sp)",
         // done
 
-        // read kernel_satp
-        "ld t1, 34*8(sp)",
         // read kernel_sp
-        "ld t2, 35*8(sp)",
+        "ld t2, 34*8(sp)",
         // read trap_handler address
-        "ld t3, 36*8(sp)",
-        // switch to KernelSpace
-        // "csrw satp, t1",
-        // "sfence.vma",
-        // satp -> KernelSpace
+        "ld t3, 35*8(sp)",
 
         // switch to KernelStack
         "mv sp, t2",
