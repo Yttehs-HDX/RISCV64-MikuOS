@@ -16,7 +16,7 @@ mod map_type;
 pub struct MapArea {
     pub vpn_range: SimpleRange<VirtPageNum>,
     ppn_map: BTreeMap<VirtPageNum, PpnTracker>,
-    pub map_type: MapType,
+    map_type: MapType,
     map_perm: MapPermission,
 }
 
@@ -105,6 +105,10 @@ impl MapArea {
 }
 
 impl MapArea {
+    pub fn get_type(&self) -> MapType {
+        self.map_type
+    }
+
     pub fn insert_raw_data(&self, data: &[u8], page_table: &mut PageTable) {
         assert_eq!(self.map_type, MapType::Framed);
         let mut current_vpn = self.vpn_range.start();

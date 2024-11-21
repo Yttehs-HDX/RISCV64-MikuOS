@@ -31,7 +31,7 @@ pub struct MemorySet {
 impl Drop for MemorySet {
     fn drop(&mut self) {
         for area in self.areas.iter_mut() {
-            if area.map_type == MapType::Framed {
+            if area.get_type() == MapType::Framed {
                 area.unmap_all(&mut self.page_table);
             }
         }
@@ -269,7 +269,7 @@ impl MemorySet {
             memory_set.insert_area(new_area);
 
             // gen page table entry
-            if area.map_type == MapType::Framed {
+            if area.get_type() == MapType::Framed {
                 for vpn in area.vpn_range {
                     let src_ppn = another
                         .page_table
