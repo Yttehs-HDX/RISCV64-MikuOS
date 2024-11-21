@@ -25,8 +25,7 @@ use crate::{
 use core::arch::asm;
 use log::{error, trace};
 use riscv::register::{
-    scause::{self, Exception, Interrupt, Trap},
-    stval,
+    scause::{self, Exception, Interrupt, Trap}, sstatus, stval
 };
 
 #[naked]
@@ -116,6 +115,9 @@ pub fn trap_handler() -> ! {
                 pid
             );
             cx.move_to_next_ins();
+            unsafe {
+                sstatus::set_sum();
+            }
             let x10 =
                 syscall::syscall(cx.get_x(17), [cx.get_x(10), cx.get_x(11), cx.get_x(12)]) as usize;
             cx.set_a0(x10);
