@@ -1,6 +1,6 @@
 use crate::{
     config::{TRAP_CX_PTR, USER_STACK_SP},
-    mm::{self, MemorySpace, PhysPageNum, PpnOffset, UserSpace, VirtAddr},
+    mm::{MemorySpace, PhysPageNum, PpnOffset, UserSpace, VirtAddr},
     sync::UPSafeCell,
     task::{alloc_pid_handle, KernelStack, PidHandle, TaskContext},
     trap::{self, TrapContext},

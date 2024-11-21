@@ -31,7 +31,9 @@ pub struct MemorySet {
 impl Drop for MemorySet {
     fn drop(&mut self) {
         for area in self.areas.iter_mut() {
-            area.unmap_all(&mut self.page_table);
+            if area.map_type == MapType::Framed {
+                area.unmap_all(&mut self.page_table);
+            }
         }
     }
 }

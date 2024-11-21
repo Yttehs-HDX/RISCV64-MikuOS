@@ -25,7 +25,8 @@ use crate::{
 use core::arch::asm;
 use log::{error, trace};
 use riscv::register::{
-    scause::{self, Exception, Interrupt, Trap}, sstatus, stval
+    scause::{self, Exception, Interrupt, Trap},
+    sstatus, stval,
 };
 
 #[naked]
@@ -87,7 +88,6 @@ pub(in crate::trap) unsafe extern "C" fn __snap_trap() -> ! {
         "ld t2, 34*8(sp)",
         // read trap_handler address
         "ld t3, 35*8(sp)",
-
         // switch to KernelStack
         "mv sp, t2",
         // sp -> KernelStack
