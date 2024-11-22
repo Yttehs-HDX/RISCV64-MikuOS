@@ -1,12 +1,11 @@
 use color_filter::ColorFilter;
-use log::{debug, Log};
+use log::{debug, LevelFilter, Log};
 
 mod color_filter;
 
 static LOGGER: Logger = Logger;
 
-pub fn logger_init() {
-    use log::LevelFilter;
+pub fn init_log() {
     log::set_logger(&LOGGER).unwrap();
     let max_level = match option_env!("LOG") {
         Some("ERROR") => LevelFilter::Error,

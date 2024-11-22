@@ -8,7 +8,9 @@ pub fn sys_read(fd: usize, buffer: *mut u8, len: usize) -> isize {
         FD_STDIN => {
             assert_eq!(len, 1, "sys_read: only support read one byte from stdin");
             let c = sbi::console_getchar();
-            unsafe { *buffer = c as u8 };
+            unsafe {
+                *buffer = c as u8;
+            }
             1
         }
         _ => {

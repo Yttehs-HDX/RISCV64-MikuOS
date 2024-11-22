@@ -8,7 +8,6 @@ pub fn console_putchar(c: usize) {
     sbi_call(SBI_CONSOLE_PUTCHAR, [c, 0, 0]);
 }
 
-#[allow(unused)]
 #[inline(always)]
 pub fn console_getchar() -> usize {
     sbi_call(SBI_CONSOLE_GETCHAR, [0, 0, 0])

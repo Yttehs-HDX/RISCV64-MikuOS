@@ -40,11 +40,14 @@ pub fn sys_fork() -> isize {
 }
 
 pub fn sys_exec(path: *const u8, _argv: *const u8) -> isize {
-    let mut len = 0;
-    while unsafe { *path.add(len) } != 0 {
-        len += 1;
+    let str: &str;
+    unsafe {
+        let mut len = 0;
+        while *path.add(len) != 0 {
+            len += 1;
+        }
+        str = core::str::from_utf8_unchecked(core::slice::from_raw_parts(path, len));
     }
-    let str = unsafe { core::str::from_utf8_unchecked(core::slice::from_raw_parts(path, len)) };
 
     if let Some(app) = app::get_app(str) {
         let current_task = task::get_processor().current();
