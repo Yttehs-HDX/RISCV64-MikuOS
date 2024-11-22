@@ -1,4 +1,4 @@
-use riscv::register::sstatus::{self, Sstatus};
+use riscv::register::sstatus::{self, Sstatus, SPP};
 
 // region TrapContext begin
 #[repr(C)]
@@ -16,7 +16,9 @@ pub struct TrapContext {
 impl TrapContext {
     pub fn new(entry: usize, user_sp: usize, kernel_sp: usize, trap_handler: usize) -> Self {
         let mut sstatus = sstatus::read();
-        sstatus.set_spp(sstatus::SPP::User);
+        sstatus.set_spp(SPP::User);
+        sstatus.clear_sum();
+
         let mut cx = Self {
             x: [0; 32],
             sstatus,

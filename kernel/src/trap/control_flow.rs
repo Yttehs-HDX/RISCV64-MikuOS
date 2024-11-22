@@ -100,6 +100,10 @@ pub(in crate::trap) unsafe extern "C" fn __snap_trap() -> ! {
 
 #[no_mangle]
 pub fn trap_handler() -> ! {
+    unsafe {
+        // enable supervisor user memory access
+        sstatus::set_sum();
+    }
     set_kernel_trap_entry();
     let cx = task::get_processor().current().get_trap_cx_mut();
     let stval = stval::read();
@@ -115,9 +119,10 @@ pub fn trap_handler() -> ! {
                 pid
             );
             cx.move_to_next_ins();
-            unsafe {
-                sstatus::set_sum();
-            }
+            // unsafe {
+            //     // enable supervisor user memory access
+            //     sstatus::set_sum();
+            // }
             let x10 =
                 syscall::syscall(cx.get_x(17), [cx.get_x(10), cx.get_x(11), cx.get_x(12)]) as usize;
             cx.set_a0(x10);
@@ -167,6 +172,7 @@ pub fn trap_handler() -> ! {
 #[no_mangle]
 pub fn trap_return() -> ! {
     unsafe {
+        // disable supervisor user memory access
         sstatus::clear_sum();
     }
     set_user_trap_entry();
