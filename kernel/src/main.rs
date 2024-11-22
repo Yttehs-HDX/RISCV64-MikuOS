@@ -13,6 +13,7 @@ mod console;
 mod board;
 mod config;
 mod entry;
+mod fs;
 mod mm;
 mod sync;
 mod syscall;
