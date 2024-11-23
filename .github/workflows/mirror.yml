@@ -1,0 +1,34 @@
+name: Sync to gitlab.eduxiji.net
+
+on:
+  push:
+    branches:
+      - "**"
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      SITE: gitlab.eduxiji.net
+      USER_NAME: T202410145994247
+      REPO_NAME: OSKernel2024-MikuOS
+      REMOTE_NAME: gitlab-xiji
+
+    steps:
+      # fetch all history
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # setup env
+      - name: Setup git
+        run: |
+          git config --global user.name "Shetty Yttehs"
+          git config --global user.email "shetty.yttehs@outlook.com"
+
+      # git push
+      - name: Push all
+        run: |
+          git remote add ${{ env.REMOTE_NAME }} https://${{ env.USER_NAME }}:${{ secrets.GITLAB_XIJI_TOKEN }}@${{ env.SITE }}/${{ env.USER_NAME }}/${{ env.REPO_NAME }}.git
+          git push --mirror ${{ env.REMOTE_NAME }}
