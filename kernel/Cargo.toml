@@ -11,6 +11,7 @@ log = "0.4.22"
 riscv = { git = "https://github.com/Yttehs-HDX/rust-riscv", features = ["inline-asm"] }
 xmas-elf = "0.9.1"
 simple_range = { path = "../lib/simple_range" }
+miku-fs = { path = "../lib/miku-fs" }
 
 [profile.release]
 debug = true
