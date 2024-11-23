@@ -10,7 +10,7 @@ lazy_static = { version = "1.5.0", features = ["spin_no_std"] }
 log = "0.4.22"
 riscv = { git = "https://github.com/Yttehs-HDX/rust-riscv", features = ["inline-asm"] }
 xmas-elf = "0.9.1"
-simple_range = { path = "../extern_crates/simple_range" }
+simple_range = { path = "../lib/simple_range" }
 
 [profile.release]
 debug = true
