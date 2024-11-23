@@ -31,4 +31,4 @@ jobs:
       - name: Push all
         run: |
           git remote add ${{ env.REMOTE_NAME }} https://${{ env.USER_NAME }}:${{ secrets.GITLAB_XIJI_TOKEN }}@${{ env.SITE }}/${{ env.USER_NAME }}/${{ env.REPO_NAME }}.git
-          git push --mirror ${{ env.REMOTE_NAME }}
+          git push -f --mirror ${{ env.REMOTE_NAME }}
