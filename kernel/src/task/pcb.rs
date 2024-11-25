@@ -1,6 +1,6 @@
 use crate::{
     config::{KERNEL_STACK_SP, TRAP_CX_PTR, USER_STACK_SP},
-    mm::{MemorySpace, PhysPageNum, PpnOffset, UserSpace, VirtAddr},
+    mm::{self, MemorySpace, PhysPageNum, PpnOffset, UserSpace, VirtAddr},
     sync::UPSafeCell,
     task::{alloc_pid_handle, PidHandle, TaskContext},
     trap::{self, TrapContext},
@@ -111,6 +111,7 @@ impl ProcessControlBlock {
 
         // update program brk, user space and trap context
         self.inner_mut().program_brk = user_space.get_base_size();
+        self.drop_user_space();
         self.inner_mut().user_space = Some(user_space);
         self.inner_mut().trap_cx_ppn = trap_cx_ppn;
     }
@@ -130,6 +131,7 @@ impl ProcessControlBlock {
     }
 
     pub fn drop_user_space(&self) {
+        mm::switch_to_kernel_space();
         self.inner_mut().user_space = None;
     }
 
