@@ -5,14 +5,12 @@ use crate::{
         EBSS, EDATA, ERODATA, ETEXT, KERNEL_STACK_SP, KERNEL_STACK_TOP, MMIO, PA_END, PA_START,
         SBSS, SDATA, SRODATA, STEXT, SV39_PAGE_SIZE, TRAP_CX_PTR, USER_STACK_SP, USER_STACK_TOP,
     },
-    mm::{PageTable, PageTableEntry, VirtAddr, VirtPageNum},
+    mm::{PageTable, PageTableEntry, PpnOffset, VirtAddr, VirtPageNum},
 };
 use alloc::vec::Vec;
 use core::arch::asm;
 use log::{trace, warn};
 use riscv::register::satp;
-
-use super::PpnOffset;
 
 mod map_area;
 
@@ -31,9 +29,7 @@ pub struct MemorySet {
 impl Drop for MemorySet {
     fn drop(&mut self) {
         for area in self.areas.iter_mut() {
-            if area.get_type() == MapType::Framed {
-                area.unmap_all(&mut self.page_table);
-            }
+            area.unmap_all(&mut self.page_table);
         }
     }
 }
