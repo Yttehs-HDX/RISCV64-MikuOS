@@ -15,3 +15,7 @@ pub fn init() {
     heap_allocator::init_heap();
     get_kernel_space().activate();
 }
+
+pub fn switch_to_kernel_space() {
+    get_kernel_space().activate();
+}

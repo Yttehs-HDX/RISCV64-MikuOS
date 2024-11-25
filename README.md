@@ -2,6 +2,10 @@
 
 RISC-V64 OS written in Rust
 
+## Workflows
+
+[![mirror](https://github.com/Yttehs-HDX/RISCV64-MikuOS/actions/workflows/mirror.yml/badge.svg)](https://github.com/Yttehs-HDX/RISCV64-MikuOS/blob/main/.github/workflows/mirror.yml)
+
 ## Setup
 
 ```bash
