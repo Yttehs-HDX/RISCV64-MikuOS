@@ -5,6 +5,7 @@ BUILD_TYPE := release
 BIOS := rustsbi.bin
 KERNEL := kernel
 TARGET := target/$(ARCH)/$(BUILD_TYPE)/$(KERNEL)
+FS_IMG := ../user/target/${ARCH}/${BUILD_TYPE}/sdcard.img
 
 CARGO := cargo
 CARGO_FLAGS := --$(BUILD_TYPE)
@@ -13,6 +14,8 @@ QEMU := qemu-system-riscv64
 QEMU_FLAGS := -machine virt \
 	-bios ../bootloader/$(BIOS) \
 	-kernel $(TARGET) \
+	-drive file=$(FS_IMG),if=none,format=raw,id=x0 \
+	-device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0 \
 	-nographic
 
 GDB := riscv64-elf-gdb
