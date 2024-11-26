@@ -5,6 +5,9 @@ pub const MEMORY_END: usize = 0x88000000;
 pub const MMIO: &[(usize, usize)] = &[
     // (addr, len)
     (VIRT_TEST as usize, 0x2000),
+    (VIRT_IO, 0x1000),
 ];
 
 mod exit_handle;
+
+const VIRT_IO: usize = 0x10001000;
