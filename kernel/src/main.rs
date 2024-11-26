@@ -12,6 +12,7 @@ mod console;
 #[path = "boards/qemu/mod.rs"]
 mod board;
 mod config;
+mod drivers;
 mod entry;
 mod fs;
 mod mm;
