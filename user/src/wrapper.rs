@@ -29,6 +29,10 @@ pub fn sbrk(inc: i32) -> isize {
     syscall::sys_sbrk(inc)
 }
 
+pub fn getpid() -> isize {
+    syscall::sys_getpid()
+}
+
 pub fn fork() -> isize {
     syscall::sys_fork()
 }

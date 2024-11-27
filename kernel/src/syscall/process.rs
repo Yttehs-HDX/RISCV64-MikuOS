@@ -28,6 +28,10 @@ pub fn sys_sbrk(increase: i32) -> isize {
     }
 }
 
+pub fn sys_getpid() -> isize {
+    task::get_processor().current().get_pid() as isize
+}
+
 pub fn sys_fork() -> isize {
     let current_task = task::get_processor().current();
     let new_task = current_task.fork();
