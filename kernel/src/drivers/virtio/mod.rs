@@ -35,15 +35,15 @@ unsafe impl Hal for VirtIOHal {
 
     unsafe fn share(
         buffer: core::ptr::NonNull<[u8]>,
-        direction: virtio_drivers::BufferDirection,
+        _direction: virtio_drivers::BufferDirection,
     ) -> virtio_drivers::PhysAddr {
         buffer.as_ptr() as *mut u8 as virtio_drivers::PhysAddr
     }
 
     unsafe fn unshare(
-        paddr: virtio_drivers::PhysAddr,
-        buffer: core::ptr::NonNull<[u8]>,
-        direction: virtio_drivers::BufferDirection,
+        _paddr: virtio_drivers::PhysAddr,
+        _buffer: core::ptr::NonNull<[u8]>,
+        _direction: virtio_drivers::BufferDirection,
     ) {
         // Do nothing
     }
