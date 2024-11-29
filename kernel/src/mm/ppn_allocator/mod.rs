@@ -19,7 +19,9 @@ pub fn alloc_ppn_tracker() -> Option<PpnTracker> {
 }
 
 pub fn alloc_contiguous_ppn_tracker(count: usize) -> Option<Vec<PpnTracker>> {
-    PPN_ALLOCATOR.alloc_contiguous(count)
+    PPN_ALLOCATOR
+        .alloc_contiguous(count)
+        .map(|ppns| ppns.into_iter().map(PpnTracker::new).collect())
 }
 
 pub fn dealloc_ppn(ppn: PhysPageNum) {
@@ -27,7 +29,9 @@ pub fn dealloc_ppn(ppn: PhysPageNum) {
 }
 
 pub fn dealloc_contiguous_ppn(start: PhysPageNum, count: usize) {
-    PPN_ALLOCATOR.dealloc_contiguous(start, count);
+    for i in 0..count {
+        dealloc_ppn(PhysPageNum(start.0 + i));
+    }
 }
 
 lazy_static! {
@@ -74,20 +78,22 @@ impl PpnAllocator {
         Some(ppn)
     }
 
-    fn alloc_contiguous(&self, count: usize) -> Option<Vec<PpnTracker>> {
+    fn alloc_contiguous(&self, count: usize) -> Option<Vec<PhysPageNum>> {
         let mut inner = self.inner.exclusive_access();
-        if inner.ppn_range.start().0 + count > inner.ppn_range.end().0 {
-            return None;
+        if inner.ppn_range.start().0 + count >= inner.ppn_range.end().0 {
+            None
+        } else {
+            {
+                let start = inner.ppn_range.start();
+                *inner.ppn_range.get_start_mut() = PhysPageNum(start.0 + count);
+            }
+            let arr: Vec<usize> = (1..count + 1).collect();
+            let v = arr
+                .iter()
+                .map(|x| PhysPageNum(inner.ppn_range.start().0 - x))
+                .collect();
+            Some(v)
         }
-
-        let current = inner.ppn_range.start();
-        *inner.ppn_range.get_start_mut() = PhysPageNum(current.0 + count);
-        Some(
-            (current.0..current.0 + count)
-                .map(PhysPageNum)
-                .map(PpnTracker::new)
-                .collect(),
-        )
     }
 
     fn dealloc(&self, ppn: PhysPageNum) {
@@ -97,21 +103,6 @@ impl PpnAllocator {
         );
         let mut inner = self.inner.exclusive_access();
         inner.recycled_ppn.push(ppn);
-    }
-
-    fn dealloc_contiguous(&self, start: PhysPageNum, count: usize) {
-        assert!(
-            self.contains(start),
-            "PpnAllocator: dealloc an unallocated ppn"
-        );
-        assert!(
-            self.contains(PhysPageNum(start.0 + count - 1)),
-            "PpnAllocator: dealloc an unallocated ppn"
-        );
-        let mut inner = self.inner.exclusive_access();
-        for i in 0..count {
-            inner.recycled_ppn.push(PhysPageNum(start.0 + i));
-        }
     }
 }
 // region PpnAllocator end
