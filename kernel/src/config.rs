@@ -17,7 +17,6 @@ pub const SV39_PAGE_OFFSET: usize = 12;
 pub const SV39_PAGE_SIZE: usize = 1 << SV39_PAGE_OFFSET; // 4 KB
 
 const MEMORY_END: usize = crate::board::MEMORY_END + KERNEL_ADDR_OFFSET; // 0xffff_ffff_c800_0000
-                                                                         // user space
 pub const TRAP_CX_PTR: usize = MEMORY_END - SV39_PAGE_SIZE;
 // left a guard page for user stack
 pub const USER_STACK_TOP: usize = TRAP_CX_PTR - (USER_STACK_SIZE + SV39_PAGE_SIZE);
