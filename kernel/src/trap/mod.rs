@@ -23,6 +23,7 @@ fn set_kernel_trap_entry() {
     }
 }
 
+#[link_section = ".text.s_trap"]
 fn kernel_trap_handler() {
     panic!("A trap occurred in kernel!");
 }

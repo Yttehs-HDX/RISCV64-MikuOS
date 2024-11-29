@@ -15,7 +15,9 @@ SECTIONS {
     .text : AT(SBI_ENTRY_POINT) {
         *(.text.entry)
         . = ALIGN(4K);
-        *(.text.trap)
+        *(.text.u_trap)
+        . = ALIGN(4K);
+        *(.text.s_trap)
         *(.text .text.*)
         *(.stext .stext.*)
     }

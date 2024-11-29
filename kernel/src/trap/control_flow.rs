@@ -31,7 +31,7 @@ use riscv::register::{
 
 #[naked]
 #[no_mangle]
-#[link_section = ".text.trap"]
+#[link_section = ".text.u_trap"]
 pub(in crate::trap) unsafe extern "C" fn __snap_trap() -> ! {
     asm!(
         // S mode
