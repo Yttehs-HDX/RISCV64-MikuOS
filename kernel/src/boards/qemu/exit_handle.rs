@@ -1,4 +1,5 @@
 use core::arch::asm;
+use crate::entry::KERNEL_ADDR_OFFSET;
 
 const EXIT_SUCCESS: u32 = 0x5555;
 const EXIT_FAILURE_FLAG: u32 = 0x3333;
@@ -8,7 +9,7 @@ const fn encode_exit_code(code: u32) -> u32 {
     (code << 16) | EXIT_FAILURE_FLAG
 }
 
-pub const VIRT_TEST: u64 = 0x100000;
+pub const VIRT_TEST: u64 = 0x100000 + KERNEL_ADDR_OFFSET as u64;
 
 pub fn get_qemu_exit_handle() -> &'static impl QEMUExit {
     &QEMU_EXIT_HANDLE

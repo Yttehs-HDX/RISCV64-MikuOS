@@ -1,5 +1,7 @@
 pub use exit_handle::*;
 
+use crate::entry::KERNEL_ADDR_OFFSET;
+
 pub const CLOCK_FREQ: usize = 12500000;
 pub const MEMORY_END: usize = 0x88000000;
 pub const MMIO: &[(usize, usize)] = &[
@@ -10,4 +12,4 @@ pub const MMIO: &[(usize, usize)] = &[
 
 mod exit_handle;
 
-const VIRT_IO: usize = 0x10001000;
+pub const VIRT_IO: usize = 0x10001000 + KERNEL_ADDR_OFFSET;

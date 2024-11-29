@@ -4,8 +4,7 @@ use crate::{
     config::{
         EBSS, EDATA, ERODATA, ETEXT, KERNEL_STACK_SP, KERNEL_STACK_TOP, MMIO, PA_END, PA_START,
         SBSS, SDATA, SRODATA, STEXT, SV39_PAGE_SIZE, TRAP_CX_PTR, USER_STACK_SP, USER_STACK_TOP,
-    },
-    mm::{PageTable, PageTableEntry, PpnOffset, VirtAddr, VirtPageNum},
+    }, entry::KERNEL_ADDR_OFFSET, mm::{PageTable, PageTableEntry, PpnOffset, VirtAddr, VirtPageNum}
 };
 use alloc::vec::Vec;
 use core::arch::asm;
@@ -155,7 +154,7 @@ impl MemorySet {
             self.insert_area(MapArea::new(
                 VirtAddr(pair.0),
                 VirtAddr(pair.0 + pair.1),
-                MapType::Identity,
+                MapType::Direct,
                 MapPermission::R | MapPermission::W,
             ));
         }
