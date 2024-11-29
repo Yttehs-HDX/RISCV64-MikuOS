@@ -31,6 +31,9 @@ lazy_static! {
     pub static ref PA_START: usize = *EKERNEL;
 }
 
+// drivers
+pub use crate::board::VIRT_IO;
+
 // sections boundary
 lazy_static! {
     pub static ref SKERNEL: usize = skernel as usize;

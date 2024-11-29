@@ -4,7 +4,8 @@ use crate::{
     config::{
         EBSS, EDATA, ERODATA, ETEXT, KERNEL_STACK_SP, KERNEL_STACK_TOP, MMIO, PA_END, PA_START,
         SBSS, SDATA, SRODATA, STEXT, SV39_PAGE_SIZE, TRAP_CX_PTR, USER_STACK_SP, USER_STACK_TOP,
-    }, entry::KERNEL_ADDR_OFFSET, mm::{PageTable, PageTableEntry, PpnOffset, VirtAddr, VirtPageNum}
+    },
+    mm::{PageTable, PageTableEntry, PpnOffset, VirtAddr, VirtPageNum},
 };
 use alloc::vec::Vec;
 use core::arch::asm;

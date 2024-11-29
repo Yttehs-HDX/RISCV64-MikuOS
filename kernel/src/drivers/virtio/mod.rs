@@ -1,5 +1,5 @@
 use crate::{
-    entry::KERNEL_ADDR_OFFSET,
+    config::KERNEL_ADDR_OFFSET,
     mm::{self, PhysAddr, PpnOffset},
 };
 use core::{mem::forget, ptr::NonNull};

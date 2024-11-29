@@ -1,5 +1,5 @@
-use core::arch::asm;
 use crate::entry::KERNEL_ADDR_OFFSET;
+use core::arch::asm;
 
 const EXIT_SUCCESS: u32 = 0x5555;
 const EXIT_FAILURE_FLAG: u32 = 0x3333;
