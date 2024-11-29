@@ -1,5 +1,5 @@
 use crate::{
-    config::{EBSS, SBSS_NO_STACK},
+    config::{EBSS, KERNEL_STACK_SIZE, SBSS_NO_STACK},
     mm::{PTEFlags, PageTableEntry, PhysAddr},
 };
 use core::arch::asm;
@@ -14,7 +14,9 @@ pub const KERNEL_ADDR_OFFSET: usize = HIGH_ADDR - LOW_ADDR;
 unsafe extern "C" fn _start() -> ! {
     asm!(
         // set sp
-        "la sp, {boot_stack}", // sp = &BOOT_STACK, low address
+        "la sp, {boot_stack}", // sp = &BOOT_STACK
+        "li t0, {stack_size}", // t0 = KERNEL_STACK_SIZE
+        "add sp, sp, t0", // sp += t0, low address
         "li t0, {offset}", // t0 = KERNEL_ADDR_OFFSET
         "add sp, sp, t0", // sp += t0, just find the space before mapping
 
@@ -34,6 +36,7 @@ unsafe extern "C" fn _start() -> ! {
         "jr t3",
         offset = const KERNEL_ADDR_OFFSET,
         boot_stack = sym BOOT_STACK,
+        stack_size = const KERNEL_STACK_SIZE,
         root_page = sym ROOT_PAGE,
         rust_main = sym rust_main,
         options(noreturn)
@@ -52,7 +55,7 @@ fn clear_bss() {
 }
 
 #[link_section = ".bss.boot_stack"]
-static BOOT_STACK: [u8; 4096] = [0; 4096];
+static BOOT_STACK: [u8; KERNEL_STACK_SIZE] = [0; KERNEL_STACK_SIZE];
 
 #[link_section = ".data.root_page"]
 static ROOT_PAGE: [PageTableEntry; 512] = {
