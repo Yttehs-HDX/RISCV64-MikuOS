@@ -1,7 +1,4 @@
-use crate::{
-    app,
-    task::{get_task_manager, ProcessControlBlock},
-};
+use crate::task::{get_task_manager, ProcessControlBlock};
 use alloc::sync::Arc;
 use lazy_static::lazy_static;
 
@@ -13,8 +10,10 @@ pub(in crate::task) fn get_initproc() -> &'static Arc<ProcessControlBlock> {
     &INITPROC
 }
 
+static INITPROC_ELF: &[u8] =
+    include_bytes!("../../../../user/target/riscv64gc-unknown-none-elf/release/initproc");
+
 lazy_static! {
-    static ref INITPROC: Arc<ProcessControlBlock> = Arc::new(ProcessControlBlock::new(
-        app::get_app("initproc").unwrap().elf()
-    ));
+    static ref INITPROC: Arc<ProcessControlBlock> =
+        Arc::new(ProcessControlBlock::new(&INITPROC_ELF));
 }
