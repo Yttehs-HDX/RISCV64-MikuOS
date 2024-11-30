@@ -1,6 +1,6 @@
 use crate::{
     config::{KERNEL_STACK_SP, TRAP_CX_PTR, USER_STACK_SP},
-    fs::{File, Stderr, Stdin, Stdout},
+    fs::{FileDescriptor, Stderr, Stdin, Stdout},
     mm::{self, MemorySpace, PhysPageNum, PpnOffset, UserSpace, VirtAddr},
     sync::UPSafeCell,
     task::{alloc_pid_handle, PidHandle, TaskContext},
@@ -37,7 +37,7 @@ impl ProcessControlBlock {
             trap::trap_handler as usize,
         );
         let task_cx = TaskContext::goto_trap_return(KERNEL_STACK_SP);
-        let fd_table: Vec<Option<Arc<dyn File + Send + Sync>>> = vec![
+        let fd_table: Vec<Option<Arc<dyn FileDescriptor + Send + Sync>>> = vec![
             Some(Arc::new(Stdin)),
             Some(Arc::new(Stdout)),
             Some(Arc::new(Stderr)),
@@ -66,7 +66,7 @@ impl ProcessControlBlock {
             .ppn()
             .low_to_high();
         let task_cx = TaskContext::goto_trap_return(KERNEL_STACK_SP);
-        let mut fd_table: Vec<Option<Arc<dyn File + Send + Sync>>> = Vec::new();
+        let mut fd_table: Vec<Option<Arc<dyn FileDescriptor + Send + Sync>>> = Vec::new();
         self.inner().fd_table.iter().for_each(|fd| {
             if let Some(f) = fd {
                 fd_table.push(Some(f.clone()));
@@ -193,7 +193,7 @@ pub struct ProcessControlBlockInner {
     children: Vec<Arc<ProcessControlBlock>>,
     exit_code: i32,
 
-    fd_table: Vec<Option<Arc<dyn File + Send + Sync>>>,
+    fd_table: Vec<Option<Arc<dyn FileDescriptor + Send + Sync>>>,
 }
 
 impl ProcessControlBlockInner {
@@ -201,7 +201,7 @@ impl ProcessControlBlockInner {
         trap_cx_ppn: PhysPageNum,
         task_cx: TaskContext,
         user_space: UserSpace,
-        fd_table: Vec<Option<Arc<dyn File + Send + Sync>>>,
+        fd_table: Vec<Option<Arc<dyn FileDescriptor + Send + Sync>>>,
     ) -> Self {
         let program_brk = user_space.get_base_size();
         Self {
@@ -236,7 +236,7 @@ impl ProcessControlBlockInner {
         &mut self.children
     }
 
-    pub fn get_fd_table_ref(&self) -> &Vec<Option<Arc<dyn File + Send + Sync>>> {
+    pub fn get_fd_table_ref(&self) -> &Vec<Option<Arc<dyn FileDescriptor + Send + Sync>>> {
         &self.fd_table
     }
 }

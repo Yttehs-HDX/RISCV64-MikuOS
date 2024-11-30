@@ -1,10 +1,10 @@
-use driver::*;
-use virtio::*;
+pub use driver::*;
+pub use virtio::*;
 
-use crate::{config::VIRT_IO, drivers::VirtIOHal, sync::UPSafeCell};
-use alloc::boxed::Box;
-use core::{cell::Ref, ptr::NonNull};
-use fatfs::{FileSystem, FsOptions, LossyOemCpConverter, NullTimeProvider};
+use crate::{config::VIRT_IO, drivers::VirtIOHal, fs::FileSystem};
+use alloc::{boxed::Box, format, string::ToString};
+use core::ptr::NonNull;
+use fatfs::{FsOptions, LossyOemCpConverter, NullTimeProvider};
 use virtio_drivers::{
     device::blk::VirtIOBlk,
     transport::mmio::{MmioTransport, VirtIOHeader},
@@ -15,7 +15,45 @@ mod virtio;
 
 // region FatFileSystem begin
 pub struct FatFileSystem {
-    inner: UPSafeCell<FatFileSystemInner>,
+    inner: FatFileSystemInner,
+}
+
+unsafe impl Send for FatFileSystem {}
+unsafe impl Sync for FatFileSystem {}
+
+impl FileSystem for FatFileSystem {
+    fn root_dir(&self) -> super::Dir {
+        self.inner.root_dir()
+    }
+
+    fn open(&self, path: &str) -> Option<super::Entry> {
+        // construct a path with leading '/'
+        let path = if path.starts_with('/') {
+            path.to_string()
+        } else {
+            format!("/{}", path)
+        };
+
+        if let Some(pos) = path.rfind('/') {
+            let parent_dir = &path[..pos];
+            let file_name = &path[pos + 1..];
+
+            let dir = if parent_dir.is_empty() {
+                self.root_dir()
+            } else {
+                self.root_dir().open_dir(parent_dir).unwrap()
+            };
+
+            let entry = dir
+                .iter()
+                .find(|entry| entry.as_ref().unwrap().file_name() == file_name);
+            if let Some(file) = entry {
+                let file = file.unwrap();
+                return Some(file);
+            }
+        }
+        None
+    }
 }
 
 impl FatFileSystem {
@@ -28,18 +66,11 @@ impl FatFileSystem {
             .expect("Failed to create VirtIOBlk");
         let device = Box::new(VirtIODisk::new(blk));
         let io = FatDeviceDriver::new(device);
+        let inner = fatfs::FileSystem::new(io, FsOptions::new()).unwrap();
 
-        let inner = FileSystem::new(io, FsOptions::new()).unwrap();
-
-        Self {
-            inner: unsafe { UPSafeCell::new(inner) },
-        }
-    }
-
-    pub fn inner(&self) -> Ref<FatFileSystemInner> {
-        self.inner.shared_access()
+        Self { inner }
     }
 }
 // region FatFileSystem end
 
-type FatFileSystemInner = FileSystem<FatDeviceDriver, NullTimeProvider, LossyOemCpConverter>;
+type FatFileSystemInner = fatfs::FileSystem<FatDeviceDriver, NullTimeProvider, LossyOemCpConverter>;

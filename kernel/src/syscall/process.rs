@@ -56,16 +56,11 @@ pub fn sys_exec(path_ptr: *const u8, _argv: *const u8) -> isize {
         path = core::str::from_utf8_unchecked(core::slice::from_raw_parts(path_ptr, len));
     }
 
-    let root_fs_inner = fs::get_root_fs().inner();
-    let root_dir = root_fs_inner.root_dir();
+    let root_fs = fs::get_root_fs();
+    let entry = root_fs.open(path);
 
-    let dir_entry = root_dir
-        .iter()
-        .find(|entry| entry.as_ref().unwrap().file_name() == path);
-
-    if let Some(entry) = dir_entry {
+    if let Some(entry) = entry {
         // get target file
-        let entry = entry.unwrap();
         let len = entry.len();
         let mut file = entry.to_file();
 
