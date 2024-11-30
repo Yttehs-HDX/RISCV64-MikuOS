@@ -4,7 +4,6 @@
 
 extern crate alloc;
 
-mod app;
 mod lang_items;
 mod sbi;
 #[macro_use]

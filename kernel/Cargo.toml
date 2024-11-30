@@ -12,6 +12,7 @@ riscv = { git = "https://github.com/Yttehs-HDX/rust-riscv", features = ["inline-
 xmas-elf = "0.9.1"
 simple_range = { path = "../lib/simple_range" }
 virtio-drivers = "0.8.0"
+fatfs = { version = "0.4", git = "https://github.com/rafalh/rust-fatfs", default-features = false, features = ["lfn", "alloc"] }
 
 [profile.release]
 debug = true

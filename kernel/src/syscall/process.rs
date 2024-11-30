@@ -1,7 +1,9 @@
 use crate::{
-    app, task,
+    fs, task,
     timer::{self, TimeVal},
 };
+use alloc::vec::Vec;
+use fatfs::Read;
 
 pub fn sys_exit(exit_code: i32) -> ! {
     task::get_processor().exit_current(exit_code);
@@ -43,19 +45,41 @@ pub fn sys_fork() -> isize {
     new_pid as isize
 }
 
-pub fn sys_exec(path: *const u8, _argv: *const u8) -> isize {
-    let str: &str;
+pub fn sys_exec(path_ptr: *const u8, _argv: *const u8) -> isize {
+    // construct path string
+    let path: &str;
     unsafe {
         let mut len = 0;
-        while *path.add(len) != 0 {
+        while *path_ptr.add(len) != 0 {
             len += 1;
         }
-        str = core::str::from_utf8_unchecked(core::slice::from_raw_parts(path, len));
+        path = core::str::from_utf8_unchecked(core::slice::from_raw_parts(path_ptr, len));
     }
 
-    if let Some(app) = app::get_app(str) {
+    let root_fs_inner = fs::get_root_fs().inner();
+    let root_dir = root_fs_inner.root_dir();
+
+    let dir_entry = root_dir
+        .iter()
+        .find(|entry| entry.as_ref().unwrap().file_name() == path);
+
+    if let Some(entry) = dir_entry {
+        // get target file
+        let entry = entry.unwrap();
+        let len = entry.len();
+        let mut file = entry.to_file();
+
+        // prepare mut buffer
+        let mut buffer: Vec<u8> = Vec::with_capacity(len as usize);
+        unsafe {
+            buffer.set_len(len as usize);
+        }
+        let buffer = buffer.as_mut_slice();
+        file.read_exact(buffer).ok().unwrap();
+
+        // execute task
         let current_task = task::get_processor().current();
-        current_task.exec(app.elf());
+        current_task.exec(buffer);
         0
     } else {
         -1

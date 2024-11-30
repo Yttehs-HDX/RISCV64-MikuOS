@@ -10,10 +10,10 @@ pub(in crate::task) fn get_initproc() -> &'static Arc<ProcessControlBlock> {
     &INITPROC
 }
 
-static INITPROC_ELF: &[u8] =
+const INITPROC_ELF: &[u8] =
     include_bytes!("../../../../user/target/riscv64gc-unknown-none-elf/release/initproc");
 
 lazy_static! {
     static ref INITPROC: Arc<ProcessControlBlock> =
-        Arc::new(ProcessControlBlock::new(&INITPROC_ELF));
+        Arc::new(ProcessControlBlock::new(INITPROC_ELF));
 }
