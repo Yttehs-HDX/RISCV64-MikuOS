@@ -15,6 +15,8 @@ use virtio_drivers::{
     transport::mmio::{MmioTransport, VirtIOHeader},
 };
 
+use super::Path;
+
 mod driver;
 mod inode;
 mod virtio;
@@ -29,43 +31,34 @@ unsafe impl Sync for FatFileSystem {}
 
 impl FileSystem for FatFileSystem {
     fn open(&self, path: &str, flags: OpenFlags) -> Option<FatInode> {
-        // remove "./"
-        let path = if path.starts_with("./") {
-            &path[2..]
+        let path = Path::from_str(path);
+        let parent = path.parent();
+        let name = path.name();
+
+        // open parent directory
+        let dir = self.inner.root_dir();
+        let dir = if parent == "/" {
+            dir
         } else {
-            path
-        };
-        // construct a path with leading '/'
-        let path = if path.starts_with('/') {
-            path.to_string()
-        } else {
-            format!("/{}", path)
-        };
-
-        if let Some(pos) = path.rfind('/') {
-            let parent_dir = &path[..pos];
-            let file_name = &path[pos + 1..];
-
-            // open parent directory
-            let dir = self.inner.root_dir();
-            let dir = if parent_dir.is_empty() {
-                dir
-            } else {
-                dir.open_dir(parent_dir).unwrap()
-            };
-
-            // find the file in the directory
-            let entry = dir
-                .iter()
-                .find(|entry| entry.as_ref().unwrap().file_name() == file_name);
-            if let Some(file) = entry {
-                let file = file.unwrap();
-                let (readable, writable) = flags.read_write();
-                let inode = FatInode::new(file, readable, writable);
-                return Some(inode);
+            let dir = dir.open_dir(parent);
+            match dir {
+                Ok(dir) => dir,
+                Err(_) => return None,
             }
+        };
+
+        // find the file in the directory
+        let entry = dir
+            .iter()
+            .find(|entry| entry.as_ref().unwrap().file_name() == name);
+        if let Some(file) = entry {
+            let file = file.unwrap();
+            let (readable, writable) = flags.read_write();
+            let inode = FatInode::new(file, readable, writable);
+            Some(inode)
+        } else {
+            None
         }
-        None
     }
 }
 

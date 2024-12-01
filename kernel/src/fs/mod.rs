@@ -1,4 +1,5 @@
 pub use interface::*;
+pub use path::*;
 pub use stdio::*;
 
 use alloc::sync::Arc;
@@ -6,6 +7,7 @@ use lazy_static::lazy_static;
 
 pub mod fat;
 mod interface;
+mod path;
 mod stdio;
 
 pub fn open_file(path: &str, flags: OpenFlags) -> Option<fat::FatInode> {
