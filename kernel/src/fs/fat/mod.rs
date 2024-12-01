@@ -1,4 +1,5 @@
 pub use driver::*;
+pub use inode::*;
 pub use virtio::*;
 
 use crate::{config::VIRT_IO, drivers::VirtIOHal, fs::FileSystem};
@@ -11,6 +12,7 @@ use virtio_drivers::{
 };
 
 mod driver;
+mod inode;
 mod virtio;
 
 // region FatFileSystem begin
@@ -26,7 +28,7 @@ impl FileSystem for FatFileSystem {
         self.inner.root_dir()
     }
 
-    fn open(&self, path: &str) -> Option<super::Entry> {
+    fn open(&self, path: &str) -> Option<FatInode> {
         // construct a path with leading '/'
         let path = if path.starts_with('/') {
             path.to_string()
@@ -49,7 +51,8 @@ impl FileSystem for FatFileSystem {
                 .find(|entry| entry.as_ref().unwrap().file_name() == file_name);
             if let Some(file) = entry {
                 let file = file.unwrap();
-                return Some(file);
+                let inode = FatInode::new(file);
+                return Some(inode);
             }
         }
         None

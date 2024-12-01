@@ -1,9 +1,11 @@
+pub use interface::*;
 pub use stdio::*;
 
 use alloc::sync::Arc;
 use lazy_static::lazy_static;
 
 pub mod fat;
+mod interface;
 mod stdio;
 
 pub fn get_root_fs() -> Arc<dyn FileSystem> {
@@ -21,20 +23,10 @@ pub trait FileDescriptor: Send + Sync {
     fn write(&self, buf: &[u8]) -> usize;
 }
 
-pub trait BlockDevice {
-    fn read_blocks(&mut self, buf: &mut [u8]);
-    fn write_blocks(&mut self, buf: &[u8]);
-    fn get_position(&self) -> usize;
-    fn set_position(&mut self, position: usize);
-    fn move_cursor(&mut self, amount: usize);
-}
-
 pub trait FileSystem: Send + Sync {
     fn root_dir(&self) -> Dir;
-    fn open(&self, path: &str) -> Option<Entry>;
+    fn open(&self, path: &str) -> Option<fat::FatInode>;
 }
 
-type Entry<'a> =
-    fatfs::DirEntry<'a, fat::FatDeviceDriver, fatfs::NullTimeProvider, fatfs::LossyOemCpConverter>;
 type Dir<'a> =
     fatfs::Dir<'a, fat::FatDeviceDriver, fatfs::NullTimeProvider, fatfs::LossyOemCpConverter>;

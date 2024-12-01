@@ -1,9 +1,9 @@
 use crate::{
-    fs, task,
+    fs::{self, File, Inode},
+    task,
     timer::{self, TimeVal},
 };
 use alloc::vec::Vec;
-use fatfs::Read;
 
 pub fn sys_exit(exit_code: i32) -> ! {
     task::get_processor().exit_current(exit_code);
@@ -61,16 +61,16 @@ pub fn sys_exec(path_ptr: *const u8, _argv: *const u8) -> isize {
 
     if let Some(entry) = entry {
         // get target file
-        let len = entry.len();
+        let len = entry.size();
         let mut file = entry.to_file();
 
         // prepare mut buffer
-        let mut buffer: Vec<u8> = Vec::with_capacity(len as usize);
+        let mut buffer: Vec<u8> = Vec::with_capacity(len);
         unsafe {
-            buffer.set_len(len as usize);
+            buffer.set_len(len);
         }
         let buffer = buffer.as_mut_slice();
-        file.read_exact(buffer).ok().unwrap();
+        file.read(buffer);
 
         // execute task
         let current_task = task::get_processor().current();
