@@ -1,3 +1,5 @@
+use alloc::vec::Vec;
+
 use crate::fs::Directory;
 
 // region FatDir begin
@@ -11,7 +13,18 @@ impl<'a> FatDir<'a> {
     }
 }
 
-impl<'a> Directory for FatDir<'a> {}
+impl<'a> Directory for FatDir<'a> {
+    fn ls(&self) -> Vec<crate::fs::fat::FatInode> {
+        self.inner
+            .iter()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                let inode = crate::fs::fat::FatInode::new(entry);
+                inode
+            })
+            .collect()
+    }
+}
 // region FatDir end
 
 type FatDirInner<'a> = fatfs::Dir<

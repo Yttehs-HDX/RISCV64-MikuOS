@@ -1,5 +1,5 @@
 use crate::fs::fat;
-use alloc::string::String;
+use alloc::{string::String, vec::Vec};
 
 pub trait Inode {
     fn name(&self) -> String;
@@ -14,7 +14,9 @@ pub trait File {
     fn write(&mut self, buf: &[u8]) -> usize;
 }
 
-pub trait Directory {}
+pub trait Directory {
+    fn ls(&self) -> Vec<fat::FatInode>;
+}
 
 // region InodeType begin
 pub enum InodeType {

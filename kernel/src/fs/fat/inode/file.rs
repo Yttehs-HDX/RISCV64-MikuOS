@@ -1,5 +1,5 @@
-use fatfs::{Read, Write};
 use crate::fs::File;
+use fatfs::{Read, Write};
 
 // region FatFile begin
 pub struct FatFile<'a> {

@@ -22,11 +22,3 @@ pub trait FileDescriptor: Send + Sync {
     fn read(&self, buf: &mut [u8]) -> usize;
     fn write(&self, buf: &[u8]) -> usize;
 }
-
-pub trait FileSystem: Send + Sync {
-    fn root_dir(&self) -> Dir;
-    fn open(&self, path: &str) -> Option<fat::FatInode>;
-}
-
-type Dir<'a> =
-    fatfs::Dir<'a, fat::FatDeviceDriver, fatfs::NullTimeProvider, fatfs::LossyOemCpConverter>;

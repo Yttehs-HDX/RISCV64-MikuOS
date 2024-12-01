@@ -24,10 +24,6 @@ unsafe impl Send for FatFileSystem {}
 unsafe impl Sync for FatFileSystem {}
 
 impl FileSystem for FatFileSystem {
-    fn root_dir(&self) -> super::Dir {
-        self.inner.root_dir()
-    }
-
     fn open(&self, path: &str) -> Option<FatInode> {
         // construct a path with leading '/'
         let path = if path.starts_with('/') {
@@ -41,9 +37,9 @@ impl FileSystem for FatFileSystem {
             let file_name = &path[pos + 1..];
 
             let dir = if parent_dir.is_empty() {
-                self.root_dir()
+                self.inner.root_dir()
             } else {
-                self.root_dir().open_dir(parent_dir).unwrap()
+                self.inner.root_dir().open_dir(parent_dir).unwrap()
             };
 
             let entry = dir
