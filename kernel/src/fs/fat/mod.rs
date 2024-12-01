@@ -25,6 +25,12 @@ unsafe impl Sync for FatFileSystem {}
 
 impl FileSystem for FatFileSystem {
     fn open(&self, path: &str) -> Option<FatInode> {
+        // remove "./"
+        let path = if path.starts_with("./") {
+            &path[2..]
+        } else {
+            path
+        };
         // construct a path with leading '/'
         let path = if path.starts_with('/') {
             path.to_string()

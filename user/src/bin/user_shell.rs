@@ -52,7 +52,7 @@ fn main() -> i32 {
                                 let zombie_pid = waitpid(pid as usize, &mut exit_code);
                                 if exit_code != COMMAND_NOT_FOUND {
                                     println!(
-                                        "{}: program '{}' (PID={}) exited with code {}",
+                                        "{}: process '{}' (PID={}) exited with code {}",
                                         SHELL_NAME, path, zombie_pid, exit_code
                                     );
                                 }
