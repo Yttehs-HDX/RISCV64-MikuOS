@@ -2,7 +2,11 @@ pub use driver::*;
 pub use inode::*;
 pub use virtio::*;
 
-use crate::{config::VIRT_IO, drivers::VirtIOHal, fs::FileSystem};
+use crate::{
+    config::VIRT_IO,
+    drivers::VirtIOHal,
+    fs::{FileSystem, OpenFlags},
+};
 use alloc::{boxed::Box, format, string::ToString};
 use core::ptr::NonNull;
 use fatfs::{FsOptions, LossyOemCpConverter, NullTimeProvider};
@@ -24,7 +28,7 @@ unsafe impl Send for FatFileSystem {}
 unsafe impl Sync for FatFileSystem {}
 
 impl FileSystem for FatFileSystem {
-    fn open(&self, path: &str) -> Option<FatInode> {
+    fn open(&self, path: &str, flags: OpenFlags) -> Option<FatInode> {
         // remove "./"
         let path = if path.starts_with("./") {
             &path[2..]
@@ -42,18 +46,22 @@ impl FileSystem for FatFileSystem {
             let parent_dir = &path[..pos];
             let file_name = &path[pos + 1..];
 
+            // open parent directory
+            let dir = self.inner.root_dir();
             let dir = if parent_dir.is_empty() {
-                self.inner.root_dir()
+                dir
             } else {
-                self.inner.root_dir().open_dir(parent_dir).unwrap()
+                dir.open_dir(parent_dir).unwrap()
             };
 
+            // find the file in the directory
             let entry = dir
                 .iter()
                 .find(|entry| entry.as_ref().unwrap().file_name() == file_name);
             if let Some(file) = entry {
                 let file = file.unwrap();
-                let inode = FatInode::new(file);
+                let (readable, writable) = flags.read_write();
+                let inode = FatInode::new(file, readable, writable);
                 return Some(inode);
             }
         }

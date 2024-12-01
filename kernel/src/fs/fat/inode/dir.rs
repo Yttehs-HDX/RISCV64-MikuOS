@@ -1,6 +1,6 @@
 use alloc::vec::Vec;
 
-use crate::fs::Directory;
+use crate::fs::{fat, Directory, OpenFlags};
 
 // region FatDir begin
 pub struct FatDir<'a> {
@@ -14,12 +14,14 @@ impl<'a> FatDir<'a> {
 }
 
 impl<'a> Directory for FatDir<'a> {
-    fn ls(&self) -> Vec<crate::fs::fat::FatInode> {
+    fn ls(&self) -> Vec<fat::FatInode> {
         self.inner
             .iter()
             .map(|entry| {
                 let entry = entry.unwrap();
-                let inode = crate::fs::fat::FatInode::new(entry);
+                let flags = OpenFlags::RDONLY;
+                let (readable, writable) = flags.read_write();
+                let inode = fat::FatInode::new(entry, readable, writable);
                 inode
             })
             .collect()

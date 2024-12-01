@@ -8,12 +8,18 @@ mod file;
 
 // region FatInode begin
 pub struct FatInode<'a> {
+    readable: bool,
+    writable: bool,
     inner: FatInodeInner<'a>,
 }
 
 impl<'a> FatInode<'a> {
-    pub const fn new(inner: FatInodeInner<'a>) -> Self {
-        Self { inner }
+    pub fn new(inner: FatInodeInner<'a>, readable: bool, writable: bool) -> Self {
+        Self {
+            readable,
+            writable,
+            inner,
+        }
     }
 }
 

@@ -8,8 +8,8 @@ pub mod fat;
 mod interface;
 mod stdio;
 
-pub fn open_file(path: &str) -> Option<fat::FatInode> {
-    ROOT_FILESYSTEM.open(path)
+pub fn open_file(path: &str, flags: OpenFlags) -> Option<fat::FatInode> {
+    ROOT_FILESYSTEM.open(path, flags)
 }
 
 lazy_static! {

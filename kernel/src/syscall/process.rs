@@ -1,5 +1,5 @@
 use crate::{
-    fs::{self, File, Inode},
+    fs::{self, File, Inode, OpenFlags},
     task,
     timer::{self, TimeVal},
 };
@@ -56,7 +56,7 @@ pub fn sys_exec(path_ptr: *const u8, _argv: *const u8) -> isize {
         path = core::str::from_utf8_unchecked(core::slice::from_raw_parts(path_ptr, len));
     }
 
-    let entry = fs::open_file(path);
+    let entry = fs::open_file(path, OpenFlags::RDONLY);
 
     if let Some(entry) = entry {
         // get target file
