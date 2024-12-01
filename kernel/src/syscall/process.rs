@@ -56,8 +56,7 @@ pub fn sys_exec(path_ptr: *const u8, _argv: *const u8) -> isize {
         path = core::str::from_utf8_unchecked(core::slice::from_raw_parts(path_ptr, len));
     }
 
-    let root_fs = fs::get_root_fs();
-    let entry = root_fs.open(path);
+    let entry = fs::open_file(path);
 
     if let Some(entry) = entry {
         // get target file

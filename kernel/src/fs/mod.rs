@@ -8,8 +8,8 @@ pub mod fat;
 mod interface;
 mod stdio;
 
-pub fn get_root_fs() -> Arc<dyn FileSystem> {
-    ROOT_FILESYSTEM.clone()
+pub fn open_file(path: &str) -> Option<fat::FatInode> {
+    ROOT_FILESYSTEM.open(path)
 }
 
 lazy_static! {
