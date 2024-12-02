@@ -7,7 +7,7 @@ use crate::{
     drivers::VirtIOHal,
     fs::{FileSystem, OpenFlags},
 };
-use alloc::{boxed::Box, format, string::ToString};
+use alloc::boxed::Box;
 use core::ptr::NonNull;
 use fatfs::{FsOptions, LossyOemCpConverter, NullTimeProvider};
 use virtio_drivers::{

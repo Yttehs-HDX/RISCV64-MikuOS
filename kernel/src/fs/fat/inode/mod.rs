@@ -23,6 +23,9 @@ impl<'a> FatInode<'a> {
     }
 }
 
+unsafe impl<'a> Sync for FatInode<'a> {}
+unsafe impl<'a> Send for FatInode<'a> {}
+
 impl<'a> Inode for FatInode<'a> {
     fn name(&self) -> alloc::string::String {
         self.inner.file_name()
@@ -40,14 +43,14 @@ impl<'a> Inode for FatInode<'a> {
         }
     }
 
-    fn to_file(&self) -> FatFile<'a> {
+    fn to_file(&self) -> FatFile<'_> {
         assert!(self.inner.is_file());
-        FatFile::new(self.inner.to_file())
+        FatFile::new(self.inner.to_file(), self.readable, self.writable)
     }
 
-    fn to_dir(&self) -> super::FatDir {
+    fn to_dir(&self) -> FatDir {
         assert!(self.inner.is_dir());
-        super::FatDir::new(self.inner.to_dir())
+        FatDir::new(self.inner.to_dir())
     }
 }
 // region FatInode end

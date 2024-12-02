@@ -1,25 +1,48 @@
-use crate::fs::File;
+use crate::{fs::File, sync::UPSafeCell};
+use core::cell::RefMut;
 use fatfs::{Read, Write};
 
 // region FatFile begin
 pub struct FatFile<'a> {
-    inner: FatFileInner<'a>,
+    readable: bool,
+    writable: bool,
+    inner: UPSafeCell<FatFileInner<'a>>,
 }
 
 impl<'a> FatFile<'a> {
-    pub fn new(inner: FatFileInner<'a>) -> Self {
-        Self { inner }
+    pub fn new(inner: FatFileInner<'a>, readable: bool, writable: bool) -> Self {
+        Self {
+            readable,
+            writable,
+            inner: unsafe { UPSafeCell::new(inner) },
+        }
+    }
+
+    fn inner_mut(&self) -> RefMut<FatFileInner<'a>> {
+        self.inner.exclusive_access()
     }
 }
 
 impl<'a> File for FatFile<'a> {
-    fn read(&mut self, buf: &mut [u8]) -> usize {
-        self.inner.read_exact(buf).ok().unwrap();
+    fn readable(&self) -> bool {
+        self.readable
+    }
+
+    fn writable(&self) -> bool {
+        self.writable
+    }
+
+    fn read(&self, buf: &mut [u8]) -> usize {
+        assert!(self.readable);
+        let mut inner = self.inner_mut();
+        inner.read_exact(buf).ok().unwrap();
         buf.len()
     }
 
-    fn write(&mut self, buf: &[u8]) -> usize {
-        self.inner.write_all(buf).ok().unwrap();
+    fn write(&self, buf: &[u8]) -> usize {
+        assert!(self.writable);
+        let mut inner = self.inner_mut();
+        inner.write_all(buf).ok().unwrap();
         buf.len()
     }
 }

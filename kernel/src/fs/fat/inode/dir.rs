@@ -1,21 +1,34 @@
+use crate::{
+    fs::{fat, Dir, OpenFlags},
+    sync::UPSafeCell,
+};
 use alloc::vec::Vec;
-
-use crate::fs::{fat, Directory, OpenFlags};
+use core::cell::Ref;
 
 // region FatDir begin
 pub struct FatDir<'a> {
-    inner: FatDirInner<'a>,
+    inner: UPSafeCell<FatDirInner<'a>>,
 }
 
 impl<'a> FatDir<'a> {
-    pub const fn new(inner: FatDirInner<'a>) -> Self {
-        Self { inner }
+    pub fn new(inner: FatDirInner<'a>) -> Self {
+        Self {
+            inner: unsafe { UPSafeCell::new(inner) },
+        }
+    }
+
+    fn inner(&self) -> Ref<FatDirInner<'a>> {
+        self.inner.shared_access()
     }
 }
 
-impl<'a> Directory for FatDir<'a> {
+unsafe impl<'a> Send for FatDir<'a> {}
+unsafe impl<'a> Sync for FatDir<'a> {}
+
+impl<'a> Dir for FatDir<'a> {
     fn ls(&self) -> Vec<fat::FatInode> {
-        self.inner
+        let inner = self.inner();
+        inner
             .iter()
             .map(|entry| {
                 let entry = entry.unwrap();

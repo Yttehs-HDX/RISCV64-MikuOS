@@ -1,9 +1,9 @@
-use crate::{fs::FileDescriptor, sbi};
+use crate::{fs::File, sbi};
 
 // region Stdin begin
 pub struct Stdin;
 
-impl FileDescriptor for Stdin {
+impl File for Stdin {
     fn readable(&self) -> bool {
         true
     }
@@ -28,7 +28,7 @@ impl FileDescriptor for Stdin {
 // region Stdout begin
 pub struct Stdout;
 
-impl FileDescriptor for Stdout {
+impl File for Stdout {
     fn readable(&self) -> bool {
         false
     }
@@ -52,7 +52,7 @@ impl FileDescriptor for Stdout {
 // region Stderr begin
 pub struct Stderr;
 
-impl FileDescriptor for Stderr {
+impl File for Stderr {
     fn readable(&self) -> bool {
         true
     }

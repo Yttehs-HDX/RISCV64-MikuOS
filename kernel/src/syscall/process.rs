@@ -61,7 +61,7 @@ pub fn sys_exec(path_ptr: *const u8, _argv: *const u8) -> isize {
     if let Some(entry) = entry {
         // get target file
         let len = entry.size();
-        let mut file = entry.to_file();
+        let file = entry.to_file();
 
         // prepare mut buffer
         let mut buffer: Vec<u8> = Vec::with_capacity(len);

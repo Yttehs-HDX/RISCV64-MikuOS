@@ -2,7 +2,7 @@ use crate::fs::fat;
 use alloc::{string::String, vec::Vec};
 use bitflags::bitflags;
 
-pub trait Inode {
+pub trait Inode: Send + Sync {
     fn name(&self) -> String;
     fn size(&self) -> usize;
     fn get_type(&self) -> InodeType;
@@ -11,11 +11,13 @@ pub trait Inode {
 }
 
 pub trait File {
-    fn read(&mut self, buf: &mut [u8]) -> usize;
-    fn write(&mut self, buf: &[u8]) -> usize;
+    fn readable(&self) -> bool;
+    fn writable(&self) -> bool;
+    fn read(&self, buf: &mut [u8]) -> usize;
+    fn write(&self, buf: &[u8]) -> usize;
 }
 
-pub trait Directory {
+pub trait Dir: Send + Sync {
     fn ls(&self) -> Vec<fat::FatInode>;
 }
 
@@ -42,7 +44,6 @@ bitflags! {
 impl OpenFlags {
     pub const fn read_write(&self) -> (bool, bool) {
         match self {
-            _ if self.is_empty() => (false, false),
             _ if self.contains(Self::RDONLY) => (true, false),
             _ if self.contains(Self::WRONLY) => (false, true),
             _ if self.contains(Self::RDWR) => (true, true),
