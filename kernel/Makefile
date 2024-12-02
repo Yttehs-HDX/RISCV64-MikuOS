@@ -44,7 +44,7 @@ test: build
 
 debug:
 	@echo -e "\033[33m[+] Run 'make connect' in another terminal at the same dir\033[0m"
-	@$(QEMU) $(QEMU_FLAGS) -S -s
+	@$(QEMU) $(TEST_FLAGS) -S -s
 
 connect:
 	@$(GDB) $(GDB_FLAGS)
