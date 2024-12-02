@@ -1,8 +1,8 @@
+use crate::config::{DIR_SEPARATOR, ROOT_DIR};
 use alloc::{
     format,
     string::{String, ToString},
 };
-use crate::config::{DIR_SEPARATOR, ROOT_DIR};
 
 // region Path begin
 pub struct Path {

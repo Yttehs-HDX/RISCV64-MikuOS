@@ -6,10 +6,12 @@ use crate::{
     task::{alloc_pid_handle, PidHandle, TaskContext},
     trap::{self, TrapContext},
 };
-use alloc::{
-    string::String, sync::{Arc, Weak}, vec::Vec
-};
 use alloc::vec;
+use alloc::{
+    string::String,
+    sync::{Arc, Weak},
+    vec::Vec,
+};
 use core::cell::{Ref, RefMut};
 
 // region ProcessControlBlock begin

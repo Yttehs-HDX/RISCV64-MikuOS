@@ -3,7 +3,8 @@ pub use map_area::*;
 use crate::{
     config::{
         EBSS, EDATA, ERODATA, ETEXT, KERNEL_STACK_SP, KERNEL_STACK_TOP, MMIO, PA_END, PA_START,
-        SBSS, SDATA, SRODATA, STEXT, SV39_PAGE_SIZE, TRAP_CX_PTR, USER_STACK_SP, USER_STACK_TOP,
+        SBSS, SDATA, SRODATA, STEXT, SV39_PAGE_SIZE, TRAP_CX_PTR, USER_STACK_BOTTOM,
+        USER_STACK_TOP,
     },
     mm::{PageTable, PageTableEntry, PpnOffset, VirtAddr, VirtPageNum},
 };
@@ -227,11 +228,11 @@ impl MemorySet {
         trace!(
             "MemorySet: map User Stack [{:#x}, {:#x})",
             USER_STACK_TOP,
-            USER_STACK_SP
+            USER_STACK_BOTTOM
         );
         memory_set.insert_area(MapArea::new(
             VirtAddr(USER_STACK_TOP),
-            VirtAddr(USER_STACK_SP),
+            VirtAddr(USER_STACK_BOTTOM),
             MapType::Framed,
             MapPermission::U | MapPermission::R | MapPermission::W,
         ));
