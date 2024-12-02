@@ -33,6 +33,12 @@ lazy_static! {
 // drivers
 pub use crate::board::VIRT_IO;
 
+// fs
+pub const ROOT_DIR: &'static str = "/";
+pub const CURRENT_DIR: &'static str = ".";
+pub const PARENT_DIR: &'static str = "..";
+pub const DIR_SEPARATOR: &'static str = "/";
+
 // sections boundary
 lazy_static! {
     pub static ref SKERNEL: usize = skernel as usize;

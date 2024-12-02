@@ -1,5 +1,5 @@
 use crate::{
-    config::{KERNEL_STACK_SP, TRAP_CX_PTR, USER_STACK_SP},
+    config::{KERNEL_STACK_SP, ROOT_DIR, TRAP_CX_PTR, USER_STACK_SP},
     fs::{File, Stderr, Stdin, Stdout},
     mm::{self, MemorySpace, PhysPageNum, PpnOffset, UserSpace, VirtAddr},
     sync::UPSafeCell,
@@ -7,10 +7,9 @@ use crate::{
     trap::{self, TrapContext},
 };
 use alloc::{
-    sync::{Arc, Weak},
-    vec,
-    vec::Vec,
+    string::String, sync::{Arc, Weak}, vec::Vec
 };
+use alloc::vec;
 use core::cell::{Ref, RefMut};
 
 // region ProcessControlBlock begin
@@ -37,6 +36,7 @@ impl ProcessControlBlock {
             trap::trap_handler as usize,
         );
         let task_cx = TaskContext::goto_trap_return(KERNEL_STACK_SP);
+        let cwd = String::from(ROOT_DIR);
         let fd_table: Vec<Option<Arc<dyn File + Send + Sync>>> = vec![
             Some(Arc::new(Stdin)),
             Some(Arc::new(Stdout)),
@@ -50,6 +50,7 @@ impl ProcessControlBlock {
                     trap_cx_ppn,
                     task_cx,
                     user_space,
+                    cwd,
                     fd_table,
                 ))
             },
@@ -66,6 +67,7 @@ impl ProcessControlBlock {
             .ppn()
             .low_to_high();
         let task_cx = TaskContext::goto_trap_return(KERNEL_STACK_SP);
+        let cwd = self.inner().get_cwd().clone();
         let mut fd_table: Vec<Option<Arc<dyn File + Send + Sync>>> = Vec::new();
         self.inner().fd_table.iter().for_each(|fd| {
             if let Some(f) = fd {
@@ -82,6 +84,7 @@ impl ProcessControlBlock {
                     trap_cx_ppn,
                     task_cx,
                     user_space,
+                    cwd,
                     fd_table,
                 ))
             },
@@ -193,6 +196,7 @@ pub struct ProcessControlBlockInner {
     children: Vec<Arc<ProcessControlBlock>>,
     exit_code: i32,
 
+    cwd: String,
     fd_table: Vec<Option<Arc<dyn File + Send + Sync>>>,
 }
 
@@ -201,6 +205,7 @@ impl ProcessControlBlockInner {
         trap_cx_ppn: PhysPageNum,
         task_cx: TaskContext,
         user_space: UserSpace,
+        cwd: String,
         fd_table: Vec<Option<Arc<dyn File + Send + Sync>>>,
     ) -> Self {
         let program_brk = user_space.get_base_size();
@@ -212,6 +217,7 @@ impl ProcessControlBlockInner {
             parent: None,
             children: Vec::new(),
             exit_code: 0,
+            cwd,
             fd_table,
         }
     }
@@ -234,6 +240,14 @@ impl ProcessControlBlockInner {
 
     pub fn get_children_mut(&mut self) -> &mut Vec<Arc<ProcessControlBlock>> {
         &mut self.children
+    }
+
+    pub fn set_cwd(&mut self, cwd: String) {
+        self.cwd = cwd;
+    }
+
+    pub fn get_cwd(&self) -> &String {
+        &self.cwd
     }
 
     pub fn get_fd_table_ref(&self) -> &Vec<Option<Arc<dyn File + Send + Sync>>> {
