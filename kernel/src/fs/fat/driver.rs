@@ -1,7 +1,9 @@
+/* Refer to https://github.com/neuq-rcore/rCore */
+
 use crate::fs::BlockDevice;
 use alloc::boxed::Box;
 
-// region Fat32IO begin
+// region FatDeviceDriver begin
 pub struct FatDeviceDriver {
     device: Box<dyn BlockDevice>,
 }
@@ -126,4 +128,4 @@ impl fatfs::Seek for FatDeviceDriver {
         }
     }
 }
-// region Fat32IO end
+// region FatDeviceDriver end
