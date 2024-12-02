@@ -1,4 +1,4 @@
-.PHONY : all build clean setup
+.PHONY : all build test clean setup
 
 all:
 	@cd user && make -s all
@@ -7,6 +7,10 @@ all:
 build:
 	@cd user && make -s all
 	@cd kernel && make -s build
+
+test:
+	@cd user && make -s build
+	@cd kernel && make -s test
 
 clean:
 	@cd user && make -s clean

@@ -1,4 +1,4 @@
-.PHONY : all build run debug connect fmt clean
+.PHONY : all build run test debug connect fmt clean
 
 ARCH := riscv64gc-unknown-none-elf
 BUILD_TYPE := release
@@ -6,6 +6,7 @@ BIOS := rustsbi.bin
 KERNEL := kernel
 TARGET := target/$(ARCH)/$(BUILD_TYPE)/$(KERNEL)
 FS_IMG := ../user/target/${ARCH}/${BUILD_TYPE}/sdcard.img
+TEST_IMG := ../test/test.img
 
 CARGO := cargo
 CARGO_FLAGS := --$(BUILD_TYPE)
@@ -15,6 +16,13 @@ QEMU_FLAGS := -machine virt \
 	-bios ../bootloader/$(BIOS) \
 	-kernel $(TARGET) \
 	-drive file=$(FS_IMG),if=none,format=raw,id=x0 \
+	-device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0 \
+	-nographic
+
+TEST_FLAGS := -machine virt \
+	-bios ../bootloader/$(BIOS) \
+	-kernel $(TARGET) \
+	-drive file=$(TEST_IMG),if=none,format=raw,id=x0 \
 	-device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0 \
 	-nographic
 
@@ -30,6 +38,9 @@ build:
 
 run: build
 	@$(QEMU) $(QEMU_FLAGS)
+
+test: build
+	@$(QEMU) $(TEST_FLAGS)
 
 debug:
 	@echo -e "\033[33m[+] Run 'make connect' in another terminal at the same dir\033[0m"
