@@ -106,3 +106,17 @@ pub fn sys_close(fd: usize) -> isize {
         -1
     }
 }
+
+pub fn sys_mkdir(_dir_fd: usize, path_ptr: *const u8, mode: usize) -> isize {
+    println!("sys_mkdir: path_ptr = {:p}", path_ptr);
+    let path = translate_str(path_ptr);
+    let path = PathUtil::from_user(path).to_string();
+
+    println!("sys_mkdir: path = {}", path);
+
+    if fs::create_dir(&path, mode) {
+        0
+    } else {
+        -1
+    }
+}

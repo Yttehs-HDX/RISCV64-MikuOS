@@ -7,7 +7,7 @@ use crate::{
     drivers::VirtIOHal,
     fs::{FileSystem, OpenFlags, PathUtil},
 };
-use alloc::boxed::Box;
+use alloc::{boxed::Box, string::ToString};
 use core::ptr::NonNull;
 use fatfs::{FsOptions, LossyOemCpConverter, NullTimeProvider};
 use virtio_drivers::{
@@ -69,6 +69,11 @@ impl FileSystem for FatFileSystem {
             }
             None
         }
+    }
+
+    fn create_dir(&'static self, path: &str, _mode: usize) -> bool {
+        let path = PathUtil::from_str(path).to_string();
+        self.inner.root_dir().create_dir(&path).is_ok()
     }
 }
 
