@@ -1,17 +1,17 @@
 use crate::{
-    config::{KERNEL_STACK_SP, TRAP_CX_PTR, USER_STACK_SP},
+    config::{KERNEL_STACK_SP, ROOT_DIR, TRAP_CX_PTR, USER_STACK_SP},
     fs::{File, Stderr, Stdin, Stdout},
     mm::{self, MemorySpace, PhysPageNum, PpnOffset, UserSpace, VirtAddr},
     sync::UPSafeCell,
     task::{alloc_pid_handle, PidHandle, TaskContext},
     trap::{self, TrapContext},
 };
-use alloc::vec;
 use alloc::{
     string::String,
     sync::{Arc, Weak},
     vec::Vec,
 };
+use alloc::{string::ToString, vec};
 use core::cell::{Ref, RefMut};
 
 // region ProcessControlBlock begin
@@ -38,7 +38,7 @@ impl ProcessControlBlock {
             trap::trap_handler as usize,
         );
         let task_cx = TaskContext::goto_trap_return(KERNEL_STACK_SP);
-        let cwd = String::from("");
+        let cwd = ROOT_DIR.to_string();
         let fd_table: Vec<Option<Arc<dyn File + Send + Sync>>> = vec![
             Some(Arc::new(Stdin)),
             Some(Arc::new(Stdout)),

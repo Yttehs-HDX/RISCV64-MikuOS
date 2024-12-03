@@ -48,7 +48,12 @@ impl PathUtil {
 
         // construct absolute path
         let cwd = task::get_processor().current().inner().get_cwd();
-        let path = format!("{}{}", cwd, path);
+        // no need to add cwd if path is root
+        let path = if cwd == ROOT_DIR {
+            path
+        } else {
+            format!("{}{}", cwd, path)
+        };
         PathUtil(path)
     }
 
