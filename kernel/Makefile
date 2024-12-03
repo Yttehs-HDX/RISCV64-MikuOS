@@ -7,6 +7,7 @@ KERNEL := kernel
 TARGET := target/$(ARCH)/$(BUILD_TYPE)/$(KERNEL)
 FS_IMG := ../user/target/${ARCH}/${BUILD_TYPE}/sdcard.img
 TEST_IMG := ../test/sdcard.img
+TEST_IMG_COPY := target/$(ARCH)/$(BUILD_TYPE)/sdcard.img
 OUTPUT := target/$(ARCH)/$(BUILD_TYPE)/output.log
 
 CARGO := cargo
@@ -23,7 +24,7 @@ QEMU_FLAGS := -machine virt \
 TEST_FLAGS := -machine virt \
 	-bios ../bootloader/$(BIOS) \
 	-kernel $(TARGET) \
-	-drive file=$(TEST_IMG),if=none,format=raw,id=x0 \
+	-drive file=$(TEST_IMG_COPY),if=none,format=raw,id=x0 \
 	-device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0 \
 	-nographic
 
@@ -40,7 +41,11 @@ build:
 run: build
 	@$(QEMU) $(QEMU_FLAGS)
 
-test: build
+test-build:
+	@$(CARGO) build $(CARGO_FLAGS) --features test
+
+test: test-build
+	@cp $(TEST_IMG) $(TEST_IMG_COPY)
 	@$(QEMU) $(TEST_FLAGS) | tee $(OUTPUT)
 
 debug:

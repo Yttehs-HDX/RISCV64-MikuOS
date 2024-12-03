@@ -91,7 +91,13 @@ impl Processor {
         pcb.drop_user_space();
 
         // if initproc exits
+        #[cfg(not(feature = "test"))]
         if pcb.get_pid() == 1 {
+            crate::os_end();
+        }
+
+        #[cfg(feature = "test")]
+        if get_task_manager().is_empty() {
             crate::os_end();
         }
 

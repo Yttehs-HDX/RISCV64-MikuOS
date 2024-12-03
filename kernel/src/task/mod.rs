@@ -11,5 +11,6 @@ mod pid;
 mod processor;
 
 pub fn init() {
+    #[cfg(not(feature = "test"))]
     add_initproc();
 }

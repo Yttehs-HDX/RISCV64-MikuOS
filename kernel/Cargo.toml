@@ -16,3 +16,7 @@ fatfs = { version = "0.4", git = "https://github.com/rafalh/rust-fatfs", default
 
 [profile.release]
 debug = true
+
+[features]
+default = []
+test = []
