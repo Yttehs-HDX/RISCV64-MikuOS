@@ -1,5 +1,8 @@
 use crate::{
-    config::ROOT_DIR, fs::{self, Inode, InodeType, OpenFlags, PathUtil}, syscall::translate_str, task
+    config::ROOT_DIR,
+    fs::{self, Inode, InodeType, OpenFlags, PathUtil},
+    syscall::translate_str,
+    task,
 };
 use alloc::string::ToString;
 
@@ -29,7 +32,10 @@ pub fn sys_chdir(path_ptr: *const u8) -> isize {
 
     if path == ROOT_DIR {
         // '/' could not be opened
-        task::get_processor().current().inner_mut().set_cwd(ROOT_DIR.to_string());
+        task::get_processor()
+            .current()
+            .inner_mut()
+            .set_cwd(ROOT_DIR.to_string());
         return 0;
     }
 

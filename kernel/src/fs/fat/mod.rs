@@ -55,6 +55,18 @@ impl FileSystem for FatFileSystem {
             let inode = FatInode::new(file, readable, writable);
             Some(inode)
         } else {
+            // file not found
+            if flags.create() {
+                dir.create_file(&name).ok().unwrap();
+                let file = dir
+                    .iter()
+                    .find(|entry| entry.as_ref().unwrap().file_name() == name)
+                    .unwrap()
+                    .unwrap();
+                let (readable, writable) = flags.read_write();
+                let inode = FatInode::new(file, readable, writable);
+                return Some(inode);
+            }
             None
         }
     }
