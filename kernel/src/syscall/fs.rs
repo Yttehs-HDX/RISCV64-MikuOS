@@ -1,7 +1,5 @@
 use crate::{
-    fs::{self, Inode, InodeType, OpenFlags, PathUtil},
-    syscall::translate_str,
-    task,
+    config::ROOT_DIR, fs::{self, Inode, InodeType, OpenFlags, PathUtil}, syscall::translate_str, task
 };
 use alloc::string::ToString;
 
@@ -28,6 +26,13 @@ pub fn sys_write(fd: usize, buffer: *const u8, len: usize) -> isize {
 pub fn sys_chdir(path_ptr: *const u8) -> isize {
     let path = translate_str(path_ptr);
     let path = PathUtil::from_user(path).to_string();
+
+    if path == ROOT_DIR {
+        // '/' could not be opened
+        task::get_processor().current().inner_mut().set_cwd(ROOT_DIR.to_string());
+        return 0;
+    }
+
     let inode = fs::open_file(&path, OpenFlags::RDONLY);
     if let Some(inode) = inode {
         if inode.get_type() == InodeType::Dir {

@@ -2,7 +2,7 @@
 #![no_main]
 
 use user_lib::{
-    alloc::string::String, exec, exit, fork, get_char, init_heap, print, println, waitpid,
+    alloc::string::String, chdir, exec, exit, fork, get_char, init_heap, print, println, waitpid
 };
 
 extern crate user_lib;
@@ -37,6 +37,12 @@ fn main() -> i32 {
                             print!("\x1b[H\x1b[2J");
                         }
                         "exit" => break,
+                        _ if input.starts_with("cd ") => {
+                            let path = input.strip_prefix("cd ").unwrap();
+                            if chdir(path) != 0 {
+                                println!("{}: cd: {}: No such file or directory", SHELL_NAME, path);
+                            }
+                        }
                         _ => {
                             // mark input as path
                             input.push('\0');
@@ -61,7 +67,7 @@ fn main() -> i32 {
                     }
                 }
                 print_prompt();
-                input.clear();
+                input = String::new();
             }
             BS | DL => {
                 if !input.is_empty() {
