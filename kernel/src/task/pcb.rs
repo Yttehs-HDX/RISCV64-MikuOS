@@ -140,6 +140,16 @@ impl ProcessControlBlock {
 }
 
 impl ProcessControlBlock {
+    pub fn get_ppid(&self) -> usize {
+        self.inner()
+            .parent
+            .as_ref()
+            .unwrap()
+            .upgrade()
+            .unwrap()
+            .get_pid()
+    }
+
     pub fn set_parent(&self, parent: Weak<ProcessControlBlock>) {
         self.inner_mut().parent = Some(parent);
     }

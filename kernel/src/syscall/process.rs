@@ -35,6 +35,12 @@ pub fn sys_getpid() -> isize {
     task::get_processor().current().get_pid() as isize
 }
 
+pub fn sys_getppid() -> isize {
+    let current_task = task::get_processor().current();
+    let parent_pid = current_task.get_ppid();
+    parent_pid as isize
+}
+
 pub fn sys_fork() -> isize {
     let current_task = task::get_processor().current();
     let new_task = current_task.fork();

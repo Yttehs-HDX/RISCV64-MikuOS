@@ -1,4 +1,7 @@
-use crate::{sync::UPSafeCell, task::ProcessControlBlock};
+use crate::{
+    sync::UPSafeCell,
+    task::{get_initproc, ProcessControlBlock},
+};
 use alloc::{collections::vec_deque::VecDeque, sync::Arc};
 use core::cell::{Ref, RefMut};
 use lazy_static::lazy_static;
@@ -26,6 +29,7 @@ pub fn create_process(path: &str) {
     let file = inode.to_file();
     file.read(buf);
     let pcb = Arc::new(ProcessControlBlock::new(buf));
+    pcb.set_parent(Arc::downgrade(get_initproc()));
     add_task(pcb);
 }
 
