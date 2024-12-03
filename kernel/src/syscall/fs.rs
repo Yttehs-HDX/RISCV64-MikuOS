@@ -68,3 +68,16 @@ pub fn sys_open(_dir_fd: i32, path_ptr: *const u8, flags: usize) -> isize {
         -1
     }
 }
+
+pub fn sys_close(fd: usize) -> isize {
+    let current_task = task::get_processor().current();
+    let mut task_inner = current_task.inner_mut();
+    let fd_table = task_inner.get_fd_table_mut();
+
+    if fd < fd_table.len() {
+        fd_table.remove(fd);
+        0
+    } else {
+        -1
+    }
+}
