@@ -50,7 +50,7 @@ impl Inode for FatInode {
 
     fn to_dir(&self) -> FatDir {
         assert!(self.inner.is_dir());
-        FatDir::new(self.inner.to_dir())
+        FatDir::new(self.inner.to_dir(), self.readable, self.writable)
     }
 }
 // region FatInode end

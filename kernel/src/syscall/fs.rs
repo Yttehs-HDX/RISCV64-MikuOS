@@ -69,13 +69,29 @@ pub fn sys_open(_dir_fd: i32, path_ptr: *const u8, flags: usize) -> isize {
         let mut task_inner = current_task.inner_mut();
         let fd_table = task_inner.get_fd_table_mut();
 
-        let file = Arc::new(inode.to_file());
-        let fd = fd_table.len();
-        fd_table.push(Some(file));
-        fd as isize
-    } else {
-        -1
+        match inode.get_type() {
+            InodeType::File => {
+                if flags.directory() {
+                    return -1;
+                }
+                let file = Arc::new(inode.to_file());
+                let fd = fd_table.len();
+                fd_table.push(Some(file));
+                return fd as isize;
+            }
+            InodeType::Dir => {
+                if !flags.directory() {
+                    return -1;
+                }
+                let dir = Arc::new(inode.to_dir());
+                let fd = fd_table.len();
+                fd_table.push(Some(dir));
+                return fd as isize;
+            }
+            _ => {}
+        }
     }
+    -1
 }
 
 pub fn sys_close(fd: usize) -> isize {

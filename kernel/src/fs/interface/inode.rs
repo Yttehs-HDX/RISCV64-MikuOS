@@ -1,5 +1,5 @@
 use crate::fs::fat;
-use alloc::{string::String, vec::Vec};
+use alloc::string::String;
 use bitflags::bitflags;
 
 pub trait Inode: Send + Sync {
@@ -17,10 +17,6 @@ pub trait File: Send + Sync {
     fn write(&self, buf: &[u8]) -> usize;
 }
 
-pub trait Dir: Send + Sync {
-    fn ls(&self) -> Vec<fat::FatInode>;
-}
-
 // region InodeType begin
 #[derive(PartialEq, Eq)]
 pub enum InodeType {
@@ -33,6 +29,7 @@ pub enum InodeType {
 
 // region OpenFlags begin
 bitflags! {
+    #[derive(Clone, Copy)]
     pub struct OpenFlags: u32 {
         const RDONLY = 0; // 0x0
         const WRONLY = 1; // 0x1
@@ -54,6 +51,10 @@ impl OpenFlags {
 
     pub const fn create(&self) -> bool {
         self.contains(OpenFlags::CREATE)
+    }
+
+    pub const fn directory(&self) -> bool {
+        self.contains(OpenFlags::DIRECTORY)
     }
 }
 // region OpenFlags end

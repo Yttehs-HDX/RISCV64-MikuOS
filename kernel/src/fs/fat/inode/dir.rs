@@ -1,43 +1,45 @@
-use crate::{
-    fs::{fat, Dir, OpenFlags},
-    sync::UPSafeCell,
-};
-use alloc::vec::Vec;
-use core::cell::Ref;
+use crate::{fs::File, sync::UPSafeCell};
+use core::cell::RefMut;
 
 // region FatDir begin
 pub struct FatDir {
+    readable: bool,
+    writable: bool,
     inner: UPSafeCell<FatDirInner<'static>>,
 }
 
 impl FatDir {
-    pub fn new(inner: FatDirInner<'static>) -> Self {
+    pub fn new(inner: FatDirInner<'static>, readable: bool, writable: bool) -> Self {
         Self {
+            readable,
+            writable,
             inner: unsafe { UPSafeCell::new(inner) },
         }
     }
 
-    fn inner(&self) -> Ref<FatDirInner<'static>> {
-        self.inner.shared_access()
+    fn inner_mut(&self) -> RefMut<FatDirInner<'static>> {
+        self.inner.exclusive_access()
     }
 }
 
 unsafe impl Send for FatDir {}
 unsafe impl Sync for FatDir {}
 
-impl Dir for FatDir {
-    fn ls(&self) -> Vec<fat::FatInode> {
-        let inner = self.inner();
-        inner
-            .iter()
-            .map(|entry| {
-                let entry = entry.unwrap();
-                let flags = OpenFlags::RDONLY;
-                let (readable, writable) = flags.read_write();
-                let inode = fat::FatInode::new(entry, readable, writable);
-                inode
-            })
-            .collect()
+impl File for FatDir {
+    fn readable(&self) -> bool {
+        self.readable
+    }
+
+    fn writable(&self) -> bool {
+        self.writable
+    }
+
+    fn read(&self, _buf: &mut [u8]) -> usize {
+        0
+    }
+
+    fn write(&self, _buf: &[u8]) -> usize {
+        0
     }
 }
 // region FatDir end
