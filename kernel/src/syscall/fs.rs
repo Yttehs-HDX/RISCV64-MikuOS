@@ -1,5 +1,7 @@
+use alloc::string::ToString;
+
 use crate::{
-    fs::{self, Inode, InodeType, OpenFlags, Path},
+    fs::{self, Inode, InodeType, OpenFlags, PathUtil},
     task,
 };
 
@@ -32,7 +34,7 @@ pub fn sys_chdir(path_ptr: *const u8) -> isize {
         }
         path = core::str::from_utf8_unchecked(core::slice::from_raw_parts(path_ptr, len));
     }
-    let path = Path::from_relative(path).to_string();
+    let path = PathUtil::from_user(path).to_string();
     let inode = fs::open_file(&path, OpenFlags::RDONLY);
     if let Some(inode) = inode {
         if inode.get_type() == InodeType::Dir {

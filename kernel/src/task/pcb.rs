@@ -1,5 +1,5 @@
 use crate::{
-    config::{KERNEL_STACK_SP, ROOT_DIR, TRAP_CX_PTR, USER_STACK_SP},
+    config::{KERNEL_STACK_SP, TRAP_CX_PTR, USER_STACK_SP},
     fs::{File, Stderr, Stdin, Stdout},
     mm::{self, MemorySpace, PhysPageNum, PpnOffset, UserSpace, VirtAddr},
     sync::UPSafeCell,
@@ -38,7 +38,7 @@ impl ProcessControlBlock {
             trap::trap_handler as usize,
         );
         let task_cx = TaskContext::goto_trap_return(KERNEL_STACK_SP);
-        let cwd = String::from(ROOT_DIR);
+        let cwd = String::from("");
         let fd_table: Vec<Option<Arc<dyn File + Send + Sync>>> = vec![
             Some(Arc::new(Stdin)),
             Some(Arc::new(Stdout)),

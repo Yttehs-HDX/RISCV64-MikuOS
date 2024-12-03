@@ -1,70 +1,83 @@
 use crate::{
-    config::{DIR_SEPARATOR, ROOT_DIR},
+    config::{CURRENT_DIR, DIR_SEPARATOR, ROOT_DIR},
     task,
 };
 use alloc::{
     format,
     string::{String, ToString},
+    vec::Vec,
 };
+use core::fmt::Display;
 
 // region Path begin
-pub struct Path {
-    parent: String,
-    name: String,
+pub struct PathUtil(String);
+
+impl Display for PathUtil {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "{}", self.0)
+    }
 }
 
-impl Path {
-    pub fn new(parent: &str, name: &str) -> Self {
-        let parent = parent.to_string();
-        let name = name.to_string();
-        Self { parent, name }
+impl PathUtil {
+    pub fn from_str(s: &str) -> Self {
+        // absolute path
+        // add '/' if not exists
+        let path = if s.starts_with(ROOT_DIR) {
+            s.to_string()
+        } else {
+            format!("{}{}", ROOT_DIR, s)
+        };
+        PathUtil(path)
     }
 
-    pub fn from_str(path: &str) -> Self {
-        // remove "./"
-        let path = path.strip_prefix("./").unwrap_or(path);
-        // construct a path with leading '/'
+    pub fn from_user(s: &str) -> Self {
+        if s.starts_with(DIR_SEPARATOR) {
+            // absolute path
+            return Self::from_str(s);
+        }
+
+        // relative path
+        // remove '.' if exists
+        let path = s.strip_prefix(CURRENT_DIR).unwrap_or(s);
+        // add '/' if not exists
         let path = if path.starts_with(DIR_SEPARATOR) {
             path.to_string()
         } else {
-            format!("/{}", path)
+            format!("{}{}", DIR_SEPARATOR, path)
         };
-        // split the path into parent and name
-        if let Some(pos) = path.rfind(DIR_SEPARATOR) {
-            let mut parent = &path[..pos];
-            if parent.is_empty() {
-                parent = ROOT_DIR;
-            }
-            let name = &path[pos + 1..];
-            Self::new(parent, name)
-        } else {
-            Self::new(ROOT_DIR, &path)
-        }
-    }
 
-    pub fn from_relative(path: &str) -> Self {
+        // construct absolute path
         let cwd = task::get_processor().current().inner().get_cwd();
-        // construct a path with leading "./"
-        let path = if path.starts_with("./") {
-            path.to_string()
-        } else {
-            format!("./{}", path)
-        };
-        // replace "." with cwd
-        let path = path.replace(".", &cwd);
-        Self::from_str(&path)
+        let path = format!("{}{}", cwd, path);
+        PathUtil(path)
     }
 
-    pub fn parent(&self) -> &str {
-        &self.parent
+    pub fn split(&self) -> Vec<&str> {
+        // root
+        if self.0 == ROOT_DIR {
+            return Vec::new();
+        }
+        self.0
+            .split(DIR_SEPARATOR)
+            .filter(|s| !s.is_empty())
+            .collect()
     }
 
-    pub fn name(&self) -> &str {
-        &self.name
+    pub fn parent(&self) -> String {
+        let mut split = self.split();
+        if split.len() == 1 {
+            return ROOT_DIR.to_string();
+        }
+        split.pop();
+        split.join(DIR_SEPARATOR)
     }
 
-    pub fn to_string(&self) -> String {
-        format!("{}/{}", self.parent, self.name)
+    pub fn name(&self) -> String {
+        let mut split = self.split();
+        if split.len() == 0 {
+            return ROOT_DIR.to_string();
+        }
+        split.pop().unwrap().to_string()
     }
 }
 // region Path end

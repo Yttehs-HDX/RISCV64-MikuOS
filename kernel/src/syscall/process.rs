@@ -1,9 +1,9 @@
 use crate::{
-    fs::{self, File, Inode, OpenFlags},
+    fs::{self, File, Inode, OpenFlags, PathUtil},
     task,
     timer::{self, TimeVal},
 };
-use alloc::vec::Vec;
+use alloc::{string::ToString, vec::Vec};
 
 pub fn sys_exit(exit_code: i32) -> ! {
     task::get_processor().exit_current(exit_code);
@@ -56,7 +56,13 @@ pub fn sys_exec(path_ptr: *const u8, _argv: *const u8) -> isize {
         path = core::str::from_utf8_unchecked(core::slice::from_raw_parts(path_ptr, len));
     }
 
-    let entry = fs::open_file(path, OpenFlags::RDONLY);
+    println!("raw path: {}", path);
+
+    let path = PathUtil::from_user(path).to_string();
+
+    println!("sys_exec: path = {}", path);
+
+    let entry = fs::open_file(&path, OpenFlags::RDONLY);
 
     if let Some(entry) = entry {
         // get target file

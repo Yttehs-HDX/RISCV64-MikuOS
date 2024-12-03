@@ -5,7 +5,7 @@ pub use virtio::*;
 use crate::{
     config::VIRT_IO,
     drivers::VirtIOHal,
-    fs::{FileSystem, OpenFlags},
+    fs::{FileSystem, OpenFlags, PathUtil},
 };
 use alloc::boxed::Box;
 use core::ptr::NonNull;
@@ -14,8 +14,6 @@ use virtio_drivers::{
     device::blk::VirtIOBlk,
     transport::mmio::{MmioTransport, VirtIOHeader},
 };
-
-use super::Path;
 
 mod driver;
 mod inode;
@@ -31,7 +29,7 @@ unsafe impl Sync for FatFileSystem {}
 
 impl FileSystem for FatFileSystem {
     fn open(&self, path: &str, flags: OpenFlags) -> Option<FatInode> {
-        let path = Path::from_str(path);
+        let path = PathUtil::from_str(path);
         let parent = path.parent();
         let name = path.name();
 
@@ -40,7 +38,7 @@ impl FileSystem for FatFileSystem {
         let dir = if parent == "/" {
             dir
         } else {
-            let dir = dir.open_dir(parent);
+            let dir = dir.open_dir(&parent);
             match dir {
                 Ok(dir) => dir,
                 Err(_) => return None,
