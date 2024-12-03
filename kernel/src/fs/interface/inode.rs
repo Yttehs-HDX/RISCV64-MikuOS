@@ -22,6 +22,7 @@ pub trait Dir: Send + Sync {
 }
 
 // region InodeType begin
+#[derive(PartialEq, Eq)]
 pub enum InodeType {
     Unknown,
     File,

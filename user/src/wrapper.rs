@@ -66,3 +66,7 @@ pub fn waitpid(pid: usize, wstatus: &mut i32) -> isize {
         }
     }
 }
+
+pub fn chdir(path: &str) -> isize {
+    syscall::sys_chdir(path)
+}

@@ -248,8 +248,8 @@ impl ProcessControlBlockInner {
         self.cwd = cwd;
     }
 
-    pub fn get_cwd(&self) -> &String {
-        &self.cwd
+    pub fn get_cwd(&self) -> String {
+        self.cwd.clone()
     }
 
     pub fn get_fd_table_ref(&self) -> &Vec<Option<Arc<dyn File + Send + Sync>>> {
