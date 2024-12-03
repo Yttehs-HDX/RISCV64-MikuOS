@@ -26,6 +26,15 @@ pub fn sys_write(fd: usize, buffer: *const u8, len: usize) -> isize {
     }
 }
 
+pub fn sys_getcwd(buffer: *mut u8, len: usize) -> isize {
+    let cwd = task::get_processor().current().inner().get_cwd();
+    let cwd = if cwd.is_empty() { "/" } else { &cwd };
+    let len = len.min(cwd.len());
+    let slice = unsafe { core::slice::from_raw_parts_mut(buffer, len) };
+    slice.copy_from_slice(cwd.as_bytes());
+    len as isize
+}
+
 pub fn sys_chdir(path_ptr: *const u8) -> isize {
     let path = translate_str(path_ptr);
     let path = PathUtil::from_user(path).to_string();
