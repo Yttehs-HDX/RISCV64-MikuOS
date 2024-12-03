@@ -6,7 +6,8 @@ BIOS := rustsbi.bin
 KERNEL := kernel
 TARGET := target/$(ARCH)/$(BUILD_TYPE)/$(KERNEL)
 FS_IMG := ../user/target/${ARCH}/${BUILD_TYPE}/sdcard.img
-TEST_IMG := ../test/test.img
+TEST_IMG := ../test/sdcard.img
+OUTPUT := target/$(ARCH)/$(BUILD_TYPE)/output.log
 
 CARGO := cargo
 CARGO_FLAGS := --$(BUILD_TYPE)
@@ -40,7 +41,7 @@ run: build
 	@$(QEMU) $(QEMU_FLAGS)
 
 test: build
-	@$(QEMU) $(TEST_FLAGS)
+	@$(QEMU) $(TEST_FLAGS) | tee $(OUTPUT)
 
 debug:
 	@echo -e "\033[33m[+] Run 'make connect' in another terminal at the same dir\033[0m"

@@ -11,6 +11,7 @@ build:
 test:
 	@cd user && make -s build
 	@cd kernel && make -s test
+	@cd test && make -s all
 
 clean:
 	@cd user && make -s clean

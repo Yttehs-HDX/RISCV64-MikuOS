@@ -29,6 +29,14 @@ make run LOG=<log_level>
 
 > log_level options: TRACE, DEBUG, INFO, WARN, ERROR
 
+### Test
+
+> Transplant from [neuq-rcore/rCore](https://github.com/neuq-rcore/rCore)
+
+```bash
+make test
+```
+
 ### Debug
 
 ```bash

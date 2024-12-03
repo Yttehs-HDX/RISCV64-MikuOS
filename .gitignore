@@ -1,2 +1,5 @@
 # gdb history
 kernel/.gdb_history
+
+# pycache
+test/check_result/__pycache__
