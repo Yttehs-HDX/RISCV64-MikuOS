@@ -1,9 +1,9 @@
-use alloc::string::ToString;
-
 use crate::{
     fs::{self, Inode, InodeType, OpenFlags, PathUtil},
+    syscall::translate_str,
     task,
 };
+use alloc::string::ToString;
 
 pub fn sys_read(fd: usize, buffer: *mut u8, len: usize) -> isize {
     if let Some(fd) = &task::get_processor().current().inner().get_fd_table_ref()[fd] {
@@ -26,14 +26,7 @@ pub fn sys_write(fd: usize, buffer: *const u8, len: usize) -> isize {
 }
 
 pub fn sys_chdir(path_ptr: *const u8) -> isize {
-    let path: &str;
-    unsafe {
-        let mut len = 0;
-        while *path_ptr.add(len) != 0 {
-            len += 1;
-        }
-        path = core::str::from_utf8_unchecked(core::slice::from_raw_parts(path_ptr, len));
-    }
+    let path = translate_str(path_ptr);
     let path = PathUtil::from_user(path).to_string();
     let inode = fs::open_file(&path, OpenFlags::RDONLY);
     if let Some(inode) = inode {

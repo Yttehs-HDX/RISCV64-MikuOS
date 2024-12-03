@@ -32,3 +32,15 @@ pub fn syscall(id: usize, args: [usize; 3]) -> isize {
         _ => panic!("Unsupported syscall id: {}", id),
     }
 }
+
+pub fn translate_str<'a>(ptr: *const u8) -> &'a str {
+    let path: &str;
+    unsafe {
+        let mut len = 0;
+        while *ptr.add(len) != 0 {
+            len += 1;
+        }
+        path = core::str::from_utf8_unchecked(core::slice::from_raw_parts(ptr, len));
+    }
+    path
+}

@@ -1,5 +1,6 @@
 use crate::{
     fs::{self, File, Inode, OpenFlags, PathUtil},
+    syscall::translate_str,
     task,
     timer::{self, TimeVal},
 };
@@ -46,22 +47,8 @@ pub fn sys_fork() -> isize {
 }
 
 pub fn sys_exec(path_ptr: *const u8, _argv: *const u8) -> isize {
-    // construct path string
-    let path: &str;
-    unsafe {
-        let mut len = 0;
-        while *path_ptr.add(len) != 0 {
-            len += 1;
-        }
-        path = core::str::from_utf8_unchecked(core::slice::from_raw_parts(path_ptr, len));
-    }
-
-    println!("raw path: {}", path);
-
+    let path = translate_str(path_ptr);
     let path = PathUtil::from_user(path).to_string();
-
-    println!("sys_exec: path = {}", path);
-
     let entry = fs::open_file(&path, OpenFlags::RDONLY);
 
     if let Some(entry) = entry {
