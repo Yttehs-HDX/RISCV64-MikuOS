@@ -28,7 +28,7 @@ unsafe impl Send for FatFileSystem {}
 unsafe impl Sync for FatFileSystem {}
 
 impl FileSystem for FatFileSystem {
-    fn open(&self, path: &str, flags: OpenFlags) -> Option<FatInode> {
+    fn open(&'static self, path: &str, flags: OpenFlags) -> Option<FatInode> {
         let path = PathUtil::from_str(path);
         let parent = path.parent();
         let name = path.name();

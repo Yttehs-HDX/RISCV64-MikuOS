@@ -6,26 +6,26 @@ use alloc::vec::Vec;
 use core::cell::Ref;
 
 // region FatDir begin
-pub struct FatDir<'a> {
-    inner: UPSafeCell<FatDirInner<'a>>,
+pub struct FatDir {
+    inner: UPSafeCell<FatDirInner<'static>>,
 }
 
-impl<'a> FatDir<'a> {
-    pub fn new(inner: FatDirInner<'a>) -> Self {
+impl FatDir {
+    pub fn new(inner: FatDirInner<'static>) -> Self {
         Self {
             inner: unsafe { UPSafeCell::new(inner) },
         }
     }
 
-    fn inner(&self) -> Ref<FatDirInner<'a>> {
+    fn inner(&self) -> Ref<FatDirInner<'static>> {
         self.inner.shared_access()
     }
 }
 
-unsafe impl<'a> Send for FatDir<'a> {}
-unsafe impl<'a> Sync for FatDir<'a> {}
+unsafe impl Send for FatDir {}
+unsafe impl Sync for FatDir {}
 
-impl<'a> Dir for FatDir<'a> {
+impl Dir for FatDir {
     fn ls(&self) -> Vec<fat::FatInode> {
         let inner = self.inner();
         inner

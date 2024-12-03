@@ -4,7 +4,7 @@ use crate::{
     syscall::translate_str,
     task,
 };
-use alloc::string::ToString;
+use alloc::{string::ToString, sync::Arc};
 
 pub fn sys_read(fd: usize, buffer: *mut u8, len: usize) -> isize {
     if let Some(fd) = &task::get_processor().current().inner().get_fd_table_ref()[fd] {
@@ -47,4 +47,24 @@ pub fn sys_chdir(path_ptr: *const u8) -> isize {
         }
     }
     -1
+}
+
+pub fn sys_open(_dir_fd: i32, path_ptr: *const u8, flags: usize) -> isize {
+    let path = translate_str(path_ptr);
+    let path = PathUtil::from_user(path).to_string();
+    let flags = OpenFlags::from_bits(flags as u32).unwrap();
+
+    let inode = fs::open_file(&path, flags);
+    if let Some(inode) = inode {
+        let current_task = task::get_processor().current();
+        let mut task_inner = current_task.inner_mut();
+        let fd_table = task_inner.get_fd_table_mut();
+
+        let file = Arc::new(inode.to_file());
+        let fd = fd_table.len();
+        fd_table.push(Some(file));
+        fd as isize
+    } else {
+        -1
+    }
 }

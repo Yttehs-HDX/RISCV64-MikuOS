@@ -3,14 +3,14 @@ use core::cell::RefMut;
 use fatfs::{Read, Write};
 
 // region FatFile begin
-pub struct FatFile<'a> {
+pub struct FatFile {
     readable: bool,
     writable: bool,
-    inner: UPSafeCell<FatFileInner<'a>>,
+    inner: UPSafeCell<FatFileInner<'static>>,
 }
 
-impl<'a> FatFile<'a> {
-    pub fn new(inner: FatFileInner<'a>, readable: bool, writable: bool) -> Self {
+impl FatFile {
+    pub fn new(inner: FatFileInner<'static>, readable: bool, writable: bool) -> Self {
         Self {
             readable,
             writable,
@@ -18,12 +18,15 @@ impl<'a> FatFile<'a> {
         }
     }
 
-    fn inner_mut(&self) -> RefMut<FatFileInner<'a>> {
+    fn inner_mut(&self) -> RefMut<FatFileInner<'static>> {
         self.inner.exclusive_access()
     }
 }
 
-impl<'a> File for FatFile<'a> {
+unsafe impl Send for FatFile {}
+unsafe impl Sync for FatFile {}
+
+impl File for FatFile {
     fn readable(&self) -> bool {
         self.readable
     }
@@ -35,14 +38,14 @@ impl<'a> File for FatFile<'a> {
     fn read(&self, buf: &mut [u8]) -> usize {
         assert!(self.readable);
         let mut inner = self.inner_mut();
-        inner.read_exact(buf).ok().unwrap();
+        inner.read_exact(buf).ok();
         buf.len()
     }
 
     fn write(&self, buf: &[u8]) -> usize {
         assert!(self.writable);
         let mut inner = self.inner_mut();
-        inner.write_all(buf).ok().unwrap();
+        inner.write_all(buf).ok();
         buf.len()
     }
 }

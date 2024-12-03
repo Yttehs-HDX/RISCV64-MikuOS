@@ -7,14 +7,14 @@ mod dir;
 mod file;
 
 // region FatInode begin
-pub struct FatInode<'a> {
+pub struct FatInode {
     readable: bool,
     writable: bool,
-    inner: FatInodeInner<'a>,
+    inner: FatInodeInner<'static>,
 }
 
-impl<'a> FatInode<'a> {
-    pub fn new(inner: FatInodeInner<'a>, readable: bool, writable: bool) -> Self {
+impl FatInode {
+    pub fn new(inner: FatInodeInner<'static>, readable: bool, writable: bool) -> Self {
         Self {
             readable,
             writable,
@@ -23,10 +23,10 @@ impl<'a> FatInode<'a> {
     }
 }
 
-unsafe impl<'a> Sync for FatInode<'a> {}
-unsafe impl<'a> Send for FatInode<'a> {}
+unsafe impl Sync for FatInode {}
+unsafe impl Send for FatInode {}
 
-impl<'a> Inode for FatInode<'a> {
+impl Inode for FatInode {
     fn name(&self) -> alloc::string::String {
         self.inner.file_name()
     }
@@ -43,7 +43,7 @@ impl<'a> Inode for FatInode<'a> {
         }
     }
 
-    fn to_file(&self) -> FatFile<'_> {
+    fn to_file(&self) -> FatFile {
         assert!(self.inner.is_file());
         FatFile::new(self.inner.to_file(), self.readable, self.writable)
     }

@@ -255,5 +255,9 @@ impl ProcessControlBlockInner {
     pub fn get_fd_table_ref(&self) -> &Vec<Option<Arc<dyn File + Send + Sync>>> {
         &self.fd_table
     }
+
+    pub fn get_fd_table_mut(&mut self) -> &mut Vec<Option<Arc<dyn File + Send + Sync>>> {
+        &mut self.fd_table
+    }
 }
 // region ProcessControlBlockInner end
