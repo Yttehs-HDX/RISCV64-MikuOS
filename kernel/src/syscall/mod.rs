@@ -1,3 +1,5 @@
+use log::error;
+
 use fs::*;
 use process::*;
 
@@ -33,7 +35,10 @@ pub fn syscall(id: usize, args: [usize; 3]) -> isize {
         SYSCALL_CHDIR => sys_chdir(args[0] as *const u8),
         SYSCALL_OPEN => sys_open(args[0] as i32, args[1] as *const u8, args[2] as usize),
         SYSCALL_CLOSE => sys_close(args[0] as usize),
-        _ => panic!("Unsupported syscall id: {}", id),
+        _ => {
+            error!("Unsupported syscall id: {}", id);
+            sys_exit(-1);
+        }
     }
 }
 
