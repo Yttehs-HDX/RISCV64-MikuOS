@@ -1,9 +1,6 @@
-use crate::{
-    sync::UPSafeCell,
-    task::{get_initproc, ProcessControlBlock},
-};
+use crate::{sync::UPSafeCell, task::ProcessControlBlock};
 use alloc::{collections::vec_deque::VecDeque, sync::Arc};
-use core::cell::{Ref, RefMut};
+use core::cell::RefMut;
 use lazy_static::lazy_static;
 
 pub fn add_task(pcb: Arc<ProcessControlBlock>) {
@@ -16,7 +13,10 @@ pub(in crate::task) fn get_task_manager() -> &'static TaskManager {
 
 #[cfg(feature = "test")]
 pub fn create_process(path: &str) {
-    use crate::fs::{self, File, Inode, OpenFlags};
+    use crate::{
+        fs::{self, File, Inode, OpenFlags},
+        task::get_initproc,
+    };
     use alloc::vec::Vec;
 
     let inode = fs::open_file(path, OpenFlags::RDONLY).unwrap();
@@ -53,7 +53,8 @@ impl TaskManager {
         }
     }
 
-    fn inner(&self) -> Ref<TaskManagerInner> {
+    #[cfg(feature = "test")]
+    fn inner(&self) -> core::cell::Ref<TaskManagerInner> {
         self.inner.shared_access()
     }
 
@@ -71,6 +72,7 @@ impl TaskManager {
         self.inner_mut().ready_queue.pop_front()
     }
 
+    #[cfg(feature = "test")]
     pub fn is_empty(&self) -> bool {
         self.inner().ready_queue.is_empty()
     }

@@ -3,6 +3,7 @@ use alloc::string::String;
 use bitflags::bitflags;
 
 pub trait Inode: Send + Sync {
+    #[allow(unused)]
     fn name(&self) -> String;
     fn size(&self) -> usize;
     fn get_type(&self) -> InodeType;
@@ -23,6 +24,7 @@ pub enum InodeType {
     Unknown,
     File,
     Dir,
+    #[allow(unused)]
     CharDevice,
 }
 // region InodeType end

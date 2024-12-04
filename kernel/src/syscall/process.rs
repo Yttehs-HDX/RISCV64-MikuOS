@@ -72,7 +72,9 @@ pub fn sys_exec(path_ptr: *const u8, _argv: *const u8) -> isize {
         let file = entry.to_file();
 
         // prepare mut buffer
+        #[allow(clippy::uninit_vec)]
         let mut buffer: Vec<u8> = Vec::with_capacity(len);
+        #[allow(clippy::uninit_vec)]
         unsafe {
             buffer.set_len(len);
         }

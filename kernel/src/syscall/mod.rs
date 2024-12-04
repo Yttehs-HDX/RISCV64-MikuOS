@@ -38,8 +38,8 @@ pub fn syscall(id: usize, args: [usize; 3]) -> isize {
         SYSCALL_WAITPID => sys_waitpid(args[0] as isize, args[1] as *mut i32, args[2]),
         SYSCALL_GETCWD => sys_getcwd(args[0] as *mut u8, args[1]),
         SYSCALL_CHDIR => sys_chdir(args[0] as *const u8),
-        SYSCALL_OPEN => sys_open(args[0] as i32, args[1] as *const u8, args[2] as usize),
-        SYSCALL_CLOSE => sys_close(args[0] as usize),
+        SYSCALL_OPEN => sys_open(args[0] as i32, args[1] as *const u8, args[2]),
+        SYSCALL_CLOSE => sys_close(args[0]),
         SYSCALL_MKDIR => sys_mkdir(args[0], args[1] as *const u8, args[2]),
         _ => {
             error!("Unsupported syscall id: {}", id);

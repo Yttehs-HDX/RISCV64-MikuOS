@@ -36,7 +36,6 @@ pub use crate::board::VIRT_IO;
 // fs
 pub const ROOT_DIR: &str = "/";
 pub const CURRENT_DIR: &str = ".";
-pub const PARENT_DIR: &str = "..";
 pub const DIR_SEPARATOR: &str = "/";
 
 // sections boundary

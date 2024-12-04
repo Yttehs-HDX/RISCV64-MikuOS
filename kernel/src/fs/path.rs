@@ -70,7 +70,7 @@ impl PathUtil {
 
     pub fn parent(&self) -> String {
         let mut split = self.split();
-        if split.len() == 1 || split.len() == 0 {
+        if split.len() == 1 || split.is_empty() {
             return ROOT_DIR.to_string();
         }
         split.pop();
@@ -79,7 +79,7 @@ impl PathUtil {
 
     pub fn name(&self) -> String {
         let mut split = self.split();
-        if split.len() == 0 {
+        if split.is_empty() {
             return "".to_string();
         }
         split.pop().unwrap().to_string()

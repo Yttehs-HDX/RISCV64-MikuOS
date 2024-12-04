@@ -17,6 +17,7 @@ impl FatDir {
         }
     }
 
+    #[allow(unused)]
     fn inner_mut(&self) -> RefMut<FatDirInner<'static>> {
         self.inner.exclusive_access()
     }
