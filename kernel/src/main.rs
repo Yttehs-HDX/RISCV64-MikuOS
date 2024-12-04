@@ -79,7 +79,7 @@ fn run_test() -> ! {
         // "dup2",
         // "yield",
         // "times",
-        // "brk",
+        "brk",
         "read",
         // "fork",
         "openat",
