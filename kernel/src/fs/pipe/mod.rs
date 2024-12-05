@@ -1,5 +1,6 @@
 pub use ring_buffer::*;
 
+use crate::fs::File;
 use alloc::sync::Arc;
 use spin::Mutex;
 
@@ -35,6 +36,26 @@ impl Pipe {
             writable: true,
             buffer,
         }
+    }
+}
+
+impl File for Pipe {
+    fn readable(&self) -> bool {
+        self.readable
+    }
+
+    fn writable(&self) -> bool {
+        self.writable
+    }
+
+    fn read(&self, buf: &mut [u8]) -> usize {
+        assert!(self.readable);
+        todo!()
+    }
+
+    fn write(&self, buf: &[u8]) -> usize {
+        assert!(self.writable);
+        todo!()
     }
 }
 // region Pipe end

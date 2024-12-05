@@ -111,3 +111,18 @@ pub fn sys_mkdir(_dir_fd: usize, path_ptr: *const u8, mode: usize) -> isize {
         -1
     }
 }
+
+pub fn sys_pipe(pipe_ptr: *mut usize) -> isize {
+    let current_task = task::get_processor().current();
+    let mut task_inner = current_task.inner_mut();
+
+    let (pipe_read, pipe_write) = fs::make_pipe();
+    let read_fd = task_inner.alloc_fd(Some(pipe_read));
+    let write_fd = task_inner.alloc_fd(Some(pipe_write));
+
+    unsafe {
+        *pipe_ptr = read_fd;
+        *pipe_ptr.add(1) = write_fd;
+    }
+    0
+}
