@@ -99,12 +99,13 @@ pub fn sys_close(fd: usize) -> isize {
     let mut task_inner = current_task.inner_mut();
     let fd_table = task_inner.get_fd_table_mut();
 
-    if fd < fd_table.len() {
-        fd_table.remove(fd);
-        0
-    } else {
-        -1
+    // fd not found
+    if fd >= fd_table.len() || fd_table[fd].is_none() {
+        return -1;
     }
+
+    fd_table[fd].take();
+    0
 }
 
 pub fn sys_mkdir(_dir_fd: usize, path_ptr: *const u8, mode: usize) -> isize {
