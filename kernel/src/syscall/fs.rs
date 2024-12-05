@@ -7,7 +7,7 @@ use crate::{
 use alloc::{string::ToString, sync::Arc};
 
 pub fn sys_read(fd: usize, buffer: *mut u8, len: usize) -> isize {
-    if let Some(fd) = &task::get_processor().current().inner().get_fd_table_ref()[fd] {
+    if let Some(fd) = &task::get_processor().current().inner().find_fd(fd) {
         assert!(fd.readable());
         let slice = unsafe { core::slice::from_raw_parts_mut(buffer, len) };
         fd.read(slice) as isize
@@ -17,7 +17,7 @@ pub fn sys_read(fd: usize, buffer: *mut u8, len: usize) -> isize {
 }
 
 pub fn sys_write(fd: usize, buffer: *const u8, len: usize) -> isize {
-    if let Some(fd) = &task::get_processor().current().inner().get_fd_table_ref()[fd] {
+    if let Some(fd) = &task::get_processor().current().inner().find_fd(fd) {
         assert!(fd.writable());
         let slice = unsafe { core::slice::from_raw_parts(buffer, len) };
         fd.write(slice) as isize
@@ -67,7 +67,6 @@ pub fn sys_open(_dir_fd: i32, path_ptr: *const u8, flags: usize) -> isize {
     if let Some(inode) = inode {
         let current_task = task::get_processor().current();
         let mut task_inner = current_task.inner_mut();
-        let fd_table = task_inner.get_fd_table_mut();
 
         match inode.get_type() {
             InodeType::File => {
@@ -75,8 +74,7 @@ pub fn sys_open(_dir_fd: i32, path_ptr: *const u8, flags: usize) -> isize {
                     return -1;
                 }
                 let file = Arc::new(inode.to_file());
-                let fd = fd_table.len();
-                fd_table.push(Some(file));
+                let fd = task_inner.alloc_fd(Some(file));
                 return fd as isize;
             }
             InodeType::Dir => {
@@ -84,8 +82,7 @@ pub fn sys_open(_dir_fd: i32, path_ptr: *const u8, flags: usize) -> isize {
                     return -1;
                 }
                 let dir = Arc::new(inode.to_dir());
-                let fd = fd_table.len();
-                fd_table.push(Some(dir));
+                let fd = task_inner.alloc_fd(Some(dir));
                 return fd as isize;
             }
             _ => {}
@@ -97,15 +94,11 @@ pub fn sys_open(_dir_fd: i32, path_ptr: *const u8, flags: usize) -> isize {
 pub fn sys_close(fd: usize) -> isize {
     let current_task = task::get_processor().current();
     let mut task_inner = current_task.inner_mut();
-    let fd_table = task_inner.get_fd_table_mut();
 
-    // fd not found
-    if fd >= fd_table.len() || fd_table[fd].is_none() {
-        return -1;
+    match task_inner.take_fd(fd) {
+        Some(_) => 0,
+        None => -1,
     }
-
-    fd_table[fd].take();
-    0
 }
 
 pub fn sys_mkdir(_dir_fd: usize, path_ptr: *const u8, mode: usize) -> isize {

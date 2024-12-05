@@ -261,13 +261,39 @@ impl ProcessControlBlockInner {
     pub fn get_cwd(&self) -> String {
         self.cwd.clone()
     }
+}
 
-    pub fn get_fd_table_ref(&self) -> &Vec<Option<Arc<dyn File + Send + Sync>>> {
-        &self.fd_table
+impl ProcessControlBlockInner {
+    pub fn alloc_fd(&mut self, file: Option<Arc<dyn File + Send + Sync>>) -> usize {
+        if let Some((i, _)) = self
+            .fd_table
+            .iter()
+            .enumerate()
+            .find(|(_, fd)| fd.is_none())
+        {
+            return i;
+        }
+
+        if let Some(file) = file {
+            self.fd_table.push(Some(file));
+        } else {
+            self.fd_table.push(None);
+        }
+
+        self.fd_table.len() - 1
     }
 
-    pub fn get_fd_table_mut(&mut self) -> &mut Vec<Option<Arc<dyn File + Send + Sync>>> {
-        &mut self.fd_table
+    pub fn find_fd(&self, fd: usize) -> Option<Arc<dyn File + Send + Sync>> {
+        if fd >= self.fd_table.len() {
+            return None;
+        }
+
+        Some(self.fd_table[fd].clone().unwrap())
+    }
+
+    pub fn take_fd(&mut self, fd: usize) -> Option<Arc<dyn File + Send + Sync>> {
+        assert!(fd < self.fd_table.len());
+        self.fd_table[fd].take()
     }
 }
 // region ProcessControlBlockInner end
