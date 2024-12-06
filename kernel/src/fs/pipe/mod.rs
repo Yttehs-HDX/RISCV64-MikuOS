@@ -1,6 +1,6 @@
 pub use ring_buffer::*;
 
-use crate::fs::File;
+use crate::{fs::File, task};
 use alloc::sync::Arc;
 use spin::Mutex;
 
@@ -50,12 +50,61 @@ impl File for Pipe {
 
     fn read(&self, buf: &mut [u8]) -> usize {
         assert!(self.readable);
-        todo!()
+        let mut buf_iter = buf.iter_mut();
+        let mut buf_len = 0usize;
+
+        loop {
+            let mut ring_buffer = self.buffer.lock();
+            let loop_read = ring_buffer.read_bytes();
+            if loop_read == 0 {
+                if ring_buffer.all_write_ends_are_closed() {
+                    return buf_len;
+                }
+
+                drop(ring_buffer);
+                task::get_processor().schedule();
+                continue;
+            }
+
+            for _ in 0..loop_read {
+                if let Some(byte) = buf_iter.next() {
+                    *byte = ring_buffer.read_byte();
+                    buf_len += 1;
+                } else {
+                    return buf_len;
+                }
+            }
+        }
     }
 
     fn write(&self, buf: &[u8]) -> usize {
         assert!(self.writable);
-        todo!()
+        let want_to_write = buf.len();
+        let mut buf_iter = buf.iter();
+        let mut buf_len = 0usize;
+
+        loop {
+            let mut ring_buffer = self.buffer.lock();
+            let loop_write = ring_buffer.write_bytes();
+            if loop_write == 0 {
+                drop(ring_buffer);
+                task::get_processor().schedule();
+                continue;
+            }
+
+            for _ in 0..loop_write {
+                if let Some(byte) = buf_iter.next() {
+                    ring_buffer.write_byte(*byte);
+                    buf_len += 1;
+
+                    if buf_len == want_to_write {
+                        return buf_len;
+                    }
+                } else {
+                    return buf_len;
+                }
+            }
+        }
     }
 }
 // region Pipe end
