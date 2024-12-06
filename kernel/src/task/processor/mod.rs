@@ -66,7 +66,7 @@ impl Processor {
         }
     }
 
-    pub fn schedule(&self) -> ! {
+    pub fn schedule(&self) {
         loop {
             if let Some(pcb) = self.take_current() {
                 let task_cx = pcb.inner_mut().get_task_cx_mut() as *mut _;

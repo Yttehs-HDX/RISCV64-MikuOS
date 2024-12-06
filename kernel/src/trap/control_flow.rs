@@ -132,6 +132,7 @@ pub fn trap_handler() -> ! {
         Trap::Interrupt(Interrupt::SupervisorTimer) => {
             timer::set_next_trigger();
             task::get_processor().schedule();
+            trap_return();
         }
         Trap::Exception(Exception::IllegalInstruction) => {
             error!(
