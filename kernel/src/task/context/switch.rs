@@ -5,6 +5,8 @@ use core::arch::asm;
 pub unsafe extern "C" fn __save_task(task_cx: *mut TaskContext) {
     // a0 -> *mut TaskContext
     asm!(
+        // save ra
+        "sd ra, 0 * 8(a0)",
         // save sp
         "sd sp, 1 * 8(a0)",
         // save s0 - s11
