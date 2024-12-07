@@ -1,6 +1,6 @@
 pub use unit::*;
 
-use crate::config::CLOCK_FREQ;
+use crate::board::CLOCK_FREQ;
 
 mod unit;
 

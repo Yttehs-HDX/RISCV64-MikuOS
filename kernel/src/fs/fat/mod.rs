@@ -3,7 +3,7 @@ pub use inode::*;
 pub use virtio::*;
 
 use crate::{
-    config::VIRT_IO,
+    board::VIRT_IO,
     drivers::VirtIOHal,
     fs::{FileSystem, OpenFlags, PathUtil},
 };
