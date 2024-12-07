@@ -3,7 +3,7 @@ use alloc::sync::Arc;
 use lazy_static::lazy_static;
 
 pub(in crate::task) fn add_initproc() {
-    get_task_manager().add(INITPROC.clone());
+    get_task_manager().add_to_back(INITPROC.clone());
 }
 
 pub(in crate::task) fn get_initproc() -> &'static Arc<ProcessControlBlock> {

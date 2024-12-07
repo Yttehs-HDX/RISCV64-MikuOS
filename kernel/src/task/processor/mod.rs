@@ -66,15 +66,36 @@ impl Processor {
         }
     }
 
-    pub fn schedule(&self) -> ! {
+    pub fn wait_for_child(&self, pid: usize) -> ! {
         loop {
             if let Some(pcb) = self.take_current() {
                 let task_cx = pcb.inner_mut().get_task_cx_mut() as *mut _;
-                get_task_manager().add(pcb);
+                get_task_manager().add_to_front(pcb);
                 unsafe {
                     __save_task(task_cx);
                 }
             }
+
+            if let Some(pcb) = get_task_manager().fetch_by_pid(pid) {
+                let task_cx = pcb.inner_mut().get_task_cx_ref() as *const _;
+                self.inner_mut().current = Some(pcb);
+                unsafe {
+                    __restore_task(task_cx);
+                }
+            }
+        }
+    }
+
+    pub fn schedule(&self) -> ! {
+        loop {
+            if let Some(pcb) = self.take_current() {
+                let task_cx = pcb.inner_mut().get_task_cx_mut() as *mut _;
+                get_task_manager().add_to_back(pcb);
+                unsafe {
+                    __save_task(task_cx);
+                }
+            }
+
             if let Some(pcb) = get_task_manager().fetch() {
                 let task_cx = pcb.inner().get_task_cx_ref() as *const _;
                 self.inner_mut().current = Some(pcb);

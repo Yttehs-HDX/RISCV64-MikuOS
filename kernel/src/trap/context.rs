@@ -51,6 +51,10 @@ impl TrapContext {
         self.sepc += 4;
     }
 
+    pub fn move_to_prev_ins(&mut self) {
+        self.sepc -= 4;
+    }
+
     pub fn set_kernel_sp(&mut self, sp: usize) {
         self.kernel_sp = sp;
     }

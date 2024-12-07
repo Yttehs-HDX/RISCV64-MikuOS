@@ -64,7 +64,7 @@ fn run_test() -> ! {
         "open",
         // "clone",
         // "mount",
-        // "exit",
+        "exit",
         // "sleep",
         // "mmap",
         // "uname",

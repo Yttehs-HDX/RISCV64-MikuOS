@@ -100,6 +100,7 @@ pub fn sys_waitpid(pid: isize, exit_code_ptr: *mut i32, _option: usize) -> isize
         .iter()
         .any(|child| child.get_pid() == pid as usize || pid == -1)
     {
+        println!("waitpid: pid not found");
         return -1;
     }
 
@@ -108,12 +109,20 @@ pub fn sys_waitpid(pid: isize, exit_code_ptr: *mut i32, _option: usize) -> isize
         .find(|child| (child.get_pid() == pid as usize || pid == -1) && child.is_zombie())
     {
         // child is zombie
+        let pid = child.get_pid();
         let exit_code = child.get_exit_code();
         unsafe { *exit_code_ptr = exit_code };
-        children.retain(|c| c.get_pid() != pid as usize);
-        pid
+        children.retain(|c| c.get_pid() != pid);
+        pid as isize
     } else {
         // child is not zombie
-        -2
+        let pid = if pid == -1 {
+            children[0].get_pid()
+        } else {
+            pid as usize
+        };
+        drop(task_inner);
+        current_task.get_trap_cx_mut().move_to_prev_ins();
+        task::get_processor().wait_for_child(pid);
     }
 }

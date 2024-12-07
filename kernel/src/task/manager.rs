@@ -4,7 +4,7 @@ use core::cell::RefMut;
 use lazy_static::lazy_static;
 
 pub fn add_task(pcb: Arc<ProcessControlBlock>) {
-    get_task_manager().add(pcb);
+    get_task_manager().add_to_back(pcb);
 }
 
 pub(in crate::task) fn get_task_manager() -> &'static TaskManager {
@@ -64,12 +64,26 @@ impl TaskManager {
 }
 
 impl TaskManager {
-    pub fn add(&self, pcb: Arc<ProcessControlBlock>) {
+    pub fn add_to_back(&self, pcb: Arc<ProcessControlBlock>) {
         self.inner_mut().ready_queue.push_back(pcb);
+    }
+
+    pub fn add_to_front(&self, pcb: Arc<ProcessControlBlock>) {
+        self.inner_mut().ready_queue.push_front(pcb);
     }
 
     pub fn fetch(&self) -> Option<Arc<ProcessControlBlock>> {
         self.inner_mut().ready_queue.pop_front()
+    }
+
+    pub fn fetch_by_pid(&self, pid: usize) -> Option<Arc<ProcessControlBlock>> {
+        let mut inner = self.inner_mut();
+        let idx = inner
+            .ready_queue
+            .iter()
+            .position(|pcb| pcb.get_pid() == pid);
+
+        idx.map(|idx| inner.ready_queue.remove(idx).unwrap())
     }
 
     #[cfg(feature = "test")]
