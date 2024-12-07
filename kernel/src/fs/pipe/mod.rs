@@ -63,7 +63,6 @@ impl File for Pipe {
 
                 drop(ring_buffer);
                 task::get_processor().schedule();
-                continue;
             }
 
             for _ in 0..loop_read {
@@ -89,7 +88,6 @@ impl File for Pipe {
             if loop_write == 0 {
                 drop(ring_buffer);
                 task::get_processor().schedule();
-                continue;
             }
 
             for _ in 0..loop_write {

@@ -37,7 +37,7 @@ impl ProcessControlBlock {
             KERNEL_STACK_SP,
             trap::trap_handler as usize,
         );
-        let task_cx = TaskContext::goto_trap_return(KERNEL_STACK_SP);
+        let task_cx = TaskContext::empty();
         let cwd = ROOT_DIR.to_string();
         let fd_table: Vec<Option<Arc<dyn File + Send + Sync>>> = vec![
             Some(Arc::new(Stdin)),
@@ -68,7 +68,7 @@ impl ProcessControlBlock {
             .unwrap()
             .ppn()
             .low_to_high();
-        let task_cx = TaskContext::goto_trap_return(KERNEL_STACK_SP);
+        let task_cx = TaskContext::empty();
         let cwd = self.inner().get_cwd().clone();
         let mut fd_table: Vec<Option<Arc<dyn File + Send + Sync>>> = Vec::new();
         self.inner().fd_table.iter().for_each(|fd| {

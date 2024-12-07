@@ -12,7 +12,6 @@ pub fn sys_exit(exit_code: i32) -> ! {
 
 pub fn sys_yield() -> isize {
     task::get_processor().schedule();
-    0
 }
 
 pub fn sys_get_time(ts_ptr: *mut u8, _tz: usize) -> isize {
