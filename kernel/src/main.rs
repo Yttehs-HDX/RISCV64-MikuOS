@@ -72,7 +72,7 @@ fn run_test() -> ! {
         "mkdir_",
         // "fstat",
         "getpid",
-        // "wait",
+        "wait",
         "write",
         // "getdents",
         // "waitpid",
