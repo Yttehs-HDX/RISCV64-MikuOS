@@ -56,7 +56,7 @@ fn run_test() -> ! {
         "execve",
         "getcwd",
         // "munmap",
-        // "pipe",
+        "pipe",
         // "umount",
         "close",
         "getppid",

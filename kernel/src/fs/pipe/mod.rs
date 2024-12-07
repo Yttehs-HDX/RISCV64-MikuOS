@@ -63,6 +63,13 @@ impl File for Pipe {
 
                 drop(ring_buffer);
                 task::get_processor().current().get_trap_cx_mut().move_to_prev_ins();
+                let current_task = task::get_processor().current();
+                let task_inner = current_task.inner();
+                if let Some(child) = task_inner.get_children_ref().iter().find(|pcb| !pcb.is_zombie()) {
+                    let pid = child.get_pid();
+                    drop(task_inner);
+                    task::get_processor().wait_for_child(pid);
+                }
                 task::get_processor().schedule();
             }
 
@@ -89,6 +96,13 @@ impl File for Pipe {
             if loop_write == 0 {
                 drop(ring_buffer);
                 task::get_processor().current().get_trap_cx_mut().move_to_prev_ins();
+                let current_task = task::get_processor().current();
+                let task_inner = current_task.inner();
+                if let Some(child) = task_inner.get_children_ref().iter().find(|pcb| !pcb.is_zombie()) {
+                    let pid = child.get_pid();
+                    drop(task_inner);
+                    task::get_processor().wait_for_child(pid);
+                }
                 task::get_processor().schedule();
             }
 
