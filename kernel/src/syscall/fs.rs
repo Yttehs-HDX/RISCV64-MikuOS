@@ -7,20 +7,26 @@ use crate::{
 use alloc::{string::ToString, sync::Arc};
 
 pub fn sys_read(fd: usize, buffer: *mut u8, len: usize) -> isize {
-    if let Some(fd) = &task::get_processor().current().inner().find_fd(fd) {
-        assert!(fd.readable());
+    let current_task = task::get_processor().current();
+    let task_inner = current_task.inner();
+    if let Some(fd_impl) = task_inner.find_fd(fd) {
+        assert!(fd_impl.readable(), "fd {} not readable", fd);
         let slice = unsafe { core::slice::from_raw_parts_mut(buffer, len) };
-        fd.read(slice) as isize
+        drop(task_inner);
+        fd_impl.read(slice) as isize
     } else {
         panic!("sys_read: fd {} not supported", fd);
     }
 }
 
 pub fn sys_write(fd: usize, buffer: *const u8, len: usize) -> isize {
-    if let Some(fd) = &task::get_processor().current().inner().find_fd(fd) {
-        assert!(fd.writable());
+    let current_task = task::get_processor().current();
+    let task_inner = current_task.inner();
+    if let Some(fd_impl) = task_inner.find_fd(fd) {
+        assert!(fd_impl.writable(), "fd {} is not writable", fd);
         let slice = unsafe { core::slice::from_raw_parts(buffer, len) };
-        fd.write(slice) as isize
+        drop(task_inner);
+        fd_impl.write(slice) as isize
     } else {
         panic!("sys_write: fd {} not supported", fd);
     }
