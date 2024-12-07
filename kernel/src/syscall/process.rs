@@ -110,17 +110,28 @@ pub fn sys_waitpid(pid: isize, exit_code_ptr: *mut i32, _option: usize) -> isize
         // child is zombie
         let pid = child.get_pid();
         let exit_code = child.get_exit_code();
-            if exit_code_ptr != core::ptr::null_mut() {
-                unsafe {
-                    *exit_code_ptr = exit_code;
+        if exit_code_ptr != core::ptr::null_mut() {
+            unsafe {
+                match exit_code {
+                    0 => {
+                        *exit_code_ptr = exit_code;
+                    }
+                    _ => {
+                        *exit_code_ptr = exit_code << 8;
+                    }
                 }
             }
+        }
         children.retain(|c| c.get_pid() != pid);
         pid as isize
     } else {
         // child is not zombie
         let pid = if pid == -1 {
-            children.iter().find(|child| !child.is_zombie()).unwrap().get_pid()
+            children
+                .iter()
+                .find(|child| !child.is_zombie())
+                .unwrap()
+                .get_pid()
         } else {
             pid as usize
         };
