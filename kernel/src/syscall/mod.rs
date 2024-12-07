@@ -42,7 +42,7 @@ pub fn syscall(id: usize, args: [usize; 3]) -> isize {
         SYSCALL_OPEN => sys_open(args[0] as i32, args[1] as *const u8, args[2]),
         SYSCALL_CLOSE => sys_close(args[0]),
         SYSCALL_MKDIR => sys_mkdir(args[0], args[1] as *const u8, args[2]),
-        SYSCALL_PIPE => sys_pipe(args[0] as *mut usize),
+        SYSCALL_PIPE => sys_pipe(args[0] as *mut i32),
         _ => {
             error!("Unsupported syscall id: {}", id);
             sys_exit(-1);

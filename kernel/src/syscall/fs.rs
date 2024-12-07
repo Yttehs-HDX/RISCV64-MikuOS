@@ -118,7 +118,7 @@ pub fn sys_mkdir(_dir_fd: usize, path_ptr: *const u8, mode: usize) -> isize {
     }
 }
 
-pub fn sys_pipe(pipe_ptr: *mut usize) -> isize {
+pub fn sys_pipe(pipe_ptr: *mut i32) -> isize {
     let current_task = task::get_processor().current();
     let mut task_inner = current_task.inner_mut();
 
@@ -127,8 +127,8 @@ pub fn sys_pipe(pipe_ptr: *mut usize) -> isize {
     let write_fd = task_inner.alloc_fd(Some(pipe_write));
 
     unsafe {
-        *pipe_ptr = read_fd;
-        *pipe_ptr.add(1) = write_fd;
+        *pipe_ptr = read_fd as i32;
+        *pipe_ptr.add(1) = write_fd as i32;
     }
     0
 }
