@@ -100,7 +100,6 @@ pub fn sys_waitpid(pid: isize, exit_code_ptr: *mut i32, _option: usize) -> isize
         .iter()
         .any(|child| child.get_pid() == pid as usize || pid == -1)
     {
-        println!("waitpid: pid not found");
         return -1;
     }
 
@@ -111,7 +110,11 @@ pub fn sys_waitpid(pid: isize, exit_code_ptr: *mut i32, _option: usize) -> isize
         // child is zombie
         let pid = child.get_pid();
         let exit_code = child.get_exit_code();
-        unsafe { *exit_code_ptr = exit_code };
+            if exit_code_ptr != core::ptr::null_mut() {
+                unsafe {
+                    *exit_code_ptr = exit_code;
+                }
+            }
         children.retain(|c| c.get_pid() != pid);
         pid as isize
     } else {
