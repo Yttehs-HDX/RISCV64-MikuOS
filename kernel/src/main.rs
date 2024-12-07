@@ -81,7 +81,7 @@ fn run_test() -> ! {
         // "times",
         "brk",
         "read",
-        // "fork",
+        "fork",
         "openat",
         // "dup",
         // "unlink",
