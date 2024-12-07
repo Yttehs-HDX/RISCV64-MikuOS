@@ -117,7 +117,7 @@ pub fn sys_waitpid(pid: isize, exit_code_ptr: *mut i32, _option: usize) -> isize
     } else {
         // child is not zombie
         let pid = if pid == -1 {
-            children[0].get_pid()
+            children.iter().find(|child| !child.is_zombie()).unwrap().get_pid()
         } else {
             pid as usize
         };
