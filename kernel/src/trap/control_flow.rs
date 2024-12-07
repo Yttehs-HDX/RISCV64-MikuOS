@@ -87,14 +87,14 @@ pub(in crate::trap) unsafe extern "C" fn __snap_trap() -> ! {
 
         // read kernel_sp
         "ld t2, 34*8(sp)",
-        // read trap_handler address
-        "ld t3, 35*8(sp)",
         // switch to KernelStack
         "mv sp, t2",
         // sp -> KernelStack
 
         // goto trap_handler
-        "jr t3",
+        "la t0, {trap_handler}",
+        "jr t0",
+        trap_handler = sym trap_handler,
         options(noreturn)
     )
 }

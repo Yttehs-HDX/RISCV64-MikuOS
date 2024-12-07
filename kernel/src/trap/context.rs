@@ -1,3 +1,4 @@
+use crate::config::{KERNEL_STACK_SP, USER_STACK_SP};
 use riscv::register::sstatus::{self, Sstatus, SPP};
 
 // region TrapContext begin
@@ -9,12 +10,11 @@ pub struct TrapContext {
     sepc: usize,      // +33
 
     // variables
-    kernel_sp: usize,    // +34
-    trap_handler: usize, // +35
+    kernel_sp: usize, // +34
 }
 
 impl TrapContext {
-    pub fn new(entry: usize, user_sp: usize, kernel_sp: usize, trap_handler: usize) -> Self {
+    pub fn new(entry: usize) -> Self {
         let mut sstatus = sstatus::read();
         sstatus.set_spp(SPP::User);
         sstatus.clear_sum();
@@ -23,10 +23,9 @@ impl TrapContext {
             x: [0; 32],
             sstatus,
             sepc: entry,
-            kernel_sp,
-            trap_handler,
+            kernel_sp: KERNEL_STACK_SP,
         };
-        cx.set_sp(user_sp);
+        cx.set_sp(USER_STACK_SP);
         cx
     }
 }

@@ -1,10 +1,10 @@
 use crate::{
-    config::{KERNEL_STACK_SP, ROOT_DIR, TRAP_CX_PTR, USER_STACK_SP},
+    config::{KERNEL_STACK_SP, ROOT_DIR, TRAP_CX_PTR},
     fs::{File, Stderr, Stdin, Stdout},
     mm::{self, MemorySpace, PhysPageNum, PpnOffset, UserSpace, VirtAddr},
     sync::UPSafeCell,
     task::{alloc_pid_handle, PidHandle, TaskContext},
-    trap::{self, TrapContext},
+    trap::TrapContext,
 };
 use alloc::{
     string::String,
@@ -31,12 +31,7 @@ impl ProcessControlBlock {
             .unwrap()
             .ppn()
             .low_to_high();
-        *trap_cx_ppn.as_mut() = TrapContext::new(
-            user_space.get_entry(),
-            USER_STACK_SP,
-            KERNEL_STACK_SP,
-            trap::trap_handler as usize,
-        );
+        *trap_cx_ppn.as_mut() = TrapContext::new(user_space.get_entry());
         let task_cx = TaskContext::empty();
         let cwd = ROOT_DIR.to_string();
         let fd_table: Vec<Option<Arc<dyn File + Send + Sync>>> = vec![
@@ -124,12 +119,7 @@ impl ProcessControlBlock {
             .unwrap()
             .ppn()
             .low_to_high();
-        *trap_cx_ppn.as_mut() = TrapContext::new(
-            user_space.get_entry(),
-            USER_STACK_SP,
-            KERNEL_STACK_SP,
-            trap::trap_handler as usize,
-        );
+        *trap_cx_ppn.as_mut() = TrapContext::new(user_space.get_entry());
 
         // update program brk, user space and trap context
         self.inner_mut().program_brk = user_space.get_base_size();
