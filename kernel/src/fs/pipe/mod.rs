@@ -62,6 +62,7 @@ impl File for Pipe {
                 }
 
                 drop(ring_buffer);
+                task::get_processor().current().get_trap_cx_mut().move_to_prev_ins();
                 task::get_processor().schedule();
             }
 
@@ -87,6 +88,7 @@ impl File for Pipe {
             let loop_write = ring_buffer.write_bytes();
             if loop_write == 0 {
                 drop(ring_buffer);
+                task::get_processor().current().get_trap_cx_mut().move_to_prev_ins();
                 task::get_processor().schedule();
             }
 
