@@ -7,11 +7,11 @@ use crate::{
     trap::TrapContext,
 };
 use alloc::{
-    string::String,
+    collections::btree_map::BTreeMap,
+    string::{String, ToString},
     sync::{Arc, Weak},
     vec::Vec,
 };
-use alloc::{string::ToString, vec};
 use core::cell::{Ref, RefMut};
 
 // region ProcessControlBlock begin
@@ -34,11 +34,10 @@ impl ProcessControlBlock {
         *trap_cx_ppn.as_mut() = TrapContext::new(user_space.get_entry());
         let task_cx = TaskContext::empty();
         let cwd = ROOT_DIR.to_string();
-        let fd_table: Vec<Option<Arc<dyn File + Send + Sync>>> = vec![
-            Some(Arc::new(Stdin)),
-            Some(Arc::new(Stdout)),
-            Some(Arc::new(Stderr)),
-        ];
+        let mut fd_table: BTreeMap<usize, Arc<dyn File + Send + Sync>> = BTreeMap::new();
+        fd_table.insert(0, Arc::new(Stdin));
+        fd_table.insert(1, Arc::new(Stdout));
+        fd_table.insert(2, Arc::new(Stderr));
 
         Self {
             pid,
@@ -65,13 +64,9 @@ impl ProcessControlBlock {
             .low_to_high();
         let task_cx = TaskContext::empty();
         let cwd = self.inner().get_cwd().clone();
-        let mut fd_table: Vec<Option<Arc<dyn File + Send + Sync>>> = Vec::new();
-        self.inner().fd_table.iter().for_each(|fd| {
-            if let Some(f) = fd {
-                fd_table.push(Some(f.clone()));
-            } else {
-                fd_table.push(None);
-            }
+        let mut fd_table: BTreeMap<usize, Arc<dyn File + Send + Sync>> = BTreeMap::new();
+        self.inner().fd_table.iter().for_each(|(&no, fd)| {
+            fd_table.insert(no, fd.clone());
         });
 
         let pcb = Arc::new(Self {
@@ -199,7 +194,7 @@ pub struct ProcessControlBlockInner {
     exit_code: i32,
 
     cwd: String,
-    fd_table: Vec<Option<Arc<dyn File + Send + Sync>>>,
+    fd_table: BTreeMap<usize, Arc<dyn File + Send + Sync>>,
 }
 
 impl ProcessControlBlockInner {
@@ -208,7 +203,7 @@ impl ProcessControlBlockInner {
         task_cx: TaskContext,
         user_space: UserSpace,
         cwd: String,
-        fd_table: Vec<Option<Arc<dyn File + Send + Sync>>>,
+        fd_table: BTreeMap<usize, Arc<dyn File + Send + Sync>>,
     ) -> Self {
         let program_brk = user_space.get_base_size();
         Self {
@@ -254,36 +249,21 @@ impl ProcessControlBlockInner {
 }
 
 impl ProcessControlBlockInner {
-    pub fn alloc_fd(&mut self, file: Option<Arc<dyn File + Send + Sync>>) -> usize {
-        if let Some((i, _)) = self
-            .fd_table
-            .iter()
-            .enumerate()
-            .find(|(_, fd)| fd.is_none())
-        {
-            return i;
+    pub fn alloc_fd(&mut self, file: Arc<dyn File + Send + Sync>) -> usize {
+        let mut fd = 0;
+        while self.fd_table.contains_key(&fd) {
+            fd += 1;
         }
-
-        if let Some(file) = file {
-            self.fd_table.push(Some(file));
-        } else {
-            self.fd_table.push(None);
-        }
-
-        self.fd_table.len() - 1
+        self.fd_table.insert(fd, file);
+        fd
     }
 
     pub fn find_fd(&self, fd: usize) -> Option<Arc<dyn File + Send + Sync>> {
-        if fd >= self.fd_table.len() {
-            return None;
-        }
-
-        Some(self.fd_table[fd].clone().unwrap())
+        self.fd_table.get(&fd).map(|fd| fd.clone())
     }
 
     pub fn take_fd(&mut self, fd: usize) -> Option<Arc<dyn File + Send + Sync>> {
-        assert!(fd < self.fd_table.len());
-        self.fd_table[fd].take()
+        self.fd_table.remove(&fd)
     }
 }
 // region ProcessControlBlockInner end

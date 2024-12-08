@@ -28,6 +28,7 @@ const SYSCALL_MOUNT: usize = 40;
 const SYSCALL_UMOUNT: usize = 39;
 const SYSCALL_UNLINK: usize = 35;
 const SYSCALL_DUP: usize = 23;
+const SYSCALL_DUP3: usize = 24;
 
 pub fn syscall(id: usize, args: [usize; 6]) -> isize {
     match id {

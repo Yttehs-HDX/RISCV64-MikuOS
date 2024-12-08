@@ -80,7 +80,7 @@ pub fn sys_open(_dir_fd: i32, path_ptr: *const u8, flags: usize) -> isize {
                     return -1;
                 }
                 let file = Arc::new(inode.to_file());
-                let fd = task_inner.alloc_fd(Some(file));
+                let fd = task_inner.alloc_fd(file);
                 return fd as isize;
             }
             InodeType::Dir => {
@@ -88,7 +88,7 @@ pub fn sys_open(_dir_fd: i32, path_ptr: *const u8, flags: usize) -> isize {
                     return -1;
                 }
                 let dir = Arc::new(inode.to_dir());
-                let fd = task_inner.alloc_fd(Some(dir));
+                let fd = task_inner.alloc_fd(dir);
                 return fd as isize;
             }
             _ => {}
@@ -123,8 +123,8 @@ pub fn sys_pipe(pipe_ptr: *mut i32) -> isize {
     let mut task_inner = current_task.inner_mut();
 
     let (pipe_read, pipe_write) = fs::make_pipe();
-    let read_fd = task_inner.alloc_fd(Some(pipe_read));
-    let write_fd = task_inner.alloc_fd(Some(pipe_write));
+    let read_fd = task_inner.alloc_fd(pipe_read);
+    let write_fd = task_inner.alloc_fd(pipe_write);
 
     unsafe {
         *pipe_ptr = read_fd as i32;
@@ -162,6 +162,5 @@ pub fn sys_dup(old_fd: usize) -> isize {
         None => return -1,
     };
 
-    let new_fd = task_inner.alloc_fd(Some(old));
-    new_fd as isize
+    task_inner.alloc_fd(old) as isize
 }
