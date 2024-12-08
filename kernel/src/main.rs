@@ -85,7 +85,7 @@ fn run_test() -> ! {
         "fork",
         "openat",
         // "dup",
-        // "unlink",
+        "unlink",
     ] {
         task::create_process(test);
     }

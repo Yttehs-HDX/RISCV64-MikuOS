@@ -142,3 +142,13 @@ pub fn sys_umount(_target_ptr: *const u8) -> isize {
     // unsupported for rust-fatfs
     0
 }
+
+pub fn sys_unlink(_dirfd: usize, path_ptr: *const u8, _flags: usize) -> isize {
+    let path = translate_str(path_ptr);
+    let path = PathUtil::from_user(path).to_string();
+    let ret = match fs::delete(&path) {
+        Ok(_) => 0,
+        Err(_) => -1,
+    };
+    ret
+}

@@ -75,6 +75,34 @@ impl FileSystem for FatFileSystem {
         let path = PathUtil::from_str(path).to_string();
         self.inner.root_dir().create_dir(&path).is_ok()
     }
+
+    fn delete(&self, path: &str) -> Result<(), ()> {
+        let path = PathUtil::from_str(path);
+        let parent = path.parent();
+        let name = path.name();
+
+        // open parent directory
+        let dir = self.inner.root_dir();
+        let dir = if parent == "/" {
+            dir
+        } else {
+            let dir = dir.open_dir(&parent);
+            match dir {
+                Ok(dir) => dir,
+                Err(_) => return Err(()),
+            }
+        };
+
+        // find the file in the directory
+        let entry = dir
+            .iter()
+            .find(|entry| entry.as_ref().unwrap().file_name() == name);
+        if entry.is_none() {
+            return Err(());
+        }
+        dir.remove(&name).ok().unwrap();
+        Ok(())
+    }
 }
 
 impl FatFileSystem {
