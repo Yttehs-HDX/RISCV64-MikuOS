@@ -23,6 +23,7 @@ mod trap;
 mod util;
 
 pub fn main() -> ! {
+    print_logo();
     println!("[Kernel] Hello, world!");
     assert_eq!(*config::SKERNEL, 0xffff_ffff_c020_0000);
 
@@ -89,4 +90,14 @@ fn run_test() -> ! {
         task::create_process(test);
     }
     task::get_processor().run_tasks();
+}
+
+fn print_logo() {
+    println!(
+        r#" __  __   _   _               ___    ____  
+|  \/  | (_) | | __  _   _   / _ \  / ___| 
+| |\/| | | | | |/ / | | | | | | | | \___ \ 
+| |  | | | | |   <  | |_| | | |_| |  ___) |
+|_|  |_| |_| |_|\_\  \__,_|  \___/  |____/ "#
+    );
 }
