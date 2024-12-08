@@ -132,3 +132,13 @@ pub fn sys_pipe(pipe_ptr: *mut i32) -> isize {
     }
     0
 }
+
+pub fn sys_mount(_source_ptr: *const u8, _target_ptr: *const u8, _fs_type_ptr: *const u8) -> isize {
+    // unsupported for rust-fatfs
+    0
+}
+
+pub fn sys_umount(_target_ptr: *const u8) -> isize {
+    // unsupported for rust-fatfs
+    0
+}
