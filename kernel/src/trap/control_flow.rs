@@ -124,8 +124,17 @@ pub fn trap_handler() -> ! {
             //     // enable supervisor user memory access
             //     sstatus::set_sum();
             // }
-            let x10 =
-                syscall::syscall(cx.get_x(17), [cx.get_x(10), cx.get_x(11), cx.get_x(12)]) as usize;
+            let x10 = syscall::syscall(
+                cx.get_x(17),
+                [
+                    cx.get_x(10),
+                    cx.get_x(11),
+                    cx.get_x(12),
+                    cx.get_x(13),
+                    cx.get_x(14),
+                    cx.get_x(15),
+                ],
+            ) as usize;
             cx.set_a0(x10);
             trap_return();
         }

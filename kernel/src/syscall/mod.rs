@@ -25,7 +25,7 @@ const SYSCALL_MKDIR: usize = 34;
 const SYSCALL_PIPE: usize = 59;
 const SYSCALL_NANO_SLEEP: usize = 101;
 
-pub fn syscall(id: usize, args: [usize; 3]) -> isize {
+pub fn syscall(id: usize, args: [usize; 6]) -> isize {
     match id {
         SYSCALL_READ => sys_read(args[0], args[1] as *mut u8, args[2]),
         SYSCALL_WRITE => sys_write(args[0], args[1] as *const u8, args[2]),
