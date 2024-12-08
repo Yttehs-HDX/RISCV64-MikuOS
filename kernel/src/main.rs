@@ -66,7 +66,7 @@ fn run_test() -> ! {
         // "clone",
         // "mount",
         "exit",
-        // "sleep",
+        "sleep",
         // "mmap",
         // "uname",
         // "gettimeofday",

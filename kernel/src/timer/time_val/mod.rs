@@ -28,11 +28,11 @@ impl core::fmt::Display for TimeVal {
 }
 
 impl TimeVal {
-    pub fn new(sec: usize, usec: usize) -> Self {
+    pub const fn new(sec: usize, usec: usize) -> Self {
         TimeVal { sec, usec }
     }
 
-    pub fn from_reg(time: usize) -> Self {
+    pub const fn from_reg(time: usize) -> Self {
         let sec = time / CLOCK_FREQ;
         let usec = time % CLOCK_FREQ * MICRO_PER_SEC / CLOCK_FREQ;
         TimeVal { sec, usec }

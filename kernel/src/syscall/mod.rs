@@ -23,6 +23,7 @@ const SYSCALL_OPEN: usize = 56;
 const SYSCALL_CLOSE: usize = 57;
 const SYSCALL_MKDIR: usize = 34;
 const SYSCALL_PIPE: usize = 59;
+const SYSCALL_NANO_SLEEP: usize = 101;
 
 pub fn syscall(id: usize, args: [usize; 3]) -> isize {
     match id {
@@ -43,6 +44,7 @@ pub fn syscall(id: usize, args: [usize; 3]) -> isize {
         SYSCALL_CLOSE => sys_close(args[0]),
         SYSCALL_MKDIR => sys_mkdir(args[0], args[1] as *const u8, args[2]),
         SYSCALL_PIPE => sys_pipe(args[0] as *mut i32),
+        SYSCALL_NANO_SLEEP => sys_nanosleep(args[0] as *const u8, args[1]),
         _ => {
             error!("Unsupported syscall id: {}", id);
             sys_exit(-1);

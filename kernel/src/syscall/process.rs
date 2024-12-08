@@ -23,6 +23,18 @@ pub fn sys_get_time(ts_ptr: *mut u8, _tz: usize) -> isize {
     0
 }
 
+pub fn sys_nanosleep(req_ptr: *const u8, _rem_ptr: usize) -> isize {
+    let now = timer::get_current_time();
+    let wait_until = unsafe { *(req_ptr as *const TimeVal) } + now;
+    loop {
+        let current_time = timer::get_current_time();
+        if current_time >= wait_until {
+            break;
+        }
+    }
+    0
+}
+
 pub fn sys_brk(new_end: i32) -> isize {
     if new_end == 0 {
         return sys_sbrk(0);
