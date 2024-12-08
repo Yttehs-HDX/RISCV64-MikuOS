@@ -258,6 +258,10 @@ impl ProcessControlBlockInner {
         fd
     }
 
+    pub fn insert_fd(&mut self, fd: usize, file: Arc<dyn File + Send + Sync>) {
+        self.fd_table.insert(fd, file);
+    }
+
     pub fn find_fd(&self, fd: usize) -> Option<Arc<dyn File + Send + Sync>> {
         self.fd_table.get(&fd).map(|fd| fd.clone())
     }

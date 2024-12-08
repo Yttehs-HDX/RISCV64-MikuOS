@@ -162,5 +162,23 @@ pub fn sys_dup(old_fd: usize) -> isize {
         None => return -1,
     };
 
-    task_inner.alloc_fd(old) as isize
+    let new_fd = task_inner.alloc_fd(old);
+    drop(task_inner);
+
+    new_fd as isize
+}
+
+pub fn sys_dup2(old_fd: usize, new_fd: usize) -> isize {
+    let current_task = task::get_processor().current();
+    let mut task_inner = current_task.inner_mut();
+
+    let old = match task_inner.find_fd(old_fd) {
+        Some(fd) => fd,
+        None => return -1,
+    };
+
+    task_inner.insert_fd(new_fd, old);
+    drop(task_inner);
+
+    new_fd as isize
 }

@@ -58,6 +58,7 @@ pub fn syscall(id: usize, args: [usize; 6]) -> isize {
         SYSCALL_UMOUNT => sys_umount(args[0] as *const u8),
         SYSCALL_UNLINK => sys_unlink(args[0], args[1] as *const u8, args[2]),
         SYSCALL_DUP => sys_dup(args[0]),
+        SYSCALL_DUP3 => sys_dup2(args[0], args[1]),
         _ => {
             error!("Unsupported syscall id: {}", id);
             sys_exit(-1);
