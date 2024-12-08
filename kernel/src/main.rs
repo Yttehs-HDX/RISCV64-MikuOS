@@ -78,7 +78,7 @@ fn run_test() -> ! {
         // "getdents",
         "waitpid",
         // "dup2",
-        // "yield",
+        "yield",
         // "times",
         "brk",
         "read",
