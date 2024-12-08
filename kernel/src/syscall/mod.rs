@@ -27,6 +27,7 @@ const SYSCALL_NANO_SLEEP: usize = 101;
 const SYSCALL_MOUNT: usize = 40;
 const SYSCALL_UMOUNT: usize = 39;
 const SYSCALL_UNLINK: usize = 35;
+const SYSCALL_DUP: usize = 23;
 
 pub fn syscall(id: usize, args: [usize; 6]) -> isize {
     match id {
@@ -55,6 +56,7 @@ pub fn syscall(id: usize, args: [usize; 6]) -> isize {
         ),
         SYSCALL_UMOUNT => sys_umount(args[0] as *const u8),
         SYSCALL_UNLINK => sys_unlink(args[0], args[1] as *const u8, args[2]),
+        SYSCALL_DUP => sys_dup(args[0]),
         _ => {
             error!("Unsupported syscall id: {}", id);
             sys_exit(-1);

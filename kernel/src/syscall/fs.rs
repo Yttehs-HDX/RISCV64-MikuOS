@@ -152,3 +152,16 @@ pub fn sys_unlink(_dirfd: usize, path_ptr: *const u8, _flags: usize) -> isize {
     };
     ret
 }
+
+pub fn sys_dup(old_fd: usize) -> isize {
+    let current_task = task::get_processor().current();
+    let mut task_inner = current_task.inner_mut();
+
+    let old = match task_inner.find_fd(old_fd) {
+        Some(fd) => fd,
+        None => return -1,
+    };
+
+    let new_fd = task_inner.alloc_fd(Some(old));
+    new_fd as isize
+}
