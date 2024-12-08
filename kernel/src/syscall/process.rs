@@ -14,15 +14,6 @@ pub fn sys_yield() -> isize {
     task::get_processor().schedule();
 }
 
-pub fn sys_get_time(ts_ptr: *mut u8, _tz: usize) -> isize {
-    let ts_ptr = ts_ptr as *mut TimeVal;
-    let now = timer::get_current_time();
-    unsafe {
-        *ts_ptr = now;
-    }
-    0
-}
-
 pub fn sys_nanosleep(req_ptr: *const u8, _rem_ptr: usize) -> isize {
     let now = timer::get_current_time();
     let wait_until = unsafe { *(req_ptr as *const TimeVal) } + now;

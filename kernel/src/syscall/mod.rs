@@ -1,10 +1,12 @@
-use log::error;
-
 use fs::*;
 use process::*;
+use system::*;
+
+use log::error;
 
 mod fs;
 mod process;
+mod system;
 
 const SYSCALL_READ: usize = 63;
 const SYSCALL_WRITE: usize = 64;
@@ -23,7 +25,7 @@ const SYSCALL_OPEN: usize = 56;
 const SYSCALL_CLOSE: usize = 57;
 const SYSCALL_MKDIR: usize = 34;
 const SYSCALL_PIPE: usize = 59;
-const SYSCALL_NANO_SLEEP: usize = 101;
+const SYSCALL_NANOSLEEP: usize = 101;
 const SYSCALL_MOUNT: usize = 40;
 const SYSCALL_UMOUNT: usize = 39;
 const SYSCALL_UNLINK: usize = 35;
@@ -49,7 +51,7 @@ pub fn syscall(id: usize, args: [usize; 6]) -> isize {
         SYSCALL_CLOSE => sys_close(args[0]),
         SYSCALL_MKDIR => sys_mkdir(args[0], args[1] as *const u8, args[2]),
         SYSCALL_PIPE => sys_pipe(args[0] as *mut i32),
-        SYSCALL_NANO_SLEEP => sys_nanosleep(args[0] as *const u8, args[1]),
+        SYSCALL_NANOSLEEP => sys_nanosleep(args[0] as *const u8, args[1]),
         SYSCALL_MOUNT => sys_mount(
             args[0] as *const u8,
             args[1] as *const u8,
