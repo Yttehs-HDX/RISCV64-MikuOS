@@ -67,11 +67,6 @@ if __name__ == '__main__':
     file_name = sys.argv[1]
     output = read_output(file_name)
     data = json.loads(output)
-    print(r' __  __   _   _               ___    ____  ')
-    print(r'|  \/  | (_) | | __  _   _   / _ \  / ___| ')
-    print(r'| |\/| | | | | |/ / | | | | | | | | \___ \ ')
-    print(r'| |  | | | | |   <  | |_| | | |_| |  ___) |')
-    print(r'|_|  |_| |_| |_|\_\  \__,_|  \___/  |____/ ')
     print("Result:")
     res = visualize(data)
 

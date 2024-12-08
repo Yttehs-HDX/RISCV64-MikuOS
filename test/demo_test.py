@@ -26,13 +26,6 @@ def run_test(binary: str, name: str):
         print(f"[KERNEL] Exit code {e.returncode} for test {name}")
 
 def main(path: str):
-    print(r"                         _____ ____ _____ ")
-    print(r"                        / ____|  _ \_   _|")
-    print(r" _ __   ___ _   _  __ _| (___ | |_) || |  ")
-    print(r"| '_ \ / _ \ | | |/ _` \\___ \|  _ < | |  ")
-    print(r"| | | |  __/ |_| | (_| |____) | |_) || |_ ")
-    print(r"|_| |_|\___|\__,_|\__, |_____/|____/_____|")
-    print(r"                     |_|                  ")
     print(r"Platform Name             : Qemu-user-riscv64")
     print(r"Platform Features         : None")
     print(r"Platform HART Count       : 1")
