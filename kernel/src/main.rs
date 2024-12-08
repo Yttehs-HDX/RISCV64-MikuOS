@@ -63,7 +63,7 @@ fn run_test() -> ! {
         "getppid",
         "chdir",
         "open",
-        // "clone",
+        "clone",
         "mount",
         "exit",
         "sleep",

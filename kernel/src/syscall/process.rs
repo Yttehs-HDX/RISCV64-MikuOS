@@ -62,12 +62,16 @@ pub fn sys_getppid() -> isize {
     parent_pid as isize
 }
 
-pub fn sys_fork() -> isize {
+pub fn sys_clone(flags: usize, sp: usize) -> isize {
+    const SIGCHLD: usize = 17;
+
     let current_task = task::get_processor().current();
     let new_task = current_task.fork();
     let new_pid = new_task.get_pid();
-    let trap_cx = new_task.get_trap_cx_mut();
-    trap_cx.set_a0(0);
+    if flags != SIGCHLD || sp != 0 {
+        new_task.get_trap_cx_mut().set_sp(sp as usize);
+    }
+    new_task.get_trap_cx_mut().set_a0(0);
     task::add_task(new_task);
 
     new_pid as isize
