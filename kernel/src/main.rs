@@ -68,7 +68,7 @@ fn run_test() -> ! {
         "exit",
         "sleep",
         // "mmap",
-        // "uname",
+        "uname",
         // "gettimeofday",
         "mkdir_",
         "fstat",

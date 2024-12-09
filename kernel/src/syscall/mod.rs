@@ -32,6 +32,7 @@ const SYSCALL_UNLINK: usize = 35;
 const SYSCALL_DUP: usize = 23;
 const SYSCALL_DUP3: usize = 24;
 const SYSCALL_FSTAT: usize = 80;
+const SYSCALL_UNAME: usize = 160;
 
 pub fn syscall(id: usize, args: [usize; 6]) -> isize {
     match id {
@@ -63,6 +64,7 @@ pub fn syscall(id: usize, args: [usize; 6]) -> isize {
         SYSCALL_DUP => sys_dup(args[0]),
         SYSCALL_DUP3 => sys_dup2(args[0], args[1]),
         SYSCALL_FSTAT => sys_fstat(args[0], args[1] as *mut u8),
+        SYSCALL_UNAME => sys_uname(args[0] as *mut u8),
         _ => {
             error!("Unsupported syscall id: {}", id);
             sys_exit(-1);
