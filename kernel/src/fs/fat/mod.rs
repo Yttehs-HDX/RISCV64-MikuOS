@@ -65,7 +65,11 @@ impl FileSystem for FatFileSystem {
         } else {
             // file not found
             if flags.create() {
-                dir.create_file(&name).ok().unwrap();
+                if flags.directory() {
+                    dir.create_dir(&name).ok().unwrap();
+                } else {
+                    dir.create_file(&name).ok().unwrap();
+                };
                 let file = dir
                     .iter()
                     .find(|entry| entry.as_ref().unwrap().file_name() == name)
