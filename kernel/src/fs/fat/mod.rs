@@ -4,6 +4,7 @@ pub use virtio::*;
 
 use crate::{
     board::VIRT_IO,
+    config::ROOT_DIR,
     drivers::VirtIOHal,
     fs::{FileSystem, OpenFlags, PathUtil},
 };
@@ -34,9 +35,15 @@ impl FileSystem for FatFileSystem {
         let name = path.name();
         let path = path.to_string();
 
+        // root
+        if path == ROOT_DIR {
+            let inode = FatInode::from_root(self.inner.root_dir());
+            return Some(inode);
+        }
+
         // open parent directory
         let dir = self.inner.root_dir();
-        let dir = if parent == "/" {
+        let dir = if parent == ROOT_DIR {
             dir
         } else {
             let dir = dir.open_dir(&parent);
@@ -53,7 +60,7 @@ impl FileSystem for FatFileSystem {
         if let Some(file) = entry {
             let file = file.unwrap();
             let (readable, writable) = flags.read_write();
-            let inode = FatInode::new(path, file, readable, writable);
+            let inode = FatInode::new_normal(path, file, readable, writable);
             Some(inode)
         } else {
             // file not found
@@ -65,7 +72,7 @@ impl FileSystem for FatFileSystem {
                     .unwrap()
                     .unwrap();
                 let (readable, writable) = flags.read_write();
-                let inode = FatInode::new(path, file, readable, writable);
+                let inode = FatInode::new_normal(path, file, readable, writable);
                 return Some(inode);
             }
             None

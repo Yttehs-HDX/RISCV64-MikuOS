@@ -1,8 +1,11 @@
 pub use dir::*;
 pub use file::*;
 
-use crate::fs::{Inode, InodeType};
-use alloc::string::String;
+use crate::{
+    config::ROOT_DIR,
+    fs::{Inode, InodeType},
+};
+use alloc::string::{String, ToString};
 
 mod dir;
 mod file;
@@ -12,13 +15,13 @@ pub struct FatInode {
     readable: bool,
     writable: bool,
     path: String,
-    inner: FatInodeInner<'static>,
+    inner: FatInodeType<'static>,
 }
 
 impl FatInode {
-    pub fn new(
+    pub fn new_normal(
         path: String,
-        inner: FatInodeInner<'static>,
+        inner: FatInodeInnerNormal<'static>,
         readable: bool,
         writable: bool,
     ) -> Self {
@@ -26,7 +29,16 @@ impl FatInode {
             readable,
             writable,
             path,
-            inner,
+            inner: FatInodeType::Normal(inner),
+        }
+    }
+
+    pub fn from_root(inner: FatInodeInnerRoot<'static>) -> Self {
+        Self {
+            readable: true,
+            writable: false,
+            path: ROOT_DIR.to_string(),
+            inner: FatInodeType::Root(inner),
         }
     }
 }
@@ -36,84 +48,132 @@ unsafe impl Send for FatInode {}
 
 impl Inode for FatInode {
     fn name(&self) -> alloc::string::String {
-        self.inner.file_name()
+        match self.inner {
+            FatInodeType::Root(_) => "/".to_string(),
+            FatInodeType::Normal(ref inner) => inner.file_name().to_string(),
+        }
     }
 
     fn size(&self) -> usize {
-        self.inner.len() as usize
+        match self.inner {
+            FatInodeType::Root(_) => 0,
+            FatInodeType::Normal(ref inner) => inner.len() as usize,
+        }
     }
 
     fn get_type(&self) -> InodeType {
-        match self {
-            _ if self.inner.is_file() => InodeType::File,
-            _ if self.inner.is_dir() => InodeType::Dir,
-            _ => InodeType::Unknown,
+        match self.inner {
+            FatInodeType::Root(_) => InodeType::Dir,
+            FatInodeType::Normal(ref inner) => match inner {
+                _ if inner.is_dir() => InodeType::Dir,
+                _ if inner.is_file() => InodeType::File,
+                _ => InodeType::Unknown,
+            },
         }
     }
 
     fn to_file(&self) -> FatFile {
-        assert!(self.inner.is_file());
-        FatFile::new(
-            self.path.clone(),
-            self.inner.to_file(),
-            self.readable,
-            self.writable,
-        )
+        match &self.inner {
+            FatInodeType::Root(_) => panic!("Root is not a file"),
+            FatInodeType::Normal(ref inner) => {
+                assert!(inner.is_file());
+                FatFile::new(
+                    self.path.clone(),
+                    inner.to_file(),
+                    self.readable,
+                    self.writable,
+                )
+            }
+        }
     }
 
     fn to_dir(&self) -> FatDir {
-        assert!(self.inner.is_dir());
-        FatDir::new(
-            self.path.clone(),
-            self.inner.to_dir(),
-            self.readable,
-            self.writable,
-        )
+        match &self.inner {
+            FatInodeType::Root(ref inner) => FatDir::new(
+                self.path.clone(),
+                (*inner).clone(),
+                self.readable,
+                self.writable,
+            ),
+            FatInodeType::Normal(ref inner) => {
+                assert!(inner.is_dir());
+                FatDir::new(
+                    self.path.clone(),
+                    inner.to_dir(),
+                    self.readable,
+                    self.writable,
+                )
+            }
+        }
     }
 
     fn atime(&self) -> (usize, usize) {
-        let year = self.inner.accessed().year as usize;
-        let month = self.inner.accessed().month as usize;
-        let day = self.inner.accessed().day as usize;
-
-        let secs = calculate_sec(year, month, day, 0, 0, 0);
-        (secs, 0)
+        match self.inner {
+            FatInodeType::Root(_) => (0, 0),
+            FatInodeType::Normal(ref inner) => {
+                let year = inner.accessed().year as usize;
+                let month = inner.accessed().month as usize;
+                let day = inner.accessed().day as usize;
+                let secs = calculate_sec(year, month, day, 0, 0, 0);
+                (secs, 0)
+            }
+        }
     }
 
     fn mtime(&self) -> (usize, usize) {
-        let year = self.inner.modified().date.year as usize;
-        let month = self.inner.modified().date.month as usize;
-        let day = self.inner.modified().date.day as usize;
-        let hour = self.inner.modified().time.hour as usize;
-        let min = self.inner.modified().time.min as usize;
-        let sec = self.inner.modified().time.sec as usize;
-        let nsec = self.inner.modified().time.millis as usize * 1_000_000;
-
-        let secs = calculate_sec(year, month, day, hour, min, sec);
-        (secs, nsec)
+        match self.inner {
+            FatInodeType::Root(_) => (0, 0),
+            FatInodeType::Normal(ref inner) => {
+                let year = inner.modified().date.year as usize;
+                let month = inner.modified().date.month as usize;
+                let day = inner.modified().date.day as usize;
+                let hour = inner.modified().time.hour as usize;
+                let min = inner.modified().time.min as usize;
+                let sec = inner.modified().time.sec as usize;
+                let nsec = inner.modified().time.millis as usize * 1_000_000;
+                let secs = calculate_sec(year, month, day, hour, min, sec);
+                (secs, nsec)
+            }
+        }
     }
 
     fn ctime(&self) -> (usize, usize) {
-        let year = self.inner.created().date.year as usize;
-        let month = self.inner.created().date.month as usize;
-        let day = self.inner.created().date.day as usize;
-        let hour = self.inner.created().time.hour as usize;
-        let min = self.inner.created().time.min as usize;
-        let sec = self.inner.created().time.sec as usize;
-        let nsec = self.inner.created().time.millis as usize * 1_000_000;
-
-        let secs = calculate_sec(year, month, day, hour, min, sec);
-        (secs, nsec)
+        match self.inner {
+            FatInodeType::Root(_) => (0, 0),
+            FatInodeType::Normal(ref inner) => {
+                let year = inner.created().date.year as usize;
+                let month = inner.created().date.month as usize;
+                let day = inner.created().date.day as usize;
+                let hour = inner.created().time.hour as usize;
+                let min = inner.created().time.min as usize;
+                let sec = inner.created().time.sec as usize;
+                let nsec = inner.created().time.millis as usize * 1_000_000;
+                let secs = calculate_sec(year, month, day, hour, min, sec);
+                (secs, nsec)
+            }
+        }
     }
 }
 // region FatInode end
 
-type FatInodeInner<'a> = fatfs::DirEntry<
+type FatInodeInnerNormal<'a> = fatfs::DirEntry<
     'a,
     super::FatDeviceDriver,
     fatfs::NullTimeProvider,
     fatfs::LossyOemCpConverter,
 >;
+
+type FatInodeInnerRoot<'a> = fatfs::Dir<
+    'a,
+    crate::fs::fat::FatDeviceDriver,
+    fatfs::NullTimeProvider,
+    fatfs::LossyOemCpConverter,
+>;
+
+pub enum FatInodeType<'a> {
+    Root(FatInodeInnerRoot<'a>),
+    Normal(FatInodeInnerNormal<'a>),
+}
 
 fn calculate_sec(
     year: usize,
