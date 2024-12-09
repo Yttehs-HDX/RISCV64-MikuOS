@@ -69,7 +69,7 @@ fn run_test() -> ! {
         "sleep",
         // "mmap",
         "uname",
-        // "gettimeofday",
+        "gettimeofday",
         "mkdir_",
         "fstat",
         "getpid",
