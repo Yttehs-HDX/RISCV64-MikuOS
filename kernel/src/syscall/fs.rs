@@ -101,9 +101,6 @@ pub fn sys_open(_dir_fd: i32, path_ptr: *const u8, flags: usize) -> isize {
                 return fd as isize;
             }
             InodeType::Dir => {
-                if !flags.directory() {
-                    return -1;
-                }
                 let dir = Arc::new(inode.to_dir());
                 let fd = task_inner.alloc_fd(dir);
                 return fd as isize;
