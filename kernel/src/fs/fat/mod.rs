@@ -32,6 +32,7 @@ impl FileSystem for FatFileSystem {
         let path = PathUtil::from_str(path);
         let parent = path.parent();
         let name = path.name();
+        let path = path.to_string();
 
         // open parent directory
         let dir = self.inner.root_dir();
@@ -52,7 +53,7 @@ impl FileSystem for FatFileSystem {
         if let Some(file) = entry {
             let file = file.unwrap();
             let (readable, writable) = flags.read_write();
-            let inode = FatInode::new(file, readable, writable);
+            let inode = FatInode::new(path, file, readable, writable);
             Some(inode)
         } else {
             // file not found
@@ -64,7 +65,7 @@ impl FileSystem for FatFileSystem {
                     .unwrap()
                     .unwrap();
                 let (readable, writable) = flags.read_write();
-                let inode = FatInode::new(file, readable, writable);
+                let inode = FatInode::new(path, file, readable, writable);
                 return Some(inode);
             }
             None

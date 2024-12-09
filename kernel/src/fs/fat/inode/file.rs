@@ -1,4 +1,5 @@
 use crate::{fs::File, sync::UPSafeCell};
+use alloc::string::String;
 use core::cell::RefMut;
 use fatfs::{Read, Write};
 
@@ -6,14 +7,16 @@ use fatfs::{Read, Write};
 pub struct FatFile {
     readable: bool,
     writable: bool,
+    path: String,
     inner: UPSafeCell<FatFileInner<'static>>,
 }
 
 impl FatFile {
-    pub fn new(inner: FatFileInner<'static>, readable: bool, writable: bool) -> Self {
+    pub fn new(path: String, inner: FatFileInner<'static>, readable: bool, writable: bool) -> Self {
         Self {
             readable,
             writable,
+            path,
             inner: unsafe { UPSafeCell::new(inner) },
         }
     }
@@ -47,6 +50,10 @@ impl File for FatFile {
         let mut inner = self.inner_mut();
         inner.write_all(buf).ok();
         buf.len()
+    }
+
+    fn path(&self) -> String {
+        self.path.clone()
     }
 }
 // region FatFile end

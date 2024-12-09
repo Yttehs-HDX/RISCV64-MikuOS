@@ -134,5 +134,9 @@ impl File for Pipe {
             }
         }
     }
+
+    fn path(&self) -> alloc::string::String {
+        task::get_processor().current().inner().get_cwd()
+    }
 }
 // region Pipe end

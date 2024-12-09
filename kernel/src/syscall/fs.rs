@@ -199,3 +199,82 @@ pub fn sys_dup2(old_fd: usize, new_fd: usize) -> isize {
 
     new_fd as isize
 }
+
+#[repr(C)]
+struct KStat {
+    st_dev: u64,
+    st_ino: u64,
+    st_mode: u32,
+    st_nlink: u32,
+    st_uid: u32,
+    st_gid: u32,
+    st_rdev: u64,
+    __pad: u64,
+    st_size: i32,
+    st_blksize: u32,
+    st_blocks: u64,
+    st_atime_sec: i64,
+    st_atime_nsec: i64,
+    st_mtime_sec: i64,
+    st_mtime_nsec: i64,
+    st_ctime_sec: i64,
+    st_ctime_nsec: i64,
+    __unused: u32,
+}
+
+impl KStat {
+    pub fn new(
+        st_dev: usize,
+        st_ino: usize,
+        st_mode: usize,
+        st_nlink: usize,
+        st_size: usize,
+        st_atime: (usize, usize),
+        st_mtime: (usize, usize),
+        st_ctime: (usize, usize),
+    ) -> Self {
+        Self {
+            st_dev: st_dev as u64,
+            st_ino: st_ino as u64,
+            st_mode: st_mode as u32,
+            st_nlink: st_nlink as u32,
+            st_uid: 0,
+            st_gid: 0,
+            st_rdev: 0,
+            __pad: 0,
+            st_size: st_size as i32,
+            st_blksize: 0,
+            st_blocks: 0,
+            st_atime_sec: st_atime.0 as i64,
+            st_atime_nsec: st_atime.1 as i64,
+            st_mtime_sec: st_mtime.0 as i64,
+            st_mtime_nsec: st_mtime.1 as i64,
+            st_ctime_sec: st_ctime.0 as i64,
+            st_ctime_nsec: st_ctime.1 as i64,
+            __unused: 0,
+        }
+    }
+}
+
+pub fn sys_fstat(fd: usize, kstat_ptr: *const u8) -> isize {
+    let kstat_ptr = kstat_ptr as *mut KStat;
+    let file = match task::get_processor().current().inner().find_fd(fd) {
+        Some(fd) => fd,
+        None => return -1,
+    };
+    let inode = fs::open_inode(&file.path()).unwrap();
+    let kstat = KStat::new(
+        0,
+        0,
+        0,
+        1,
+        inode.size(),
+        inode.atime(),
+        inode.mtime(),
+        inode.ctime(),
+    );
+    unsafe {
+        *kstat_ptr = kstat;
+    }
+    0
+}

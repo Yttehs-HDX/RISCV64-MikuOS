@@ -71,7 +71,7 @@ fn run_test() -> ! {
         // "uname",
         // "gettimeofday",
         "mkdir_",
-        // "fstat",
+        "fstat",
         "getpid",
         "wait",
         "write",

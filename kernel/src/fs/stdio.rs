@@ -1,4 +1,5 @@
 use crate::{fs::File, sbi};
+use alloc::string::ToString;
 
 // region Stdin begin
 pub struct Stdin;
@@ -21,6 +22,10 @@ impl File for Stdin {
 
     fn write(&self, _buf: &[u8]) -> usize {
         panic!("Stdin: write is not supported");
+    }
+
+    fn path(&self) -> alloc::string::String {
+        "/dev/stdin".to_string()
     }
 }
 // region Stdin end
@@ -46,6 +51,10 @@ impl File for Stdout {
         print!("{}", str);
         buf.len()
     }
+
+    fn path(&self) -> alloc::string::String {
+        "/dev/stdout".to_string()
+    }
 }
 // region Stdout end
 
@@ -69,6 +78,10 @@ impl File for Stderr {
         let str = core::str::from_utf8(buf).unwrap();
         print!("{}", str);
         buf.len()
+    }
+
+    fn path(&self) -> alloc::string::String {
+        "/dev/stderr".to_string()
     }
 }
 // region Stderr end

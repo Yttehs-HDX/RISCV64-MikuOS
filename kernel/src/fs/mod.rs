@@ -24,6 +24,10 @@ pub fn delete(path: &str) -> Result<(), ()> {
     ROOT_FILESYSTEM.delete(path)
 }
 
+pub fn open_inode(path: &str) -> Option<fat::FatInode> {
+    open_file(path, OpenFlags::RDONLY)
+}
+
 lazy_static! {
     static ref ROOT_FILESYSTEM: Arc<dyn FileSystem> = Arc::new(fat::FatFileSystem::new(0));
 }

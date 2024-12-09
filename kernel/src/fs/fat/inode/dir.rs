@@ -1,18 +1,21 @@
 use crate::{fs::File, sync::UPSafeCell};
+use alloc::string::String;
 use core::cell::RefMut;
 
 // region FatDir begin
 pub struct FatDir {
     readable: bool,
     writable: bool,
+    path: String,
     inner: UPSafeCell<FatDirInner<'static>>,
 }
 
 impl FatDir {
-    pub fn new(inner: FatDirInner<'static>, readable: bool, writable: bool) -> Self {
+    pub fn new(path: String, inner: FatDirInner<'static>, readable: bool, writable: bool) -> Self {
         Self {
             readable,
             writable,
+            path,
             inner: unsafe { UPSafeCell::new(inner) },
         }
     }
@@ -41,6 +44,10 @@ impl File for FatDir {
 
     fn write(&self, _buf: &[u8]) -> usize {
         0
+    }
+
+    fn path(&self) -> String {
+        self.path.clone()
     }
 }
 // region FatDir end

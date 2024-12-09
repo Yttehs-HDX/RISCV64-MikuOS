@@ -9,6 +9,9 @@ pub trait Inode: Send + Sync {
     fn get_type(&self) -> InodeType;
     fn to_file(&self) -> fat::FatFile;
     fn to_dir(&self) -> fat::FatDir;
+    fn atime(&self) -> (usize, usize);
+    fn mtime(&self) -> (usize, usize);
+    fn ctime(&self) -> (usize, usize);
 }
 
 pub trait File: Send + Sync {
@@ -16,6 +19,7 @@ pub trait File: Send + Sync {
     fn writable(&self) -> bool;
     fn read(&self, buf: &mut [u8]) -> usize;
     fn write(&self, buf: &[u8]) -> usize;
+    fn path(&self) -> String;
 }
 
 // region InodeType begin
