@@ -1,7 +1,7 @@
 use crate::{
     fs::{self, File, Inode, OpenFlags, PathUtil},
     syscall::translate_str,
-    task,
+    task::{self, Tms},
     timer::{self, TimeVal},
 };
 use alloc::{string::ToString, vec::Vec};
@@ -112,7 +112,26 @@ pub fn sys_waitpid(pid: isize, exit_code_ptr: *mut i32, _option: usize) -> isize
                 }
             }
         }
+
+        // read tms
+        let (cutime_inc, cstime_inc): (usize, usize);
+        {
+            let child_inner = child.inner();
+            cutime_inc =
+                child_inner.get_tms_ref().get_utime() + child_inner.get_tms_ref().get_cutime();
+            cstime_inc =
+                child_inner.get_tms_ref().get_stime() + child_inner.get_tms_ref().get_cstime();
+            drop(child_inner);
+        }
+
         children.retain(|c| c.get_pid() != pid);
+
+        // update tms
+        {
+            task_inner.get_tms_mut().add_cstime(cstime_inc);
+            task_inner.get_tms_mut().add_cutime(cutime_inc);
+        }
+
         pid as isize
     } else {
         // child is not zombie
@@ -129,4 +148,17 @@ pub fn sys_waitpid(pid: isize, exit_code_ptr: *mut i32, _option: usize) -> isize
         current_task.get_trap_cx_mut().move_to_prev_ins();
         task::get_processor().wait_for_child(pid);
     }
+}
+
+pub fn sys_times(buf: *const u8) -> isize {
+    let current_time = timer::get_current_tick();
+
+    let current_task = task::get_processor().current();
+    let inner = current_task.inner();
+    let tms = inner.get_tms_ref();
+    unsafe {
+        *(buf as *mut Tms) = *tms;
+    }
+
+    current_time as isize
 }

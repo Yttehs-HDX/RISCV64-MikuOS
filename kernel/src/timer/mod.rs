@@ -6,8 +6,12 @@ mod time_val;
 
 const TIGGER_TIME: usize = 100_000; // 100 ms
 
+pub fn get_current_tick() -> usize {
+    sbi::sbi_get_time()
+}
+
 pub fn get_current_time() -> TimeVal {
-    let time = sbi::sbi_get_time();
+    let time = get_current_tick();
     TimeVal::from_reg(time)
 }
 

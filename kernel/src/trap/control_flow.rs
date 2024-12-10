@@ -106,6 +106,23 @@ pub fn trap_handler() -> ! {
         sstatus::set_sum();
     }
     set_kernel_trap_entry();
+
+    // update tms
+    {
+        let current_task = task::get_processor().current();
+        let mut inner = current_task.inner_mut();
+
+        // utime end
+        let now = timer::get_current_tick();
+        let inc = now - inner.get_utime_base();
+        inner.get_tms_mut().add_utime(inc);
+
+        // stime start
+        inner.set_stime_base(now);
+
+        drop(inner);
+    }
+
     let cx = task::get_processor().current().get_trap_cx_mut();
     let stval = stval::read();
     let scause = scause::read();
@@ -186,6 +203,23 @@ pub fn trap_return() -> ! {
         sstatus::clear_sum();
     }
     set_user_trap_entry();
+
+    // update tms
+    {
+        let current_task = task::get_processor().current();
+        let mut inner = current_task.inner_mut();
+
+        // utime start
+        let now = timer::get_current_tick();
+        inner.set_utime_base(now);
+
+        // stime end
+        let inc = now - inner.get_stime_base();
+        inner.get_tms_mut().add_stime(inc);
+
+        drop(inner);
+    }
+
     let trap_cx_ptr = TRAP_CX_PTR;
     let user_satp = task::get_processor().current().get_satp();
     unsafe {

@@ -79,7 +79,7 @@ fn run_test() -> ! {
         "waitpid",
         "dup2",
         "yield",
-        // "times",
+        "times",
         "brk",
         "read",
         "fork",

@@ -3,6 +3,7 @@ pub(in crate::task) use initproc::*;
 use crate::{
     sync::UPSafeCell,
     task::{__restore_task, __save_task, get_task_manager, ProcessControlBlock},
+    timer,
 };
 use alloc::sync::Arc;
 use core::cell::{Ref, RefMut};
@@ -51,13 +52,26 @@ impl Processor {
     pub fn run_tasks(&self) -> ! {
         loop {
             if let Some(pcb) = self.take_current() {
-                let task_cx = pcb.inner_mut().get_task_cx_mut() as *mut _;
+                let mut inner = pcb.inner_mut();
+
+                // update tms
+                {
+                    // stime end
+                    let now = timer::get_current_tick();
+                    let inc = now - inner.get_stime_base();
+                    inner.get_tms_mut().add_stime(inc);
+                }
+
+                let task_cx = inner.get_task_cx_mut() as *mut _;
+                drop(inner);
                 unsafe {
                     __save_task(task_cx);
                 }
             }
             if let Some(pcb) = get_task_manager().fetch() {
-                let task_cx = pcb.inner_mut().get_task_cx_ref() as *const _;
+                let inner = pcb.inner();
+                let task_cx = inner.get_task_cx_ref() as *const _;
+                drop(inner);
                 self.inner_mut().current = Some(pcb);
                 unsafe {
                     __restore_task(task_cx);
@@ -69,7 +83,18 @@ impl Processor {
     pub fn wait_for_child(&self, pid: usize) -> ! {
         loop {
             if let Some(pcb) = self.take_current() {
-                let task_cx = pcb.inner_mut().get_task_cx_mut() as *mut _;
+                let mut inner = pcb.inner_mut();
+
+                // update tms
+                {
+                    // stime end
+                    let now = timer::get_current_tick();
+                    let inc = now - inner.get_stime_base();
+                    inner.get_tms_mut().add_stime(inc);
+                }
+
+                let task_cx = inner.get_task_cx_mut() as *mut _;
+                drop(inner);
                 get_task_manager().add_to_front(pcb);
                 unsafe {
                     __save_task(task_cx);
@@ -77,7 +102,9 @@ impl Processor {
             }
 
             if let Some(pcb) = get_task_manager().fetch_by_pid(pid) {
-                let task_cx = pcb.inner_mut().get_task_cx_ref() as *const _;
+                let inner = pcb.inner();
+                let task_cx = inner.get_task_cx_ref() as *const _;
+                drop(inner);
                 self.inner_mut().current = Some(pcb);
                 unsafe {
                     __restore_task(task_cx);
@@ -89,7 +116,18 @@ impl Processor {
     pub fn schedule(&self) -> ! {
         loop {
             if let Some(pcb) = self.take_current() {
-                let task_cx = pcb.inner_mut().get_task_cx_mut() as *mut _;
+                let mut inner = pcb.inner_mut();
+
+                // update tms
+                {
+                    // stime end
+                    let now = timer::get_current_tick();
+                    let inc = now - inner.get_stime_base();
+                    inner.get_tms_mut().add_stime(inc);
+                }
+
+                let task_cx = inner.get_task_cx_mut() as *mut _;
+                drop(inner);
                 get_task_manager().add_to_back(pcb);
                 unsafe {
                     __save_task(task_cx);
@@ -97,7 +135,9 @@ impl Processor {
             }
 
             if let Some(pcb) = get_task_manager().fetch() {
-                let task_cx = pcb.inner().get_task_cx_ref() as *const _;
+                let inner = pcb.inner();
+                let task_cx = inner.get_task_cx_ref() as *const _;
+                drop(inner);
                 self.inner_mut().current = Some(pcb);
                 unsafe {
                     __restore_task(task_cx);

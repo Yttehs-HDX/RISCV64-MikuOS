@@ -3,7 +3,7 @@ use crate::{
     fs::{File, Stderr, Stdin, Stdout},
     mm::{self, MemorySpace, PhysPageNum, PpnOffset, UserSpace, VirtAddr},
     sync::UPSafeCell,
-    task::{alloc_pid_handle, PidHandle, TaskContext},
+    task::{alloc_pid_handle, PidHandle, TaskContext, Tms},
     trap::TrapContext,
 };
 use alloc::{
@@ -195,6 +195,10 @@ pub struct ProcessControlBlockInner {
 
     cwd: String,
     fd_table: BTreeMap<usize, Arc<dyn File + Send + Sync>>,
+
+    stime_base: usize,
+    utime_base: usize,
+    tms: Tms,
 }
 
 impl ProcessControlBlockInner {
@@ -216,6 +220,9 @@ impl ProcessControlBlockInner {
             exit_code: 0,
             cwd,
             fd_table,
+            stime_base: 0,
+            utime_base: 0,
+            tms: Tms::empty(),
         }
     }
 
@@ -245,6 +252,32 @@ impl ProcessControlBlockInner {
 
     pub fn get_cwd(&self) -> String {
         self.cwd.clone()
+    }
+}
+
+impl ProcessControlBlockInner {
+    pub fn get_stime_base(&self) -> usize {
+        self.stime_base
+    }
+
+    pub fn set_stime_base(&mut self, stime_base: usize) {
+        self.stime_base = stime_base;
+    }
+
+    pub fn get_utime_base(&self) -> usize {
+        self.utime_base
+    }
+
+    pub fn set_utime_base(&mut self, utime_base: usize) {
+        self.utime_base = utime_base;
+    }
+
+    pub fn get_tms_ref(&self) -> &Tms {
+        &self.tms
+    }
+
+    pub fn get_tms_mut(&mut self) -> &mut Tms {
+        &mut self.tms
     }
 }
 
