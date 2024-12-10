@@ -75,7 +75,7 @@ fn run_test() -> ! {
         "getpid",
         "wait",
         "write",
-        // "getdents",
+        "getdents",
         "waitpid",
         "dup2",
         "yield",

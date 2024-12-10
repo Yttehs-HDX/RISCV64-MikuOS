@@ -1,6 +1,6 @@
 use crate::{
     config::ROOT_DIR,
-    fs::{self, Inode, InodeType, OpenFlags, PathUtil},
+    fs::{self, Inode, InodeType, LinuxDirent64, OpenFlags, PathUtil},
     syscall::translate_str,
     task,
 };
@@ -274,4 +274,32 @@ pub fn sys_fstat(fd: usize, kstat_ptr: *const u8) -> isize {
         *kstat_ptr = kstat;
     }
     0
+}
+
+pub fn sys_getdents(fd: usize, dirent_ptr: *const u8, len: usize) -> isize {
+    let mut dirent_ptr = dirent_ptr as *mut LinuxDirent64;
+
+    let file = match task::get_processor().current().inner().find_fd(fd) {
+        Some(fd) => fd,
+        None => return -1,
+    };
+    let inode = fs::open_file(&file.path(), OpenFlags::RDONLY).unwrap();
+    if inode.get_type() != InodeType::Dir {
+        return -1;
+    }
+    let entries = inode.to_dir().get_entries();
+
+    let mut offset = 0;
+    for entry in entries {
+        unsafe {
+            *dirent_ptr = entry;
+            dirent_ptr = dirent_ptr.add(1);
+        }
+        offset += core::mem::size_of::<LinuxDirent64>();
+        if offset + core::mem::size_of::<LinuxDirent64>() > len {
+            break;
+        }
+    }
+
+    offset as isize
 }

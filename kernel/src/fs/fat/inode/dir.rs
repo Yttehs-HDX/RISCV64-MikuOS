@@ -1,6 +1,9 @@
-use crate::{fs::File, sync::UPSafeCell};
-use alloc::string::String;
-use core::cell::RefMut;
+use crate::{
+    fs::{File, LinuxDirent64},
+    sync::UPSafeCell,
+};
+use alloc::{string::String, vec::Vec};
+use core::cell::{Ref, RefMut};
 
 // region FatDir begin
 pub struct FatDir {
@@ -20,9 +23,26 @@ impl FatDir {
         }
     }
 
+    fn inner(&self) -> Ref<FatDirInner<'static>> {
+        self.inner.shared_access()
+    }
+
     #[allow(unused)]
     fn inner_mut(&self) -> RefMut<FatDirInner<'static>> {
         self.inner.exclusive_access()
+    }
+}
+
+impl FatDir {
+    pub fn get_entries(&self) -> Vec<LinuxDirent64> {
+        let mut entries = Vec::new();
+        self.inner().iter().for_each(|entry| {
+            let entry = entry.unwrap();
+            let name = entry.file_name();
+            let dent = LinuxDirent64::new(&name);
+            entries.push(dent);
+        });
+        entries
     }
 }
 
