@@ -5,3 +5,17 @@ target = "riscv64gc-unknown-none-elf"
 rustflags = [
     "-Clink-args=-Tsrc/linker.ld", "-Cforce-frame-pointers=yes"
 ]
+
+[source.crates-io]
+replace-with = "vendored-sources"
+
+[source."git+https://github.com/Yttehs-HDX/rust-riscv"]
+git = "https://github.com/Yttehs-HDX/rust-riscv"
+replace-with = "vendored-sources"
+
+[source."git+https://github.com/rafalh/rust-fatfs"]
+git = "https://github.com/rafalh/rust-fatfs"
+replace-with = "vendored-sources"
+
+[source.vendored-sources]
+directory = "../third_party"
