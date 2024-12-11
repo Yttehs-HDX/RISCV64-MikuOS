@@ -143,11 +143,10 @@ pub fn sys_umount(_target_ptr: *const u8) -> isize {
 pub fn sys_unlink(_dirfd: usize, path_ptr: *const u8, _flags: usize) -> isize {
     let path = translate_str(path_ptr);
     let path = PathUtil::from_user(path).to_string();
-    let ret = match fs::delete(&path) {
+    match fs::delete(&path) {
         Ok(_) => 0,
         Err(_) => -1,
-    };
-    ret
+    }
 }
 
 pub fn sys_dup(old_fd: usize) -> isize {
@@ -180,6 +179,7 @@ pub fn sys_dup2(old_fd: usize, new_fd: usize) -> isize {
     new_fd as isize
 }
 
+// region KStat begin
 #[repr(C)]
 struct KStat {
     st_dev: u64,
@@ -204,20 +204,16 @@ struct KStat {
 
 impl KStat {
     pub fn new(
-        st_dev: usize,
-        st_ino: usize,
-        st_mode: usize,
-        st_nlink: usize,
         st_size: usize,
         st_atime: (usize, usize),
         st_mtime: (usize, usize),
         st_ctime: (usize, usize),
     ) -> Self {
         Self {
-            st_dev: st_dev as u64,
-            st_ino: st_ino as u64,
-            st_mode: st_mode as u32,
-            st_nlink: st_nlink as u32,
+            st_dev: 0,
+            st_ino: 0,
+            st_mode: 0,
+            st_nlink: 1,
             st_uid: 0,
             st_gid: 0,
             st_rdev: 0,
@@ -235,6 +231,7 @@ impl KStat {
         }
     }
 }
+// region KStat end
 
 pub fn sys_fstat(fd: usize, kstat_ptr: *const u8) -> isize {
     let kstat_ptr = kstat_ptr as *mut KStat;
@@ -243,16 +240,7 @@ pub fn sys_fstat(fd: usize, kstat_ptr: *const u8) -> isize {
         None => return -1,
     };
     let inode = fs::open_inode(&file.path()).unwrap();
-    let kstat = KStat::new(
-        0,
-        0,
-        0,
-        1,
-        inode.size(),
-        inode.atime(),
-        inode.mtime(),
-        inode.ctime(),
-    );
+    let kstat = KStat::new(inode.size(), inode.atime(), inode.mtime(), inode.ctime());
     unsafe {
         *kstat_ptr = kstat;
     }

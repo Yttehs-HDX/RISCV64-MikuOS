@@ -50,7 +50,6 @@ impl MapArea {
     pub fn map_one(&mut self, vpn: VirtPageNum, page_table: &mut PageTable) {
         let ppn: PhysPageNum;
         match self.map_type {
-            MapType::Identity => ppn = PhysPageNum(vpn.0),
             MapType::Direct => ppn = PhysPageNum(vpn.0).high_to_low(),
             MapType::Framed => {
                 let ppn_tracker = alloc_ppn_tracker().unwrap();
@@ -63,7 +62,6 @@ impl MapArea {
 
     pub fn unmap_one(&mut self, vpn: VirtPageNum, page_table: &mut PageTable) {
         match self.map_type {
-            MapType::Identity => {}
             MapType::Direct => {}
             MapType::Framed => {
                 self.ppn_map.remove(&vpn);

@@ -4,6 +4,7 @@ use crate::{
     task::{self, Tms},
     timer::{self, TimeVal},
 };
+use alloc::vec;
 use alloc::{string::ToString, vec::Vec};
 
 pub fn sys_exit(exit_code: i32) -> ! {
@@ -43,7 +44,7 @@ pub fn sys_clone(flags: usize, sp: usize) -> isize {
     let new_task = current_task.fork();
     let new_pid = new_task.get_pid();
     if flags != SIGCHLD || sp != 0 {
-        new_task.get_trap_cx_mut().set_sp(sp as usize);
+        new_task.get_trap_cx_mut().set_sp(sp);
     }
     new_task.get_trap_cx_mut().set_a0(0);
     task::add_task(new_task);
@@ -62,12 +63,7 @@ pub fn sys_exec(path_ptr: *const u8, _argv: *const u8) -> isize {
         let file = entry.to_file();
 
         // prepare mut buffer
-        #[allow(clippy::uninit_vec)]
-        let mut buffer: Vec<u8> = Vec::with_capacity(len);
-        #[allow(clippy::uninit_vec)]
-        unsafe {
-            buffer.set_len(len);
-        }
+        let mut buffer: Vec<u8> = vec![0; len];
         let buffer = buffer.as_mut_slice();
         file.read(buffer);
 
@@ -100,7 +96,7 @@ pub fn sys_waitpid(pid: isize, exit_code_ptr: *mut i32, _option: usize) -> isize
         // child is zombie
         let pid = child.get_pid();
         let exit_code = child.get_exit_code();
-        if exit_code_ptr != core::ptr::null_mut() {
+        if !exit_code_ptr.is_null() {
             unsafe {
                 match exit_code {
                     0 => {

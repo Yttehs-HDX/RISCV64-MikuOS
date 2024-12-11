@@ -11,7 +11,6 @@ pub fn init_trap() {
     set_kernel_trap_entry();
 }
 
-#[allow(unused)]
 pub fn enable_timer_interrupt() {
     unsafe { sie::set_stimer() };
     timer::set_next_trigger();

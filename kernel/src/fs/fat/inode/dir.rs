@@ -3,7 +3,7 @@ use crate::{
     sync::UPSafeCell,
 };
 use alloc::{string::String, vec::Vec};
-use core::cell::{Ref, RefMut};
+use core::cell::Ref;
 
 // region FatDir begin
 pub struct FatDir {
@@ -25,11 +25,6 @@ impl FatDir {
 
     fn inner(&self) -> Ref<FatDirInner<'static>> {
         self.inner.shared_access()
-    }
-
-    #[allow(unused)]
-    fn inner_mut(&self) -> RefMut<FatDirInner<'static>> {
-        self.inner.exclusive_access()
     }
 }
 

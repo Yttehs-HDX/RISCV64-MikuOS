@@ -9,6 +9,7 @@ use crate::{
     task::{alloc_pid_handle, PidHandle, TaskContext, Tms},
     trap::TrapContext,
 };
+use alloc::vec;
 use alloc::{
     collections::btree_map::BTreeMap,
     string::{String, ToString},
@@ -295,10 +296,7 @@ impl ProcessControlBlockInner {
         let inode = fs::open_inode(&file.path()).unwrap();
         let size = inode.size();
         let file = inode.to_file();
-        let mut buf: Vec<u8> = Vec::with_capacity(size);
-        unsafe {
-            buf.set_len(size);
-        }
+        let mut buf: Vec<u8> = vec![0; size];
         file.read(&mut buf);
 
         let end_va = VirtAddr(self.mmap_base);
@@ -348,7 +346,7 @@ impl ProcessControlBlockInner {
     }
 
     pub fn find_fd(&self, fd: usize) -> Option<Arc<dyn File + Send + Sync>> {
-        self.fd_table.get(&fd).map(|fd| fd.clone())
+        self.fd_table.get(&fd).cloned()
     }
 
     pub fn take_fd(&mut self, fd: usize) -> Option<Arc<dyn File + Send + Sync>> {

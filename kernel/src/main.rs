@@ -30,7 +30,8 @@ pub fn main() -> ! {
     util::init_log();
     mm::init();
     trap::init_trap();
-    // trap::enable_timer_interrupt();
+    #[cfg(not(feature = "test"))]
+    trap::enable_timer_interrupt();
     task::init();
     println!("[Kernel] initialized");
 

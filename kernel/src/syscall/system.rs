@@ -9,6 +9,7 @@ pub fn sys_get_time(ts_ptr: *mut u8, _tz: usize) -> isize {
     0
 }
 
+// region UtsName begin
 struct UtsName {
     sysname: [u8; 65],
     nodename: [u8; 65],
@@ -43,6 +44,7 @@ impl UtsName {
         target[..len].copy_from_slice(&bytes[..len]);
     }
 }
+// region UtsName end
 
 pub fn sys_uname(uts_name_ptr: *const u8) -> isize {
     let uts_name_ptr = uts_name_ptr as *mut UtsName;
