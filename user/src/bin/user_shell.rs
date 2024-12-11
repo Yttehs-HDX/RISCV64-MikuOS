@@ -2,7 +2,7 @@
 #![no_main]
 
 use user_lib::{
-    alloc::string::String, chdir, exec, exit, fork, get_char, init_heap, print, println, waitpid
+    alloc::string::String, chdir, exec, exit, fork, get_char, init_heap, print, println, waitpid,
 };
 
 extern crate user_lib;

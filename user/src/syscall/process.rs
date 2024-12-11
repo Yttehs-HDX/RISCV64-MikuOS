@@ -23,8 +23,8 @@ pub fn sys_get_time(ts: *mut TimeVal, _tz: usize) -> isize {
     syscall(SYSCALL_GET_TIME, [ts as usize, _tz, 0])
 }
 
-pub fn sys_sbrk(inc: i32) -> isize {
-    syscall(SYSCALL_SBRK, [inc as usize, 0, 0])
+pub fn sys_sbrk(new: i32) -> isize {
+    syscall(SYSCALL_SBRK, [new as usize, 0, 0])
 }
 
 pub fn sys_getpid() -> isize {
@@ -32,7 +32,8 @@ pub fn sys_getpid() -> isize {
 }
 
 pub fn sys_fork() -> isize {
-    syscall(SYSCALL_FORK, [0, 0, 0])
+    const SIGCHLD: usize = 17;
+    syscall(SYSCALL_FORK, [SIGCHLD, 0, 0])
 }
 
 pub fn sys_exec(path: &str, argv: &[&str]) -> isize {

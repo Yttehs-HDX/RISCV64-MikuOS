@@ -26,7 +26,8 @@ pub fn write(fd: usize, buf: &[u8]) -> isize {
 }
 
 pub fn sbrk(inc: i32) -> isize {
-    syscall::sys_sbrk(inc)
+    let old = syscall::sys_sbrk(0) as i32;
+    syscall::sys_sbrk(inc + old)
 }
 
 pub fn getpid() -> isize {
@@ -46,25 +47,11 @@ pub fn exec_with_argv(path: &str, argv: &[&str]) -> isize {
 }
 
 pub fn wait(wstatus: &mut i32) -> isize {
-    loop {
-        match syscall::sys_waitpid(-1, wstatus, 0) {
-            -2 => {
-                yield_();
-            }
-            pid => return pid,
-        }
-    }
+    syscall::sys_waitpid(-1, wstatus, 0)
 }
 
 pub fn waitpid(pid: usize, wstatus: &mut i32) -> isize {
-    loop {
-        match syscall::sys_waitpid(pid as isize, wstatus, 0) {
-            -2 => {
-                yield_();
-            }
-            pid => return pid,
-        }
-    }
+    syscall::sys_waitpid(pid as isize, wstatus, 0)
 }
 
 pub fn chdir(path: &str) -> isize {

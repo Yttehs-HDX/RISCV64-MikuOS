@@ -1,7 +1,7 @@
 #![no_std]
 #![no_main]
 
-use user_lib::{exec, fork, println, wait, yield_};
+use user_lib::{exec, fork, println, wait};
 
 extern crate user_lib;
 
@@ -14,8 +14,7 @@ fn main() -> i32 {
             let mut exit_code: i32 = 0;
             let pid = wait(&mut exit_code);
             if pid == -1 {
-                yield_();
-                continue;
+                break;
             }
             println!(
                 "[user_shell] Process {} exited with code {}",
