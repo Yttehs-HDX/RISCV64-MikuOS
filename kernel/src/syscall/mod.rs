@@ -37,6 +37,8 @@ const SYSCALL_FSTAT: usize = 80;
 const SYSCALL_UNAME: usize = 160;
 const SYSCALL_GETDENTS: usize = 61;
 const SYSCALL_TIMES: usize = 153;
+const SYSCALL_MMAP: usize = 222;
+const SYSCALL_MUNMAP: usize = 215;
 
 pub fn syscall(id: usize, args: [usize; 6]) -> isize {
     match id {
@@ -71,6 +73,8 @@ pub fn syscall(id: usize, args: [usize; 6]) -> isize {
         SYSCALL_UNAME => sys_uname(args[0] as *mut u8),
         SYSCALL_GETDENTS => sys_getdents(args[0], args[1] as *const u8, args[2]),
         SYSCALL_TIMES => sys_times(args[0] as *const u8),
+        SYSCALL_MMAP => sys_mmap(args[0], args[1], args[2], args[3], args[4], args[5]),
+        SYSCALL_MUNMAP => sys_munmap(args[0]),
         _ => {
             error!("Unsupported syscall id: {}", id);
             sys_exit(-1);

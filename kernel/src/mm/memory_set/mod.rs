@@ -68,10 +68,15 @@ impl MemorySet {
         self.areas.push(area);
     }
 
-    fn insert_area_with_data(&mut self, mut area: MapArea, data: &[u8]) {
+    pub fn insert_area_with_data(&mut self, mut area: MapArea, data: &[u8]) {
         area.map_all(&mut self.page_table);
         area.insert_raw_data(data, &mut self.page_table);
         self.areas.push(area);
+    }
+
+    pub fn remove_area(&mut self, start_va: usize) {
+        self.areas
+            .retain(|area| area.vpn_range.start().0 != start_va);
     }
 
     pub fn change_area_end(&mut self, start_va: VirtAddr, new_end_va: VirtAddr) -> bool {

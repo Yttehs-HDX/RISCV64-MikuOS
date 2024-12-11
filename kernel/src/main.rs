@@ -56,7 +56,7 @@ fn run_test() -> ! {
     for test in [
         "execve",
         "getcwd",
-        // "munmap",
+        "munmap",
         "pipe",
         "umount",
         "close",
@@ -67,7 +67,7 @@ fn run_test() -> ! {
         "mount",
         "exit",
         "sleep",
-        // "mmap",
+        "mmap",
         "uname",
         "gettimeofday",
         "mkdir_",

@@ -1,4 +1,4 @@
-use crate::{fs::{File, Inode}, sync::UPSafeCell};
+use crate::{fs::File, sync::UPSafeCell};
 use alloc::string::String;
 use core::cell::RefMut;
 use fatfs::{Read, Write};

@@ -1,7 +1,10 @@
 use crate::{
     config::{KERNEL_STACK_SP, ROOT_DIR, TRAP_CX_PTR},
-    fs::{File, Stderr, Stdin, Stdout},
-    mm::{self, MemorySpace, PhysPageNum, PpnOffset, UserSpace, VirtAddr},
+    fs::{self, File, Inode, Stderr, Stdin, Stdout},
+    mm::{
+        self, MapArea, MapPermission, MapType, MemorySpace, PhysPageNum, PpnOffset, UserSpace,
+        VirtAddr,
+    },
     sync::UPSafeCell,
     task::{alloc_pid_handle, PidHandle, TaskContext, Tms},
     trap::TrapContext,
@@ -199,6 +202,9 @@ pub struct ProcessControlBlockInner {
     stime_base: usize,
     utime_base: usize,
     tms: Tms,
+
+    mmap_base: usize,
+    mmap_pair: Vec<(usize, usize)>,
 }
 
 impl ProcessControlBlockInner {
@@ -223,6 +229,8 @@ impl ProcessControlBlockInner {
             stime_base: 0,
             utime_base: 0,
             tms: Tms::empty(),
+            mmap_base: 0xffff_ffff_c020_0000,
+            mmap_pair: Vec::new(),
         }
     }
 
@@ -278,6 +286,50 @@ impl ProcessControlBlockInner {
 
     pub fn get_tms_mut(&mut self) -> &mut Tms {
         &mut self.tms
+    }
+}
+
+impl ProcessControlBlockInner {
+    pub fn alloc_mmap(&mut self, fd: usize) -> usize {
+        let file = self.find_fd(fd).unwrap();
+        let inode = fs::open_inode(&file.path()).unwrap();
+        let size = inode.size();
+        let file = inode.to_file();
+        let mut buf: Vec<u8> = Vec::with_capacity(size);
+        unsafe {
+            buf.set_len(size);
+        }
+        file.read(&mut buf);
+
+        let end_va = VirtAddr(self.mmap_base);
+        let start_va = VirtAddr(self.mmap_base - size).to_vpn_floor().to_va();
+        self.mmap_base = start_va.0;
+
+        self.user_space
+            .as_mut()
+            .unwrap()
+            .inner_mut()
+            .insert_area_with_data(
+                MapArea::new(
+                    start_va,
+                    end_va,
+                    MapType::Framed,
+                    MapPermission::U | MapPermission::R | MapPermission::W,
+                ),
+                &buf,
+            );
+        self.mmap_pair.push((fd, start_va.0));
+
+        start_va.0
+    }
+
+    pub fn dealloc_mmap(&mut self, start: usize) {
+        self.user_space
+            .as_mut()
+            .unwrap()
+            .inner_mut()
+            .remove_area(start);
+        self.mmap_pair.retain(|&(_, start_va)| start_va != start);
     }
 }
 
