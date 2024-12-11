@@ -1,4 +1,4 @@
-use crate::{fs::File, sync::UPSafeCell};
+use crate::{fs::{File, Inode}, sync::UPSafeCell};
 use alloc::string::String;
 use core::cell::RefMut;
 use fatfs::{Read, Write};
@@ -49,6 +49,7 @@ impl File for FatFile {
         assert!(self.writable);
         let mut inner = self.inner_mut();
         inner.write_all(buf).ok();
+        inner.flush().ok();
         buf.len()
     }
 
