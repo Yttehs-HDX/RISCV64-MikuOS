@@ -10,10 +10,10 @@ fn panic(info: &PanicInfo) -> ! {
             location.file(),
             location.line(),
             location.column(),
-            info.message(),
+            info.message().unwrap(),
         );
     } else {
-        error!("Panicked: {}", info.message())
+        error!("Panicked: {}", info.message().unwrap())
     }
     sbi::sbi_shutdown_failure();
 }

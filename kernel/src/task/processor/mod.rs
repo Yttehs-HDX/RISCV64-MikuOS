@@ -46,7 +46,7 @@ impl Processor {
     }
 
     pub fn current(&self) -> Arc<ProcessControlBlock> {
-        self.inner().current.as_ref().map(Arc::clone).unwrap()
+        self.inner().current.clone().unwrap()
     }
 
     pub fn run_tasks(&self) -> ! {

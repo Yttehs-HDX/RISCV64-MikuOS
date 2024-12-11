@@ -18,8 +18,9 @@ clean:
 	@cd kernel && make -s clean
 
 setup:
+	rustup toolchain install nightly-2024-02-03 --profile minimal
+	rustup default nightly-2024-02-03
 	rustup target add riscv64gc-unknown-none-elf
-	cargo install cargo-binutils
 	rustup component add rust-src
 	rustup component add llvm-tools-preview
 

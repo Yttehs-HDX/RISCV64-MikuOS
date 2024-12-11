@@ -3,7 +3,6 @@ use buddy_system_allocator::LockedHeap;
 use log::trace;
 
 pub fn init_heap() {
-    #[allow(static_mut_refs)]
     unsafe {
         trace!(
             "HeapAllocator: heap [{:#x?}, {:#x?})",
