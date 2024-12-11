@@ -19,5 +19,5 @@ spin = "0.9.8"
 debug = true
 
 [features]
-default = []
+default = ["test"]
 test = []

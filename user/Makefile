@@ -16,7 +16,7 @@ FS_IMG = sdcard.img
 FS_PATH = $(TARGET_DIR)/sdcard.img
 FS_MOUNT = $(TARGET_DIR)/mnt
 
-all: fs
+all: build
 
 build:
 	@$(CARGO) build $(CARGO_FLAGS)

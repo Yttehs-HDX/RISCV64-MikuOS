@@ -3,3 +3,8 @@ kernel/.gdb_history
 
 # pycache
 test/check_result/__pycache__
+
+# build
+kernel-qemu
+sbi-qemu
+sdcard.img

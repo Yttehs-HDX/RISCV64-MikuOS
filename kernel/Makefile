@@ -1,4 +1,4 @@
-.PHONY : all build run test debug connect fmt clean
+.PHONY : all build run test submit debug connect fmt clean
 
 ARCH := riscv64gc-unknown-none-elf
 BUILD_TYPE := release
@@ -33,7 +33,7 @@ GDB_FLAGS := -ex "file $(TARGET)" \
 	-ex "target remote :1234" \
 	-ex "set arch riscv:rv64"
 
-all: run
+all: submit
 
 build:
 	@$(CARGO) build $(CARGO_FLAGS)
@@ -47,6 +47,11 @@ test-build:
 test: test-build
 	@cp $(TEST_IMG) $(TEST_IMG_COPY)
 	@$(QEMU) $(TEST_FLAGS) | tee $(OUTPUT)
+
+submit: build
+	cp $(TARGET) ../kernel-qemu
+	cp ../bootloader/$(BIOS) ../sbi-qemu
+	cp $(TEST_IMG) ../sdcard.img
 
 debug:
 	@echo -e "\033[33m[+] Run 'make connect' in another terminal at the same dir\033[0m"
