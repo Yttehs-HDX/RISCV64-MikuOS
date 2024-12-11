@@ -161,11 +161,12 @@ pub fn trap_handler() -> ! {
         }
         Trap::Exception(Exception::IllegalInstruction) => {
             error!(
-                "{:?} @ {:#x}, badaddr {:#x}, pid = {}",
+                "{:?} @ {:#x}, badaddr {:#x}, pid = {}, syscall = {}",
                 scause.cause(),
                 sepc,
                 stval,
-                pid
+                pid,
+                cx.get_x(17),
             );
             task::get_processor().exit_current(-3);
         }
@@ -176,21 +177,23 @@ pub fn trap_handler() -> ! {
         | Trap::Exception(Exception::InstructionFault)
         | Trap::Exception(Exception::InstructionPageFault) => {
             error!(
-                "{:?} @ {:#x}, badaddr {:#x}, pid = {}",
+                "{:?} @ {:#x}, badaddr {:#x}, pid = {}, syscall = {}",
                 scause.cause(),
                 sepc,
                 stval,
-                pid
+                pid,
+                cx.get_x(17),
             );
             task::get_processor().exit_current(-2);
         }
         _ => {
             panic!(
-                "Unhandled trap {:?} @ {:#x}, badaddr {:#x}, pid = {}",
+                "Unhandled trap {:?} @ {:#x}, badaddr {:#x}, pid = {}, syscall = {}",
                 scause.cause(),
                 sepc,
                 stval,
-                pid
+                pid,
+                cx.get_x(17),
             );
         }
     }
