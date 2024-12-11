@@ -28,7 +28,7 @@ impl PidAllocator {
         Self {
             inner: unsafe {
                 UPSafeCell::new(PidAllocatorInner {
-                    current: 0,
+                    current: 1,
                     recycled: Vec::new(),
                 })
             },

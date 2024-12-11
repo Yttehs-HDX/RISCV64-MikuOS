@@ -15,4 +15,7 @@ mod tms;
 pub fn init() {
     #[cfg(not(feature = "test"))]
     add_initproc();
+
+    #[cfg(feature = "test")]
+    get_initproc();
 }
