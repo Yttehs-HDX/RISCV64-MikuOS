@@ -2,6 +2,12 @@
 
 RISC-V64 OS written in Rust
 
+## Basic Info
+
+Passed all testcases in 2024.12.12.
+
+![score](docs/assets/score.png)
+
 ## Workflows
 
 [![mirror](https://github.com/Yttehs-HDX/RISCV64-MikuOS/actions/workflows/mirror.yml/badge.svg)](https://github.com/Yttehs-HDX/RISCV64-MikuOS/blob/main/.github/workflows/mirror.yml)
