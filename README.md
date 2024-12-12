@@ -12,6 +12,10 @@ Passed all testcases in 2024.12.12.
 
 [![mirror](https://github.com/Yttehs-HDX/RISCV64-MikuOS/actions/workflows/mirror.yml/badge.svg)](https://github.com/Yttehs-HDX/RISCV64-MikuOS/blob/main/.github/workflows/mirror.yml)
 
+## Docs
+
+- [内核高地址与用户共页](./docs/kernel_high_address_and_shared_memory_space.md)
+
 ## Setup
 
 ```bash
