@@ -58,3 +58,8 @@ make connect
 ## License
 
 MIT
+
+## I'm thinking Miku, Miku, oo-ee-oo
+
+![fufu](docs/assets/fufu.jpg)
+![miku](docs/assets/miku.jpg)
