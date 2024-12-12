@@ -4,7 +4,7 @@ RISC-V64 OS written in Rust
 
 ## Basic Info
 
-Passed all testcases in 2024.12.12.
+Passed all testcases in 2024.12.12, ranked 3rd.
 
 ![score](docs/assets/score.png)
 
