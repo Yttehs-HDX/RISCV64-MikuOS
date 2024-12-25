@@ -6,6 +6,7 @@ pub use stdio::*;
 use alloc::sync::Arc;
 use lazy_static::lazy_static;
 
+pub mod ext4;
 pub mod fat;
 mod interface;
 mod path;
