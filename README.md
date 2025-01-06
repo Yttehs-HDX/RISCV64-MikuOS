@@ -17,6 +17,11 @@ Passed all testcases in 2024.12.12, ranked 3rd.
 - [内核高地址与用户共页](docs/kernel_high_address_and_shared_memory_space.md)
 - [无栈协程调度与非阻塞性系统调用](docs/stackless_coroutine_and_non-blocking_syscall.md)
 
+### Explanation
+
+- Video Link: [百度网盘](https://pan.baidu.com/s/1WAu6152cZdW1Rc-9IHwM6Q)
+- Password: `cxkh`
+
 ## Setup
 
 ```bash
