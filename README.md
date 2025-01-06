@@ -19,6 +19,10 @@ Passed all testcases in 2024.12.12, ranked 3rd.
 
 ### Explanation
 
+#### Video
+
+- Bilibili: [MikuOS (RISC-V64) 演示视频](https://www.bilibili.com/video/BV1zpr5YUE5o/?spm_id_from=333.999.list.card_archive.click&vd_source=f5d3310d445c014fbe8556da492aa86a)
+
 - Video Link: [百度网盘](https://pan.baidu.com/s/1WAu6152cZdW1Rc-9IHwM6Q)
 - Password: `cxkh`
 
